@@ -137,15 +137,22 @@ Ohne Konfiguration speichert das Spiel **lokal pro Modus** (localStorage). Mit S
 
 ---
 
+## Hosting — ERLEDIGT (GitHub Pages)
+
+- **Live-Link für die Kinder:** https://m7dchscjsk-droid.github.io/gleichungs-run/
+- Repo: https://github.com/m7dchscjsk-droid/gleichungs-run (public). GitHub-Account-Login: `m7dchscjsk-droid` (Anzeigename „sigmaligma").
+- `index.html` ist eine **Meta-Refresh-Weiterleitung** auf `Gleichungs-Trainer.html` (damit die Root-URL direkt das Spiel öffnet). Single source of truth bleibt `Gleichungs-Trainer.html`.
+- `.gitignore` schließt `.claude/` (Preview-Tooling) aus dem Repo aus.
+- **Update-Workflow:** Datei ändern → `git commit` → `git push` (origin/main). Pages baut automatisch (~1 Min), gleicher Link. Git-Auth läuft über `gh` (credential helper via `gh auth setup-git`).
+
 ## Offene Punkte / Ideen für den nächsten Chat
 
 1. **Cloud aktivieren + Multiplayer-Board** (siehe oben) — Hauptwunsch des Users für „mehrere Kinder online".
-2. **Hosting** (Netlify Drop) — Link, den die Kinder aufrufen können.
-3. (Optional) Geometrie: mehr zusammengesetzte Figuren / Sachkontexte, Maßstabs-/Diagonalaufgaben.
-4. (Optional) Größen: l↔dm³ / ml↔cm³ Äquivalenzen als eigener Mini-Typ; Tonnen/Hektar-Sachaufgaben.
-5. (Optional) Prozent: Zinsrechnung (Teil B), gestaffelte Rabatte.
-6. (Optional) Mix: Schwierigkeits-Schieberegler (wie stark „sehr schwer" überwiegt).
-7. (Optional) Eigene Sprüche-Buckets pro Modus statt geteiltem `MSG`.
+2. (Optional) Geometrie: mehr zusammengesetzte Figuren / Sachkontexte, Maßstabs-/Diagonalaufgaben.
+3. (Optional) Größen: l↔dm³ / ml↔cm³ Äquivalenzen als eigener Mini-Typ; Tonnen/Hektar-Sachaufgaben.
+4. (Optional) Prozent: Zinsrechnung (Teil B), gestaffelte Rabatte.
+5. (Optional) Mix: Schwierigkeits-Schieberegler (wie stark „sehr schwer" überwiegt).
+6. (Optional) Eigene Sprüche-Buckets pro Modus statt geteiltem `MSG`.
 
 ---
 
