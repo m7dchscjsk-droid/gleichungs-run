@@ -1270,8 +1270,8 @@ let current=null, startTime=0, ticker=null, solvedThis=false, peeked=false, warn
    3) Project Settings -> API: Project URL und anon public key kopieren
       und hier unten eintragen. Datei dann hosten (z.B. Netlify/Vercel).
    ========================================================================= */
-const SUPABASE_URL = '';   // z.B. 'https://abcd1234.supabase.co'
-const SUPABASE_KEY = '';   // anon public key
+const SUPABASE_URL = 'https://xmihfeelhmrqaddmohqr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_FaZMAa5l-cgKNULOmN6JSQ_goOaEql7';   // öffentlicher (publishable) Key – nur Lesen/Eintragen via RLS
 const NAME_KEY='gleichungsrun_player';
 let PLAYER = (function(){ try{ return (localStorage.getItem(NAME_KEY)||'').trim() || 'LOOIS'; }catch(e){ return 'LOOIS'; } })();
 /* ersetzt den Platzhalter-Namen LOOIS in Sprüchen/Texten durch den echten Spielernamen */
