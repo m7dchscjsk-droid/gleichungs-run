@@ -189,6 +189,28 @@
   .ovr-btns .btn-ghost{flex:0 0 auto;min-width:0;padding:13px 22px;}
 
   footer{text-align:center;color:var(--dim);font-size:12px;margin-top:22px;}
+
+  /* Namens-Eingabe */
+  .player{cursor:pointer;}
+  .namemodal{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .namebox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 24px;max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:12px;}
+  .nm-title{font-size:22px;font-weight:800;color:var(--ink);}
+  .nm-sub{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .nm-input{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:14px;padding:14px 16px;font-size:20px;font-family:var(--mono);text-align:center;text-transform:uppercase;letter-spacing:.12em;outline:none;}
+  .nm-input:focus{border-color:var(--hi);}
+
+  /* Board-Umschalter + gemeinsames Board */
+  .board-tabs{display:flex;gap:6px;margin:2px 0 12px;flex-wrap:wrap;}
+  .board-tab{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--panel);cursor:pointer;}
+  .board-tab.active{background:var(--hi);color:#000;border-color:var(--hi);}
+  .lbrow{display:grid;grid-template-columns:26px 1fr auto auto;gap:10px;font-family:var(--mono);font-size:13px;padding:7px 8px;border-radius:8px;color:var(--muted);align-items:center;}
+  .lbrow:nth-child(even){background:var(--panel2);}
+  .lbrow .rk{font-weight:800;color:var(--dim);}
+  .lbrow .pl{color:var(--ink);font-weight:700;letter-spacing:.04em;}
+  .lbrow .sub{color:var(--dim);font-size:11px;}
+  .lbrow .mv{color:var(--ink);font-weight:800;}
+  .lbrow.me{outline:1px solid var(--hi);outline-offset:-1px;}
+  .lbrow.top1 .rk,.lbrow.top1 .mv,.lbrow.top1 .pl{color:var(--gold);}
 </style>
 </head>
 <body>
@@ -199,7 +221,7 @@
       <p id="brandSub">Hauptschulabschluss Bayern · nach x auflösen · ohne Taschenrechner</p>
     </div>
     <div class="stats">
-      <div class="player"><span class="dico" id="playerDino"></span>LOOIS</div>
+      <div class="player" id="playerChip" title="Name ändern"><span class="dico" id="playerDino"></span><span id="playerName">LOOIS</span></div>
       <div class="chip stat-btn" id="btnMenu" title="Zurück zur Auswahl">↩ Auswahl</div>
       <div class="chip"><span class="lbl">RUNDE</span><span class="val" id="stRound">1</span></div>
       <div class="chip"><span class="lbl">PKT</span><span class="val" id="stPoints">0</span></div>
@@ -214,7 +236,7 @@
     <div class="overlay" id="overlay">
       <div class="ov-start" id="ovStart">
         <div class="ov-dino" id="ovDino"></div>
-        <div class="ov-title">Servus, LOOIS!</div>
+        <div class="ov-title" id="ovTitle">Servus, LOOIS!</div>
         <div class="modepick">
           <button class="modebtn active" id="btnModeEq">Gleichungen</button>
           <button class="modebtn" id="btnModeP">Prozent</button>
@@ -282,13 +304,36 @@
   </main>
 
   <section class="board">
-    <div class="board-head"><span>Scoreboard · Runden bis 1000</span><span id="boardBest"></span></div>
-    <div class="board-cap">↓ kürzer = besser · weniger Aufgaben bis 1000 (Serien/AURA bringen dich schneller hin)</div>
-    <div class="board-chart" id="boardChart"></div>
-    <div class="board-list" id="boardList"></div>
+    <div class="board-head"><span id="boardTitle">Scoreboard · Runden bis 1000</span><span id="boardBest"></span></div>
+    <div class="board-tabs">
+      <button class="board-tab active" id="tabOwn">Eigenes</button>
+      <button class="board-tab" id="tabClass">Klassen-Board</button>
+    </div>
+    <div id="ownBoard">
+      <div class="board-cap">↓ kürzer = besser · weniger Aufgaben bis 1000 (Serien/AURA bringen dich schneller hin)</div>
+      <div class="board-chart" id="boardChart"></div>
+      <div class="board-list" id="boardList"></div>
+    </div>
+    <div id="classBoard" style="display:none">
+      <div class="board-tabs">
+        <button class="board-tab active" id="metricTasks">Beste Runde</button>
+        <button class="board-tab" id="metricAura">AURA</button>
+      </div>
+      <div class="board-cap" id="classCap"></div>
+      <div class="board-list" id="classList"></div>
+    </div>
   </section>
 
-  <footer>LOOIS, tipp dein Ergebnis ein und drück PRÜFEN. Erst bei RICHTIG geht's weiter – wer das SOLL reißt, kassiert Minuspunkte.</footer>
+  <footer id="footerHint">LOOIS, tipp dein Ergebnis ein und drück PRÜFEN. Erst bei RICHTIG geht's weiter – wer das SOLL reißt, kassiert Minuspunkte.</footer>
+</div>
+
+<div class="namemodal" id="nameModal" style="display:none">
+  <div class="namebox">
+    <div class="nm-title">Wer spielt?</div>
+    <div class="nm-sub">Dein Name erscheint im gemeinsamen Klassen-Board.</div>
+    <input class="nm-input" id="nameInput" type="text" maxlength="14" autocomplete="off" spellcheck="false" placeholder="DEIN NAME">
+    <button class="btn-start" id="nameSave">Speichern</button>
+  </div>
 </div>
 
 <script>
@@ -1215,7 +1260,7 @@ let current=null, startTime=0, ticker=null, solvedThis=false, peeked=false, warn
    2) Im SQL-Editor ausführen:
         create table scores (
           id bigint generated by default as identity primary key,
-          player text, round int, tasks int, time int, aura int,
+          player text, mode text, round int, tasks int, time int, aura int,
           peak int, pts int, boss boolean, ts bigint,
           created_at timestamptz default now()
         );
@@ -1227,11 +1272,18 @@ let current=null, startTime=0, ticker=null, solvedThis=false, peeked=false, warn
    ========================================================================= */
 const SUPABASE_URL = '';   // z.B. 'https://abcd1234.supabase.co'
 const SUPABASE_KEY = '';   // anon public key
-const PLAYER = 'LOOIS';
+const NAME_KEY='gleichungsrun_player';
+let PLAYER = (function(){ try{ return (localStorage.getItem(NAME_KEY)||'').trim() || 'LOOIS'; }catch(e){ return 'LOOIS'; } })();
+/* ersetzt den Platzhalter-Namen LOOIS in Sprüchen/Texten durch den echten Spielernamen */
+function nm(s){ return typeof s==='string' ? s.split('LOOIS').join(PLAYER) : s; }
 const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY);
 function cloudHeaders(extra){ return Object.assign({'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'}, extra||{}); }
 async function cloudFetch(){
-  const url=SUPABASE_URL+'/rest/v1/scores?player=eq.'+encodeURIComponent(PLAYER)+'&select=round,tasks,time,aura,peak,pts,boss,ts&order=ts.asc';
+  const url=SUPABASE_URL+'/rest/v1/scores?player=eq.'+encodeURIComponent(PLAYER)+'&mode=eq.'+encodeURIComponent(state.mode)+'&select=mode,player,round,tasks,time,aura,peak,pts,boss,ts&order=ts.asc';
+  const r=await fetch(url,{headers:cloudHeaders()}); if(!r.ok) throw new Error('GET '+r.status); return await r.json();
+}
+async function cloudFetchAll(mode){
+  const url=SUPABASE_URL+'/rest/v1/scores?mode=eq.'+encodeURIComponent(mode)+'&select=player,tasks,time,aura,peak,boss,ts&order=ts.asc';
   const r=await fetch(url,{headers:cloudHeaders()}); if(!r.ok) throw new Error('GET '+r.status); return await r.json();
 }
 async function cloudPush(entry){
@@ -1326,7 +1378,7 @@ function checkAnswer(){
   if(current.tol!=null){ correct = Math.abs(ua.n/ua.d - current.av) <= current.tol; }   // Geometrie: gerundet, mit Toleranz
   else { const t=current.answer; correct = (ua.n*t.d===t.n*ua.d); }
   if(correct){onCorrect();}
-  else{fb.className='feedback wrong';fb.textContent='✗ FALSCH – '+pick(MSG.falsch);shake();playWrong();}
+  else{fb.className='feedback wrong';fb.textContent='✗ FALSCH – '+nm(pick(MSG.falsch));shake();playWrong();}
 }
 
 function onCorrect(){
@@ -1351,14 +1403,14 @@ function onCorrect(){
   if(state.streak>0 && state.streak%10===0) nextIsBoss=true;   // nach 10 in Folge: Endgegner
 
   $('feedback').className='feedback right';
-  $('feedback').textContent = (current.isBoss && pts>0) ? '✓ ENDGEGNER BESIEGT!' : '✓ RICHTIG, LOOIS!';
+  $('feedback').textContent = (current.isBoss && pts>0) ? '✓ ENDGEGNER BESIEGT!' : ('✓ RICHTIG, '+PLAYER+'!');
   $('answer').disabled=true; $('btnCheck').disabled=true;
   if(soundOn){ if(bk==='boss')playWin(); else if(pts>0)playRight(); }
   const neg=pts<0;
   const res=$('result'); res.className='show'+(neg?' neg':'');
   res.innerHTML=
     '<div class="res-time">ZEIT <b>'+fmt(elapsed)+'</b> · SOLL '+fmt(est)+(nextIsBoss?' · NÄCHSTE: ENDGEGNER!':'')+'</div>'+
-    '<div class="res-msg">'+pick(MSG[bk])+'</div>'+
+    '<div class="res-msg">'+nm(pick(MSG[bk]))+'</div>'+
     '<div><span class="res-pts '+(neg?'pts-neg':'pts-pos')+'">'+(pts>=0?'+':'−')+Math.abs(pts)+' Punkte</span>'+
       (aura>0?'<span class="res-aura">+'+aura+' AURA ✦ Serie ×'+state.streak+'</span>':'')+
       (master>0?'<span class="res-aura">+'+master+' MASTER-BONUS</span>':'')+
@@ -1404,12 +1456,15 @@ function finishRound(viaBoss){
   roundDone=true; nextIsBoss=false;
   const prevBest = scores.length? Math.min.apply(null,scores.map(s=>s.tasks)) : null;
   const last = scores.length? scores[scores.length-1] : null;
-  const entry={player:PLAYER, round:scores.length+1, tasks:state.solved, time:Math.round(state.roundTime), aura:state.aura, peak:state.peakStreak, pts:state.points, boss:!!viaBoss, ts:Date.now()};
-  scores.push(entry); saveScoresLocal(); if(CLOUD) cloudPush(entry).catch(e=>console.warn('Cloud-Push fehlgeschlagen:',e)); renderBoard();
+  const entry={player:PLAYER, mode:state.mode, round:scores.length+1, tasks:state.solved, time:Math.round(state.roundTime), aura:state.aura, peak:state.peakStreak, pts:state.points, boss:!!viaBoss, ts:Date.now()};
+  scores.push(entry); saveScoresLocal();
+  if(CLOUD) cloudPush(entry).then(()=>{ if(boardView==='class') renderSharedBoard(); }).catch(e=>console.warn('Cloud-Push fehlgeschlagen:',e));
+  renderBoard();
+  if(boardView==='class') renderSharedBoard();
   let note;
   if(prevBest===null) note='Erste Runde gespeichert – ab jetzt heißt es: schneller werden!';
   else if(entry.tasks<prevBest) note='🏆 NEUER REKORD! '+(prevBest-entry.tasks)+' Aufgabe(n) weniger als dein Bestwert ('+prevBest+').';
-  else if(last && entry.tasks<last.tasks) note='↓ Besser als letzte Runde ('+last.tasks+' Aufg.). Weiter so, LOOIS!';
+  else if(last && entry.tasks<last.tasks) note='↓ Besser als letzte Runde ('+last.tasks+' Aufg.). Weiter so, '+PLAYER+'!';
   else if(last && entry.tasks>last.tasks) note='↑ '+(entry.tasks-last.tasks)+' Aufgabe(n) mehr als letzte Runde. Mehr Serien = schneller am Ziel!';
   else note='Gleich wie zuletzt ('+entry.tasks+' Aufg.). Knack den Rekord!';
   playWin();
@@ -1472,7 +1527,7 @@ function goNext(){ if(roundDone){ resetRound(); $('btnNext').textContent='Nächs
 function showTaskResult(elapsed,pts,aura,master,bk){
   const neg=pts<0;
   $('ovResult').className='ov-result';
-  $('ovrSpruch').textContent=pick(MSG[bk]);
+  $('ovrSpruch').textContent=nm(pick(MSG[bk]));
   $('ovrStats').innerHTML=
     '<span class="'+(neg?'neg':'pos')+'">'+(pts>=0?'+':'−')+Math.abs(pts)+' Punkte</span>'+
     '<span>Zeit '+fmt(elapsed)+'</span>'+
@@ -1534,9 +1589,15 @@ function setMode(m){
   $('btnModeGeo').classList.toggle('active',m==='geo');
   $('btnModeMix').classList.toggle('active',m==='mix');
   const t=MODE_TXT[m];
-  $('ovSub').innerHTML=t.sub; $('brandSub').textContent=t.brand;
+  $('ovSub').innerHTML=nm(t.sub); $('brandSub').textContent=t.brand;
   $('answer').placeholder=t.ph; $('eqHint').textContent=t.hint;
-  loadScoresLocal(); resetRound(); renderBoard();
+  resetRound(); reloadScores();
+}
+function reloadScores(){
+  if(CLOUD){
+    cloudFetch().then(d=>{ scores=d; saveScoresLocal(); state.roundNo=scores.length+1; renderBoard(); })
+                .catch(e=>{ console.warn('Cloud nicht erreichbar – lokal:',e); loadScoresLocal(); state.roundNo=scores.length+1; renderBoard(); });
+  } else { loadScoresLocal(); state.roundNo=scores.length+1; renderBoard(); }
 }
 $('btnModeEq').addEventListener('click',()=>setMode('gleich'));
 $('btnModeP').addEventListener('click',()=>setMode('prozent'));
@@ -1544,10 +1605,84 @@ $('btnModeG').addEventListener('click',()=>setMode('groessen'));
 $('btnModeGeo').addEventListener('click',()=>setMode('geo'));
 $('btnModeMix').addEventListener('click',()=>setMode('mix'));
 
+/* ---------- Spielername ---------- */
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function applyPlayerName(){
+  $('playerName').textContent=PLAYER;
+  $('ovTitle').textContent='Servus, '+PLAYER+'!';
+  $('footerHint').textContent=PLAYER+', tipp dein Ergebnis ein und drück PRÜFEN. Erst bei RICHTIG geht’s weiter – wer das SOLL reißt, kassiert Minuspunkte.';
+  const t=MODE_TXT[state.mode]; if(t) $('ovSub').innerHTML=nm(t.sub);
+}
+function openNameModal(){ $('nameInput').value=(PLAYER==='LOOIS'?'':PLAYER); $('nameModal').style.display='flex'; setTimeout(()=>$('nameInput').focus(),30); }
+function closeNameModal(){ $('nameModal').style.display='none'; }
+function saveName(){
+  const v=($('nameInput').value||'').trim().toUpperCase().slice(0,14);
+  if(!v){ $('nameInput').focus(); return; }
+  PLAYER=v; try{ localStorage.setItem(NAME_KEY,PLAYER); }catch(e){}
+  applyPlayerName(); closeNameModal(); reloadScores();
+}
+$('playerChip').addEventListener('click',openNameModal);
+$('nameSave').addEventListener('click',saveName);
+$('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); });
+
+/* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
+let boardView='own', classMetric='tasks';
+function setBoardView(v){
+  boardView=v;
+  $('tabOwn').classList.toggle('active',v==='own');
+  $('tabClass').classList.toggle('active',v==='class');
+  $('ownBoard').style.display=(v==='own')?'':'none';
+  $('classBoard').style.display=(v==='class')?'':'none';
+  $('boardTitle').textContent=(v==='class')?'Klassen-Board · alle Spieler':'Scoreboard · Runden bis 1000';
+  if(v==='class') renderSharedBoard();
+}
+function setMetric(m){ classMetric=m; $('metricTasks').classList.toggle('active',m==='tasks'); $('metricAura').classList.toggle('active',m==='aura'); renderSharedBoard(); }
+$('tabOwn').addEventListener('click',()=>setBoardView('own'));
+$('tabClass').addEventListener('click',()=>setBoardView('class'));
+$('metricTasks').addEventListener('click',()=>setMetric('tasks'));
+$('metricAura').addEventListener('click',()=>setMetric('aura'));
+
+function aggregateClass(raw){
+  const byP={};
+  raw.forEach(s=>{
+    const p=s.player||'?'; const o=byP[p]||(byP[p]={player:p,rounds:0,tasks:Infinity,time:Infinity,aura:0,peak:0});
+    o.rounds++;
+    if(s.tasks<o.tasks || (s.tasks===o.tasks && s.time<o.time)){ o.tasks=s.tasks; o.time=s.time; }
+    if(s.aura>o.aura) o.aura=s.aura;
+    if(s.peak>o.peak) o.peak=s.peak;
+  });
+  const arr=Object.keys(byP).map(k=>byP[k]);
+  if(classMetric==='tasks') arr.sort((a,b)=> a.tasks-b.tasks || a.time-b.time);
+  else arr.sort((a,b)=> b.aura-a.aura || b.peak-a.peak);
+  return arr;
+}
+function renderClassRows(rows){
+  const list=$('classList');
+  if(!rows.length){ list.innerHTML='<div class="board-empty">Noch keine Ergebnisse in diesem Modus.</div>'; return; }
+  list.innerHTML=rows.map((r,i)=>{
+    const me=(r.player===PLAYER)?' me':''; const top=(i===0)?' top1':'';
+    const main = classMetric==='tasks'
+      ? '<span class="mv">'+r.tasks+'</span><span class="sub">'+fmt(r.time)+' · '+r.rounds+' Rdn</span>'
+      : '<span class="mv">'+r.aura+'</span><span class="sub">×'+r.peak+' · '+r.rounds+' Rdn</span>';
+    return '<div class="lbrow'+top+me+'"><span class="rk">'+(i+1)+'</span><span class="pl">'+esc(r.player)+'</span>'+main+'</div>';
+  }).join('');
+}
+function renderSharedBoard(){
+  $('classCap').textContent = classMetric==='tasks'
+    ? 'Beste Runde je Spieler · wenigste Aufgaben (dann schnellste Zeit)'
+    : 'Höchste AURA je Spieler';
+  if(!CLOUD){ $('classList').innerHTML='<div class="board-empty">Gemeinsames Board ist erst nach der Cloud-Einrichtung aktiv.</div>'; return; }
+  $('classList').innerHTML='<div class="board-empty">Lade …</div>';
+  cloudFetchAll(state.mode).then(raw=>{ renderClassRows(aggregateClass(raw)); })
+    .catch(e=>{ console.warn('Klassen-Board-Fehler:',e); $('classList').innerHTML='<div class="board-empty">Konnte das Board gerade nicht laden.</div>'; });
+}
+
 $('dino').innerHTML=buildDino();
 $('playerDino').innerHTML=buildDino();
 $('ovDino').innerHTML=buildDino();
+applyPlayerName();
 initScores();   // lädt Punkte aus der Cloud (falls konfiguriert), sonst lokal
+(function(){ let hasName=false; try{ hasName=!!(localStorage.getItem(NAME_KEY)||'').trim(); }catch(e){} if(!hasName) openNameModal(); })();
 /* Startseite anzeigen – erste Aufgabe wird erst nach dem Countdown freigegeben */
 </script>
 </body>
