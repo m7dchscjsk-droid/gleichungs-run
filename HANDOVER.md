@@ -50,7 +50,7 @@ Lokales Öffnen: Doppelklick auf `Gleichungs-Trainer.html` (file://). Sauberer �
 - **Spickzettel-Strafe**: „Lösung zeigen" vor dem Lösen → 0 Punkte, Serie weg. Nach dem Lösen frei.
 - **Endgegner bei Serie 10** (`nextIsBoss`): super lange Aufgabe; **in SOLL besiegt → Runde endet sofort** (+100 Master-Bonus, Express-Ende); **über SOLL → Minus + Serie weg, Runde läuft weiter**.
 - **Runde = bis 1000 Punkte** (`GOAL=1000`) **oder** Endgegner besiegt. Goal-Bar mit goldenem AURA-Anteil. Danach Win-Overlay + Scoreboard-Eintrag.
-- **Scoreboard** (`renderBoard`): Mini-Balkendiagramm (Balken = Aufgaben pro Runde, kürzer = besser) + Liste der letzten Runden. Persistenz in localStorage pro Modus. Cloud (Supabase) **vorbereitet, nicht aktiv** (siehe unten).
+- **Scoreboard** (`renderBoard`): Mini-Balkendiagramm (Balken = Aufgaben pro Runde, kürzer = besser) + Liste der letzten Runden. Persistenz in localStorage pro Modus **und** in Supabase (Cloud **aktiv** — geräteübergreifendes Klassen-Board, siehe unten).
 - **Sounds** (WebAudio, offline): Trillern (30-s-Warnung), Wah-Wahh (falsch), Ding (richtig), Sieges-Jingle (Boss/Rundenende), Countdown-Beeps. Toggle ♪/✕ im Header.
 - **Sprüche** (`MSG`-Buckets): blitz (enthält „GOOD BOY"), gut (enthält „DU MUSST AUCH MAL NON CHALANT BLEIBEN."), drueber, peek, falsch, boss. Werden über alle Modi geteilt.
 
@@ -89,7 +89,7 @@ Gewichteter Pool aus den Generatoren **aller** Sektionen, **Übergewicht sehr sc
 5. **Größen-Block**: `G_CATS`, `G_V`, `G_CTX`, `toF`, `niceVal`, Generatoren, `GGENS`.
 6. **Geometrie-Block**: `PI`, `gnum`, `geoProb`, `gT`, `fin`, `fig*`-SVGs, Generatoren, `GEOGENS`.
 7. **Mix-Block**: `MIXGENS`.
-8. **`MSG`** (Sprüche), **Pixel-Dino**, **WebAudio**.
+8. **`MSG`** (Sprüche), **Pixel-Figur** (`SAHUR`-Körperraster + `KNUEPPEL`-Knüppel → `buildDino()`; der Läufer ist „Tung Tung Tung Sahur", ein Holzmann mit Knüppel, der per CSS-`@keyframes swing` auf und ab schwingt — Funktions-/ID-Namen `buildDino`/`dino`/`updateDino` aus Kompatibilität beibehalten), **WebAudio**.
 9. **State + Konstanten**: `state` (inkl. `mode`), `GOAL=1000`, `PLAYER='LOOIS'`, Supabase-Block.
 10. **Persistenz**: `scoreKey`, `loadScoresLocal`, `saveScoresLocal`, `cloudFetch`, `cloudPush`, `initScores`.
 11. **UI/Flow**: `parseAnswer` (strippt %, €, Einheiten), `loadProblem` (inkl. Mix-Hint-Logik), `startTimer`, `tick`, `checkAnswer` (exakt **oder** Toleranz bei `current.tol`), `onCorrect`, `updateStats`, `updateDino`, `renderBoard`, `finishRound`.
@@ -123,17 +123,20 @@ Gewichteter Pool aus den Generatoren **aller** Sektionen, **Übergewicht sehr sc
 
 ---
 
-## Cloud / Multiplayer — vorbereitet, nicht aktiviert
+## Cloud / Multiplayer — AKTIV (Supabase)
 
-Im Script-Kopf:
+Im Script-Kopf stehen jetzt echte Werte:
 ```js
-const SUPABASE_URL = '';   // z.B. 'https://abcd1234.supabase.co'
-const SUPABASE_KEY = '';   // anon public key
-const PLAYER = 'LOOIS';
+const SUPABASE_URL = 'https://xmihfeelhmrqaddmohqr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_…';   // ÖFFENTLICHER (publishable) Key – NIE den sb_secret_-Key hier eintragen!
 ```
-Ohne Konfiguration speichert das Spiel **lokal pro Modus** (localStorage). Mit Supabase (gratis) wird geräteübergreifend gespeichert. SQL-Schema steht als Kommentar in der HTML; Tabelle `scores` hat u. a. `player, round, tasks, time, aura, peak, pts, boss, ts`.
+- **Name pro Gerät:** `PLAYER` wird aus `localStorage['gleichungsrun_player']` geladen (Default `LOOIS`). Beim ersten Start öffnet sich `#nameModal` („Wer spielt?"); Name jederzeit über den Header-Chip (`#playerChip`) änderbar. `nm(str)` ersetzt den Platzhalter `LOOIS` in allen Sprüchen/Texten durch den echten Namen.
+- **Tabelle `scores`** hat eine zusätzliche **`mode`-Spalte** (5 Modi). `cloudPush` schreibt `mode`; persönliches `cloudFetch` filtert `player=eq.PLAYER & mode=eq.state.mode`; `cloudFetchAll(mode)` holt **alle** Spieler eines Modus.
+- **Klassen-Board:** Board-Sektion hat Tabs **Eigenes / Klassen-Board** (`#tabOwn`/`#tabClass`) und im Klassen-Board einen Metrik-Umschalter **Beste Runde / AURA** (`#metricTasks`/`#metricAura`). `aggregateClass()` verdichtet pro Spieler (min tasks, Tie→min time, bzw. max aura) und `renderSharedBoard()` rendert die Rangliste (Top 1 in Gold, eigener Eintrag umrandet). Ohne Cloud-Keys zeigt das Board einen Hinweis.
+- **RLS-Policies:** anon darf nur `select` + `insert` auf `scores` (kein delete/update). Aufräumen/Reset daher per SQL-Editor: `delete from scores;` bzw. `delete from scores where player='…';`.
+- Verifiziert: Node-vm (Namensersetzung, Aggregation beide Metriken, esc, alle 5 Generatoren) + Live gegen Supabase (read 200, insert 201, Board-Ranking tasks & aura korrekt, Browser-Screenshot).
 
-**Geplant/besprochen (Multiplayer für mehrere Kinder, async):** Jedes Kind spielt seine eigene Lernstrecke online, gemeinsames **Klassen-Board** (wer wie viele Runden, Zeit, AURA). Technisch machbar; offene To-dos: (1) Supabase aktivieren, (2) `mode`-Spalte ergänzen (5 Modi), (3) Namens-Eingabe pro Gerät, (4) aggregiertes Multi-Spieler-Board, (5) Datei online hosten (z. B. Netlify Drop). Echtzeit-Duell wäre möglich, aber deutlich aufwändiger (Realtime + Räume).
+**Optional / Ausbau:** Echtzeit-Duell (Supabase Realtime + Räume) wäre möglich, aber deutlich aufwändiger. Aktuell async „Klassen-Board".
 
 ---
 
@@ -147,12 +150,12 @@ Ohne Konfiguration speichert das Spiel **lokal pro Modus** (localStorage). Mit S
 
 ## Offene Punkte / Ideen für den nächsten Chat
 
-1. **Cloud aktivieren + Multiplayer-Board** (siehe oben) — Hauptwunsch des Users für „mehrere Kinder online".
-2. (Optional) Geometrie: mehr zusammengesetzte Figuren / Sachkontexte, Maßstabs-/Diagonalaufgaben.
-3. (Optional) Größen: l↔dm³ / ml↔cm³ Äquivalenzen als eigener Mini-Typ; Tonnen/Hektar-Sachaufgaben.
-4. (Optional) Prozent: Zinsrechnung (Teil B), gestaffelte Rabatte.
-5. (Optional) Mix: Schwierigkeits-Schieberegler (wie stark „sehr schwer" überwiegt).
-6. (Optional) Eigene Sprüche-Buckets pro Modus statt geteiltem `MSG`.
+1. (Optional) Geometrie: mehr zusammengesetzte Figuren / Sachkontexte, Maßstabs-/Diagonalaufgaben.
+2. (Optional) Größen: l↔dm³ / ml↔cm³ Äquivalenzen als eigener Mini-Typ; Tonnen/Hektar-Sachaufgaben.
+3. (Optional) Prozent: Zinsrechnung (Teil B), gestaffelte Rabatte.
+4. (Optional) Mix: Schwierigkeits-Schieberegler (wie stark „sehr schwer" überwiegt).
+5. (Optional) Eigene Sprüche-Buckets pro Modus statt geteiltem `MSG`.
+6. (Optional) Echtzeit-Duell zwischen zwei Kindern (Supabase Realtime + Räume).
 
 ---
 
