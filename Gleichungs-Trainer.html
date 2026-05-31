@@ -60,6 +60,11 @@
   @keyframes hop{0%,100%{transform:translateY(0) scaleY(1);}42%{transform:translateY(-12px) scaleY(1.05);}84%{transform:translateY(0) scaleY(.95);}}
   .runner .dino.gold svg{fill:var(--gold);}
   .runner .dino.gold{filter:drop-shadow(0 0 6px rgba(255,207,74,.7));}
+  /* Knüppel schwingt auf und ab (um den Griff/Hand-Drehpunkt) */
+  .club{transform-box:fill-box;transform-origin:50% 6%;}
+  .runner .dino .club,.ov-dino .club{animation:swing .6s ease-in-out infinite;}
+  .track.paused .dino .club{animation-play-state:paused;}
+  @keyframes swing{0%,100%{transform:rotate(22deg);}50%{transform:rotate(-58deg);}}
   .chip.aura .val{color:var(--gold);}
   .stat-btn{cursor:pointer;user-select:none;}
   .b-boss{background:var(--gold);color:#000;border-color:var(--gold);letter-spacing:.16em;}
@@ -1211,30 +1216,47 @@ const MSG={
   ]
 };
 
-/* ---------- Pixel-Dino ---------- */
-const DINO=[
-"...........#####..",
-"..........######..",
-"..........#.#####.",
-"..........#######.",
-"#.........#######.",
-"##........######..",
-"###.......######..",
-"####.....#######..",
-"#################.",
-".################.",
-"..###############.",
-"..##############..",
-"..#############...",
-"..####....#####...",
-"..###.....####....",
-"..##......###.....",
-"..##......##......"
+/* ---------- Pixel-Figur „Tung Tung Tung Sahur" (Holzmann mit Knüppel) ---------- */
+const SAHUR=[
+".....###....",
+"....#####...",
+"....#####...",
+"....#####...",
+"....#.#.#...",
+"....#####...",
+"....#####...",
+"....##.##...",
+"....#####...",
+"....#####...",
+"....#####...",
+"....#####...",
+"....#####...",
+"....##.##...",
+"....##.##...",
+"....##.##...",
+"....##.##...",
+"....##.##...",
+"...###.###.."
 ];
+/* Knüppel – Griff oben (am Hand-Drehpunkt), schwingt auf und ab */
+const KNUEPPEL=[
+".#.",
+".#.",
+".#.",
+".#.",
+"###",
+"###",
+"###",
+"###"
+];
+function gridRects(grid,ox,oy){ let r=''; for(let y=0;y<grid.length;y++){const rs=grid[y];for(let x=0;x<rs.length;x++){if(rs[x]==='#')r+='<rect x="'+(x+ox)+'" y="'+(y+oy)+'" width="1" height="1"/>';}} return r; }
 function buildDino(){
-  let r='';
-  for(let y=0;y<DINO.length;y++){const rs=DINO[y];for(let x=0;x<rs.length;x++){if(rs[x]==='#')r+='<rect x="'+x+'" y="'+y+'" width="1" height="1"/>';}}
-  return '<svg viewBox="0 0 18 17" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">'+r+'</svg>';
+  const body=gridRects(SAHUR,1,0);
+  const club=gridRects(KNUEPPEL,9,7);
+  return '<svg viewBox="0 0 15 20" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">'
+    +'<g class="figbody">'+body+'</g>'
+    +'<g class="club">'+club+'</g>'
+    +'</svg>';
 }
 
 /* ---------- Sound (WebAudio – lustige Signale, offline) ---------- */
