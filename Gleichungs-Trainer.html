@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gleichungs-Trainer · Hauptschulabschluss Bayern</title>
+<style>
+  :root{
+    --bg:#0a0a0b; --panel:#101012; --panel2:#17171a; --line:#2a2a30;
+    --ink:#f4f4f5; --muted:#8e8e98; --dim:#54545c; --hi:#ffffff;
+    --track:#212126; --gold:#ffcf4a;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:radial-gradient(1000px 520px at 50% -12%,#1b1b21,transparent),var(--bg);
+    min-height:100vh; padding:24px 16px 60px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:780px;margin:0 auto;}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+  .brand h1{font-size:19px;margin:0;letter-spacing:.2em;font-weight:800;text-transform:uppercase;}
+  .brand p{margin:5px 0 0;color:var(--muted);font-size:12px;letter-spacing:.03em;}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .player{display:flex;align-items:center;gap:8px;background:var(--hi);color:#000;border-radius:999px;padding:7px 14px 7px 11px;font-weight:800;letter-spacing:.14em;font-size:13px;}
+  .player .dico{width:20px;height:18px;display:inline-block;}
+  .player .dico svg{display:block;width:100%;height:100%;fill:#000;}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;font-family:var(--mono);}
+  .chip .lbl{color:var(--muted);font-weight:500;}
+  .chip .val{color:var(--ink);font-weight:800;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px;position:relative;min-height:430px;}
+
+  .meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .badge{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;padding:5px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);}
+  .b-mittel{color:var(--muted);}
+  .b-schwer{color:var(--ink);border-color:var(--muted);}
+  .b-sehr-schwer{background:var(--hi);color:#000;border-color:var(--hi);}
+  .tasknum{color:var(--muted);font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;}
+
+  .timer-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2px;}
+  .timer{font-family:var(--mono);font-weight:800;font-size:30px;letter-spacing:.02em;color:var(--ink);}
+  .timer.over{color:var(--hi);animation:blink 1s steps(2) infinite;}
+  @keyframes blink{50%{opacity:.4;}}
+  .timer-sub{color:var(--muted);font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;}
+  .overhint{color:var(--muted);font-size:12px;font-weight:700;height:15px;margin-top:1px;letter-spacing:.02em;}
+  .track{position:relative;height:58px;margin-top:6px;}
+  .rail{position:absolute;left:0;right:0;bottom:12px;height:6px;background:var(--track);border-radius:3px;overflow:hidden;}
+  .rail-fill{height:100%;width:0;background:linear-gradient(90deg,var(--dim),var(--hi));}
+  .track.over .rail-fill{width:100%!important;background:repeating-linear-gradient(45deg,var(--hi) 0 6px,var(--dim) 6px 12px);}
+  .finish{position:absolute;right:0;bottom:10px;height:30px;border-left:2px dashed var(--muted);}
+  .finish:after{content:"";position:absolute;left:0;top:-1px;width:9px;height:7px;background:var(--muted);}
+  .runner{position:absolute;bottom:16px;left:0;transform:translateX(-50%);transition:left .1s linear;}
+  .dino{width:30px;height:28px;}
+  .dino svg{display:block;width:100%;height:100%;fill:var(--hi);}
+  .runner .dino{animation:hop .5s ease-in-out infinite;transform-origin:bottom;}
+  .track.paused .dino{animation-play-state:paused;}
+  @keyframes hop{0%,100%{transform:translateY(0) scaleY(1);}42%{transform:translateY(-12px) scaleY(1.05);}84%{transform:translateY(0) scaleY(.95);}}
+  .runner .dino.gold svg{fill:var(--gold);}
+  .runner .dino.gold{filter:drop-shadow(0 0 6px rgba(255,207,74,.7));}
+  .chip.aura .val{color:var(--gold);}
+  .stat-btn{cursor:pointer;user-select:none;}
+  .b-boss{background:var(--gold);color:#000;border-color:var(--gold);letter-spacing:.16em;}
+  .card.boss{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset,0 0 44px rgba(255,207,74,.14);}
+  .bossbanner{display:none;text-align:center;font-family:var(--mono);font-weight:800;letter-spacing:.3em;font-size:13px;color:var(--gold);text-transform:uppercase;margin:2px 0 -8px;}
+  .bossbanner.show{display:block;animation:fade .3s ease;}
+  .res-aura{font-size:13px;color:var(--gold);font-weight:800;margin-left:8px;font-family:var(--mono);}
+
+  .eqwrap{margin:24px 0 6px;text-align:center;}
+  #equation{font-family:"Georgia","Times New Roman",serif;font-size:clamp(26px,6.5vw,44px);line-height:1.5;color:var(--ink);font-weight:600;}
+  .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .12em;}
+  .frac .num{padding:0 .35em .04em;border-bottom:2.5px solid currentColor;}
+  .frac .den{padding:.04em .35em 0;}
+
+  .answerbar{display:flex;gap:10px;margin-top:22px;}
+  input.answer{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:14px;padding:14px 16px;font-size:20px;font-family:var(--mono);outline:none;transition:border-color .15s;}
+  input.answer::placeholder{color:var(--dim);}
+  input.answer:focus{border-color:var(--hi);}
+  input.answer.shake{animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-7px);}40%,80%{transform:translateX(7px);}}
+  .feedback{margin-top:12px;min-height:22px;font-weight:800;font-size:16px;}
+  .feedback.right{color:var(--hi);}
+  .feedback.wrong{color:var(--muted);}
+  .eqhint{color:var(--dim);font-size:12px;margin-top:6px;font-family:var(--mono);}
+
+  button{font-family:inherit;font-size:15px;font-weight:700;border:none;border-radius:14px;padding:14px 18px;cursor:pointer;transition:transform .06s,opacity .2s,background .2s;}
+  button:active{transform:translateY(1px);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-check{background:var(--hi);color:#000;letter-spacing:.06em;flex:0 0 auto;padding:14px 26px;}
+  .btn-check:hover:not(:disabled){background:#e2e2e6;}
+  .actions{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;}
+  .btn-ghost{flex:1;min-width:150px;background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn-ghost:hover:not(:disabled){background:var(--panel2);}
+
+  #solution{margin-top:22px;border-top:1px dashed var(--line);padding-top:18px;display:none;}
+  #solution.show{display:block;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .sol-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:12px;}
+  .srow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 12px;border-radius:10px;}
+  .srow:nth-child(even){background:var(--panel2);}
+  .seq{font-family:"Georgia",serif;font-size:clamp(16px,3.2vw,20px);display:flex;align-items:center;gap:.5em;flex-wrap:wrap;}
+  .seq .eqsign{color:var(--muted);}
+  .sop{font-size:13px;color:var(--ink);font-weight:700;white-space:nowrap;font-family:var(--mono);}
+  .sop.word{font-style:italic;color:var(--muted);font-weight:600;font-family:inherit;}
+  .srow.final{background:var(--hi);}
+  .srow.final .seq{font-weight:800;color:#000;}
+  .srow.final .seq .eqsign{color:#444;}
+  .srow.final .sop{color:#000;}
+  .srow.final .sop.word{color:#333;}
+
+  #result{margin-top:18px;display:none;border-radius:16px;padding:16px 18px;border:1px solid var(--line);background:var(--panel2);}
+  #result.show{display:block;animation:fade .3s ease;}
+  #result.neg{border-color:var(--dim);background:repeating-linear-gradient(45deg,var(--panel2) 0 10px,#141417 10px 20px);}
+  .res-time{font-size:13px;color:var(--muted);font-weight:700;font-family:var(--mono);letter-spacing:.04em;}
+  .res-time b{color:var(--ink);font-size:18px;}
+  .res-msg{font-size:18px;font-weight:800;margin:8px 0 4px;line-height:1.35;color:var(--ink);}
+  .res-pts{font-size:15px;font-weight:800;font-family:var(--mono);}
+  .pts-pos{color:var(--hi);}
+  .pts-neg{color:var(--muted);}
+  .res-streak{font-size:13px;color:var(--muted);font-weight:700;margin-left:8px;font-family:var(--mono);}
+
+  /* Ziel-Fortschritt (1000 Punkte) */
+  .goal{margin:0 0 14px;}
+  .goal-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted);margin-bottom:5px;}
+  .goal-head b{color:var(--ink);}
+  .goal-head .g-aura{color:var(--gold);}
+  .goal-bar{position:relative;height:10px;background:var(--track);border-radius:5px;overflow:hidden;}
+  .goal-fill{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#6a6a72,var(--hi));transition:width .35s ease;}
+  .goal-aura{position:absolute;left:0;top:0;height:100%;width:0;background:var(--gold);transition:width .35s ease;z-index:2;}
+
+  /* Scoreboard */
+  .board{max-width:780px;margin:18px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 20px;}
+  .board-head{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
+  .board-head b{color:var(--gold);}
+  .board-cap{font-family:var(--mono);font-size:11px;color:var(--dim);margin:4px 0 12px;}
+  .board-chart{display:flex;align-items:flex-end;gap:6px;height:92px;padding:4px 0;border-bottom:1px solid var(--line);margin-bottom:10px;overflow-x:auto;}
+  .bar{flex:0 0 28px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;}
+  .bar .col{width:18px;background:#3a3a42;border-radius:4px 4px 0 0;min-height:4px;transition:height .3s;}
+  .bar.best .col{background:var(--gold);}
+  .bar.cur .col{outline:2px solid var(--hi);outline-offset:-2px;}
+  .bar .bn{font-family:var(--mono);font-size:9px;color:var(--dim);}
+  .bar .bv{font-family:var(--mono);font-size:10px;color:var(--ink);font-weight:700;}
+  .board-list{display:flex;flex-direction:column;gap:2px;}
+  .brow{display:grid;grid-template-columns:42px 1fr auto auto auto;gap:10px;font-family:var(--mono);font-size:12px;padding:6px 8px;border-radius:8px;color:var(--muted);}
+  .brow:nth-child(even){background:var(--panel2);}
+  .brow.best{color:var(--gold);}
+  .brow b{color:var(--ink);}
+  .brow.best b{color:var(--gold);}
+  .board-empty{font-family:var(--mono);font-size:12px;color:var(--dim);padding:8px 0;}
+
+  /* Runde geschafft */
+  #result.win{border-color:var(--gold);background:linear-gradient(180deg,rgba(255,207,74,.10),var(--panel2));}
+  .win-title{font-family:var(--mono);font-weight:800;letter-spacing:.08em;color:var(--gold);font-size:16px;margin-bottom:6px;}
+
+  /* Startseite / Countdown */
+  .overlay{position:absolute;inset:0;border-radius:22px;background:rgba(10,10,11,.94);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;text-align:center;z-index:20;}
+  .overlay.hidden{display:none;}
+  .ov-start{display:flex;flex-direction:column;align-items:center;gap:16px;padding:24px;}
+  .ov-dino{width:66px;height:62px;}
+  .ov-dino svg{width:100%;height:100%;fill:var(--hi);}
+  .ov-title{font-family:var(--mono);font-weight:800;letter-spacing:.22em;font-size:26px;text-transform:uppercase;}
+  .ov-sub{color:var(--muted);font-size:14px;max-width:440px;line-height:1.55;}
+  .ov-sub b{color:var(--gold);}
+  .modepick{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:2px 0;}
+  .modebtn{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:10px 22px;font-weight:800;letter-spacing:.12em;font-size:13px;text-transform:uppercase;cursor:pointer;transition:background .15s,color .15s,border-color .15s;}
+  .modebtn:hover{border-color:var(--muted);}
+  .modebtn.active{background:var(--hi);color:#000;border-color:var(--hi);}
+  #equation .ptype{font-size:.4em;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5em;line-height:1.2;}
+  #equation .wp{font-size:21px;line-height:1.5;font-weight:500;color:var(--ink);max-width:540px;margin:0 auto;}
+  #equation .wp b{font-weight:800;}
+  #equation .geofig{width:210px;max-width:62%;height:auto;display:block;margin:2px auto 12px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linejoin:round;}
+  #equation .geofig text{fill:var(--muted);stroke:none;font-size:13px;font-family:var(--mono);}
+  .btn-start{background:var(--hi);color:#000;font-size:18px;font-weight:800;letter-spacing:.2em;padding:16px 52px;border-radius:14px;cursor:pointer;border:none;margin-top:4px;transition:background .2s,transform .06s;}
+  .btn-start:hover{background:#e2e2e6;}
+  .btn-start:active{transform:translateY(1px);}
+  .ov-count{font-family:var(--mono);font-weight:800;font-size:clamp(80px,18vw,130px);color:var(--hi);line-height:1;}
+  .ov-count #ovNum{display:inline-block;}
+  @keyframes pop{0%{transform:scale(.4);opacity:0;}40%{transform:scale(1.18);opacity:1;}100%{transform:scale(1);opacity:1;}}
+  /* Ergebnis-Overlay nach jeder Aufgabe */
+  .ov-result{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px;max-width:540px;animation:fade .25s ease;}
+  .ovr-spruch{font-size:21px;font-weight:800;line-height:1.35;color:var(--ink);}
+  .ov-result.win .ovr-spruch{color:var(--gold);font-family:var(--mono);letter-spacing:.04em;font-size:18px;}
+  .ovr-stats{font-family:var(--mono);font-size:16px;display:flex;gap:8px 16px;flex-wrap:wrap;justify-content:center;color:var(--muted);}
+  .ovr-stats .pos{color:var(--hi);font-weight:800;} .ovr-stats .neg{color:var(--muted);font-weight:800;} .ovr-stats .au{color:var(--gold);font-weight:800;}
+  .ovr-note{font-family:var(--mono);font-size:13px;color:var(--muted);}
+  .ovr-btns{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;justify-content:center;}
+  .ovr-btns .btn-ghost{flex:0 0 auto;min-width:0;padding:13px 22px;}
+
+  footer{text-align:center;color:var(--dim);font-size:12px;margin-top:22px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1 id="brandTitle">Gleichungs&nbsp;Run</h1>
+      <p id="brandSub">Hauptschulabschluss Bayern · nach x auflösen · ohne Taschenrechner</p>
+    </div>
+    <div class="stats">
+      <div class="player"><span class="dico" id="playerDino"></span>LOOIS</div>
+      <div class="chip stat-btn" id="btnMenu" title="Zurück zur Auswahl">↩ Auswahl</div>
+      <div class="chip"><span class="lbl">RUNDE</span><span class="val" id="stRound">1</span></div>
+      <div class="chip"><span class="lbl">PKT</span><span class="val" id="stPoints">0</span></div>
+      <div class="chip aura"><span class="lbl">AURA</span><span class="val" id="stAura">0</span></div>
+      <div class="chip"><span class="lbl">SERIE</span><span class="val" id="stStreak">0</span></div>
+      <div class="chip"><span class="lbl">OK</span><span class="val" id="stSolved">0</span></div>
+      <div class="chip stat-btn" id="btnSound" title="Sound an/aus"><span id="soundIco">♪</span></div>
+    </div>
+  </header>
+
+  <main class="card" id="card">
+    <div class="overlay" id="overlay">
+      <div class="ov-start" id="ovStart">
+        <div class="ov-dino" id="ovDino"></div>
+        <div class="ov-title">Servus, LOOIS!</div>
+        <div class="modepick">
+          <button class="modebtn active" id="btnModeEq">Gleichungen</button>
+          <button class="modebtn" id="btnModeP">Prozent</button>
+          <button class="modebtn" id="btnModeG">Größen</button>
+          <button class="modebtn" id="btnModeGeo">Geometrie</button>
+          <button class="modebtn" id="btnModeMix">Mix</button>
+        </div>
+        <div class="ov-sub" id="ovSub">Knack die Gleichungen, halte deine <b>Serie</b> für AURA-Punkte und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück wartet der Endgegner. Bereit?</div>
+        <button class="btn-start" id="btnStart">START</button>
+      </div>
+      <div class="ov-count" id="ovCount" style="display:none"><span id="ovNum">3</span></div>
+      <div class="ov-result" id="ovResult" style="display:none">
+        <div class="ovr-spruch" id="ovrSpruch"></div>
+        <div class="ovr-stats" id="ovrStats"></div>
+        <div class="ovr-note" id="ovrNote"></div>
+        <div class="ovr-btns">
+          <button class="btn-ghost" id="ovLoesung">Lösungsweg</button>
+          <button class="btn-start" id="ovWeiter">Weiter →</button>
+        </div>
+      </div>
+    </div>
+    <div class="goal">
+      <div class="goal-head"><span>ZIEL <span id="goalTxt"><b>0</b> / 1000</span></span><span class="g-aura" id="goalAuraTxt"></span></div>
+      <div class="goal-bar"><div class="goal-fill" id="goalFill"></div><div class="goal-aura" id="goalAura"></div></div>
+    </div>
+    <div class="meta">
+      <span class="badge" id="diffBadge">mittel</span>
+      <span class="tasknum">AUFGABE <span id="taskNum">1</span></span>
+    </div>
+
+    <div class="timer-head">
+      <span class="timer" id="timer">0:00</span>
+      <span class="timer-sub">SOLL <span id="estTime">0:00</span></span>
+    </div>
+    <div class="overhint" id="overhint"></div>
+    <div class="track" id="track">
+      <div class="rail"><div class="rail-fill" id="railFill"></div></div>
+      <div class="finish"></div>
+      <div class="runner" id="runner"><div class="dino" id="dino"></div></div>
+    </div>
+
+    <div class="bossbanner" id="bossBanner">★ Endgegner ★</div>
+    <div class="eqwrap">
+      <div id="equation"></div>
+    </div>
+
+    <div class="answerbar">
+      <input class="answer" id="answer" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="x = ?   z. B. 7/4 oder 1,75">
+      <button class="btn-check" id="btnCheck">PRÜFEN</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="eqhint" id="eqHint">Bruch als 3/4 · Dezimal mit Komma 1,75 · negativ mit − oder -</div>
+
+    <div class="actions">
+      <button class="btn-ghost" id="btnSolution">Lösung zeigen</button>
+      <button class="btn-ghost" id="btnNext">Nächste Aufgabe →</button>
+    </div>
+
+    <div id="result"></div>
+
+    <div id="solution">
+      <div class="sol-title">Lösungsweg – Schritt für Schritt</div>
+      <div id="steps"></div>
+    </div>
+  </main>
+
+  <section class="board">
+    <div class="board-head"><span>Scoreboard · Runden bis 1000</span><span id="boardBest"></span></div>
+    <div class="board-cap">↓ kürzer = besser · weniger Aufgaben bis 1000 (Serien/AURA bringen dich schneller hin)</div>
+    <div class="board-chart" id="boardChart"></div>
+    <div class="board-list" id="boardList"></div>
+  </section>
+
+  <footer>LOOIS, tipp dein Ergebnis ein und drück PRÜFEN. Erst bei RICHTIG geht's weiter – wer das SOLL reißt, kassiert Minuspunkte.</footer>
+</div>
+
+<script>
+/* ---------- Brüche / exakte Rationalzahlen ---------- */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;}
+function lcm(a,b){return Math.abs(a*b)/gcd(a,b);}
+class F{
+  constructor(n,d=1){
+    if(d===0) throw new Error('div0');
+    if(d<0){n=-n;d=-d;}
+    const g=gcd(n,d); this.n=n/g; this.d=d/g;
+  }
+  isInt(){return this.d===1;}
+  toHTML(){
+    if(this.d===1) return (this.n<0?'−':'')+Math.abs(this.n);
+    return (this.n<0?'−':'')+fracHTML(Math.abs(this.n),this.d);
+  }
+}
+function decimalSuffix(f){
+  if(f.d===1) return '';
+  let dd=f.d; while(dd%2===0)dd/=2; while(dd%5===0)dd/=5;
+  if(dd!==1) return ''; // periodisch -> kein Dezimalwert
+  const v=f.n/f.d; return ' <span style="color:var(--muted);font-size:.8em">(= '+(''+v).replace('.',',').replace('-','−')+')</span>';
+}
+/* Ganzzahl oder (terminierende) Dezimalzahl deutsch: 12 · 0,8 · 7,5 */
+function numDE(n,d){ if(d===1) return (n<0?'−':'')+Math.abs(n); return (''+(n/d)).replace('.',',').replace('-','−'); }
+
+/* ---------- Zufall ---------- */
+function rndInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function weightedPick(arr){let t=arr.reduce((s,x)=>s+x.w,0),r=Math.random()*t;for(const x of arr){if((r-=x.w)<0)return x;}return arr[arr.length-1];}
+
+/* ---------- Darstellung ---------- */
+function fracHTML(num,den){return '<span class="frac"><span class="num">'+num+'</span><span class="den">'+den+'</span></span>';}
+function xc(a){if(a===1)return'x';if(a===-1)return'−x';return (a<0?'−':'')+Math.abs(a)+'x';}
+function withSign(v){return v<0?' − '+Math.abs(v):' + '+v;}
+function polyHTML(a,b){let s=xc(a); if(b!==0)s+=withSign(b); return s;}
+function iHTML(n){return (n<0?'−':'')+Math.abs(n);}   // Ganzzahl mit typografischem Minus
+function coefBracket(k,inner){return (k===1?'':k)+'('+inner+')';}
+function renderTerms(terms){
+  const t=terms.filter(z=>z.c!==0);
+  if(t.length===0)return'0';
+  let s='';
+  t.forEach((z,i)=>{
+    const neg=z.c<0,abs=Math.abs(z.c);
+    const piece=z.x?(abs===1?'x':abs+'x'):(''+abs);
+    s+= i===0 ? (neg?'−':'')+piece : (neg?' − ':' + ')+piece;
+  });
+  return s;
+}
+function opX(v){const s=v<0?'−':'+',a=Math.abs(v);return s+' '+(a===1?'':a)+'x';}
+function opC(v){return (v<0?'− ':'+ ')+Math.abs(v);}
+function opDiv(v){const a=Math.abs(v);return ': '+(v<0?'(−'+a+')':a);}
+function row(lhs,rhs,op){return {lhs:lhs,rhs:rhs,op:op||''};}
+function eqRow(L,R,op){return row(renderTerms([{c:L.a,x:1},{c:L.b,x:0}]),renderTerms([{c:R.a,x:1},{c:R.b,x:0}]),op);}
+
+/* ---------- Standard-Äquivalenzumformung ---------- */
+function standardSolve(A,B,C,D){
+  let L={a:A,b:B},R={a:C,b:D};
+  const rows=[];
+  const pr=op=>rows.push(eqRow(L,R,op));
+  let ans;
+  if((A-C)>=0){
+    if(R.a!==0){pr('| '+opX(-R.a));L.a-=R.a;R.a=0;}
+    if(L.b!==0){pr('| '+opC(-L.b));R.b-=L.b;L.b=0;}
+    if(L.a!==1){pr('| '+opDiv(L.a));}
+    ans=new F(R.b,L.a);
+  }else{
+    if(L.a!==0){pr('| '+opX(-L.a));R.a-=L.a;L.a=0;}
+    if(R.b!==0){pr('| '+opC(-R.b));L.b-=R.b;R.b=0;}
+    if(R.a!==1){pr('| '+opDiv(R.a));}
+    ans=new F(L.b,R.a);
+  }
+  rows.push({lhs:'x',rhs:ans.toHTML()+decimalSuffix(ans),op:'',final:true});
+  return {rows,ans};
+}
+
+/* ---------- Gültigkeit (ohne Taschenrechner lösbar) ---------- */
+function ok(ans,consts){
+  if(!ans)return false;
+  if(![1,2,3,4,5,6].includes(ans.d))return false;
+  if(Math.abs(ans.n)>30)return false;
+  for(const c of (consts||[])) if(Math.abs(c)>200)return false;
+  return true;
+}
+function prob(diff,displayHTML,steps,ans){
+  const base={'leicht':45,'mittel':80,'schwer':130,'sehr schwer':175}[diff];
+  let est=base+steps.length*4+rndInt(-8,12);
+  return {difficulty:diff,displayHTML:displayHTML,steps:steps,answer:ans,estSeconds:Math.max(30,est)};
+}
+/* Hauptnenner durchmischen: 4..20 zulassen, 12 bewusst entzerren */
+function lcdOk(L){ if(L<4||L>20) return false; if(L===12 && Math.random()<0.6) return false; return true; }
+
+/* ---------- Aufgaben-Generatoren ---------- */
+function genEasy(){
+  const A=rndInt(2,5),C=rndInt(1,4); if(A===C)return null;
+  const x=rndInt(-6,9),B=rndInt(-9,9),D=(A-C)*x+B;
+  if(Math.abs(D)>99)return null;
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,D]))return null;
+  return prob('leicht',polyHTML(A,B)+' = '+polyHTML(C,D),s.rows,s.ans);
+}
+function genVarBoth(){
+  const A=rndInt(2,8),C=rndInt(-5,7); if(A===C)return null;
+  const B=rndInt(-12,12),D=rndInt(-12,12);
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,D]))return null;
+  if(s.ans.d===1&&Math.abs(s.ans.n)<2&&Math.random()<.5)return null;
+  return prob('mittel',polyHTML(A,B)+' = '+polyHTML(C,D),s.rows,s.ans);
+}
+function genBracketConst(){
+  const a=rndInt(2,6),b=rndInt(-7,7),e=rndInt(-9,9),c=rndInt(1,7),d=rndInt(-12,12);
+  if(b===0||e===0)return null;
+  const A=a,B=a*b+e,C=c,D=d; if(A===C)return null;
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,D,a*b]))return null;
+  const disp=a+'('+polyHTML(1,b)+')'+withSign(e)+' = '+polyHTML(c,d);
+  const r1=row(a+'('+polyHTML(1,b)+')'+withSign(e),polyHTML(c,d),'| ausmultiplizieren');
+  const r2=row(renderTerms([{c:a,x:1},{c:a*b,x:0},{c:e,x:0}]),polyHTML(c,d),'| zusammenfassen');
+  return prob('schwer',disp,[r1,r2,...s.rows],s.ans);
+}
+function genBracketBoth(){
+  const a=rndInt(2,6),b=rndInt(1,9),c=rndInt(2,6),d=rndInt(1,9),e=rndInt(-12,12);
+  const A=a-c,B=a*b+c*d,C=0,D=e; if(A===0)return null;
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,e,a*b,c*d]))return null;
+  const disp=a+'('+polyHTML(1,b)+') − '+c+'('+polyHTML(1,-d)+') = '+iHTML(e);
+  const r1=row(a+'('+polyHTML(1,b)+') − '+c+'('+polyHTML(1,-d)+')',iHTML(e),'| ausmultiplizieren');
+  const r2=row(renderTerms([{c:a,x:1},{c:a*b,x:0},{c:-c,x:1},{c:c*d,x:0}]),iHTML(e),'| zusammenfassen');
+  return prob('schwer',disp,[r1,r2,...s.rows],s.ans);
+}
+function genMinusBracket(){
+  const a=rndInt(2,6),b=rndInt(1,9),e=rndInt(-9,12),c=rndInt(1,7),d=rndInt(-12,12);
+  const A=-a,B=e+a*b,C=c,D=d; if(A===C)return null;
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,D,a*b]))return null;
+  const disp=iHTML(e)+' − '+a+'('+polyHTML(1,-b)+') = '+polyHTML(c,d);
+  const r1=row(iHTML(e)+' − '+a+'('+polyHTML(1,-b)+')',polyHTML(c,d),'| ausmultiplizieren');
+  const r2=row(renderTerms([{c:e,x:0},{c:-a,x:1},{c:a*b,x:0}]),polyHTML(c,d),'| zusammenfassen');
+  return prob('schwer',disp,[r1,r2,...s.rows],s.ans);
+}
+function genFracSimple(){
+  const a=rndInt(2,6),b=rndInt(-9,9),m=rndInt(2,6),c=rndInt(-8,8);
+  const A=a,B=b,C=0,D=c*m;
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,D]))return null;
+  const disp=fracHTML(polyHTML(a,b),m)+' = '+iHTML(c);
+  const r1=row(fracHTML(polyHTML(a,b),m),iHTML(c),'| · '+m);
+  return prob('mittel',disp,[r1,...s.rows],s.ans);
+}
+function genFracDen(){
+  const set=[2,3,4,5,6],p=pick(set),q=pick(set); if(p===q)return null;
+  const L=lcm(p,q); if(!lcdOk(L))return null;
+  const c1=rndInt(-4,4),c2=rndInt(-4,4); if(c1===c2)return null;
+  const A=L/p,B=c1*L,C=L/q,D=c2*L; if(A===C)return null;
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,D]))return null;
+  const left=fracHTML('x',p)+(c1!==0?withSign(c1):'');
+  const right=fracHTML('x',q)+(c2!==0?withSign(c2):'');
+  const r1=row(left,right,'| · '+L);
+  return prob('schwer',left+' = '+right,[r1,...s.rows],s.ans);
+}
+function genFracCross(){
+  const set=[2,3,4,5,6],p=pick(set),q=pick(set); if(p===q)return null;
+  const L=lcm(p,q); if(!lcdOk(L))return null;
+  const u=L/p,v=L/q,a=rndInt(-7,7),b=rndInt(-7,7);
+  const A=u,B=u*a,C=v,D=v*b; if(A===C)return null;
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,D]))return null;
+  const disp=fracHTML(polyHTML(1,a),p)+' = '+fracHTML(polyHTML(1,b),q);
+  const r1=row(fracHTML(polyHTML(1,a),p),fracHTML(polyHTML(1,b),q),'| · '+L);
+  const r2=row(coefBracket(u,polyHTML(1,a)),coefBracket(v,polyHTML(1,b)),'| ausmultiplizieren');
+  return prob('sehr schwer',disp,[r1,r2,...s.rows],s.ans);
+}
+function genFracBoth(){
+  const set=[2,3,4,5,6],p=pick(set),q=pick(set); if(p===q)return null;
+  const L=lcm(p,q); if(!lcdOk(L))return null;
+  const u=L/p,v=L/q,a=rndInt(2,5),b=rndInt(-7,7),c=rndInt(2,5),d=rndInt(-7,7);
+  const A=u*a,B=u*b,C=v*c,D=v*d; if(A===C)return null;
+  const s=standardSolve(A,B,C,D); if(!ok(s.ans,[B,D,A,C]))return null;
+  const disp=fracHTML(polyHTML(a,b),p)+' = '+fracHTML(polyHTML(c,d),q);
+  const r1=row(fracHTML(polyHTML(a,b),p),fracHTML(polyHTML(c,d),q),'| · '+L);
+  const r2=row(coefBracket(u,polyHTML(a,b)),coefBracket(v,polyHTML(c,d)),'| ausmultiplizieren');
+  return prob('sehr schwer',disp,[r1,r2,...s.rows],s.ans);
+}
+
+/* ---------- Term-Bausteine: sign·(a·x + b)/d ---------- */
+function constTerm(v){return {a:0,b:Math.abs(v),d:1,sign:v<0?-1:1};}
+function joinSigned(pieces){
+  if(pieces.length===0)return'0';
+  let s='';
+  pieces.forEach((p,i)=>{ s+= i===0 ? (p.sign<0?'−':'')+p.html : (p.sign<0?' − ':' + ')+p.html; });
+  return s;
+}
+function renderFracSide(terms,useDec){
+  return joinSigned(terms.map(t=>{
+    let html;
+    if(useDec && t.dec!=null){ html=t.dec+(t.a!==0?'x':''); }
+    else if(t.d===1){ html = t.a!==0?polyHTML(t.a,t.b):(''+Math.abs(t.b)); }
+    else { html = fracHTML(t.a!==0?polyHTML(t.a,t.b):(''+Math.abs(t.b)), t.d); }
+    return {sign:t.sign, html:html};
+  }));
+}
+function bracketSide(terms,L){
+  return joinSigned(terms.map(t=>{
+    const m=L/t.d; let html;
+    if(t.a!==0&&t.b!==0) html=coefBracket(m,polyHTML(t.a,t.b));
+    else if(t.a!==0) html=(m*t.a===1?'x':(m*t.a)+'x');
+    else html=''+(m*Math.abs(t.b));
+    return {sign:t.sign, html:html};
+  }));
+}
+function flats(terms,L){
+  let A=0,B=0; const flat=[];
+  terms.forEach(t=>{
+    const m=L/t.d, sg=t.sign;
+    if(t.a!==0){const c=sg*m*t.a; A+=c; flat.push({c:c,x:1});}
+    const cb=sg*m*t.b; B+=cb; if(t.b!==0||t.a===0) flat.push({c:cb,x:0});
+  });
+  return {A:A,B:B,flat:flat};
+}
+function solveFractionEquation(left,right){
+  let L=1; left.concat(right).forEach(t=>L=lcm(L,t.d));
+  const lf=flats(left,L), rf=flats(right,L);
+  const A=lf.A,B=lf.B,C=rf.A,D=rf.B;
+  if(A===C) return null;
+  const sol=standardSolve(A,B,C,D);
+  if(!ok(sol.ans,[A,B,C,D])) return null;
+  const bracketRow=row(bracketSide(left,L),bracketSide(right,L),'| ausmultiplizieren');
+  const expandedRow=row(renderTerms(lf.flat),renderTerms(rf.flat),'| zusammenfassen');
+  const r0=sol.rows[0];
+  const same=(a,b)=>a.lhs===b.lhs&&a.rhs===b.rhs;
+  const pre=[];
+  if(!same(bracketRow,expandedRow)) pre.push(bracketRow);   // nur wenn Klammern wirklich auftreten
+  if(!same(expandedRow,r0)) pre.push(expandedRow);          // nur wenn es etwas zusammenzufassen gibt
+  return {L:L, rows:[...pre,...sol.rows], ans:sol.ans};
+}
+
+/* Lange Bruchterme – gemeinsamen Nenner (Hauptnenner) finden */
+function genHardFrac(){
+  const set=[2,3,4,5,6];
+  const shape=pick(['A','B','B','C','C']);
+  const mk=()=>({a:rndInt(1,5),b:rndInt(-8,8)});
+  let left,right;
+  if(shape==='A'){
+    const d1=pick(set),d2=pick(set); if(d1===d2)return null;
+    const t1=mk(),t2=mk();
+    left=[{...t1,d:d1,sign:1},{...t2,d:d2,sign:-1}];
+    right=[constTerm(rndInt(-9,9))];
+  }else if(shape==='B'){
+    const d1=pick(set),d2=pick(set),d3=pick(set);
+    if(new Set([d1,d2,d3]).size<2)return null;
+    const t1=mk(),t2=mk(),t3=mk();
+    left=[{...t1,d:d1,sign:1},{...t2,d:d2,sign:1}];
+    right=[{...t3,d:d3,sign:1}];
+  }else{
+    const d1=pick(set),d2=pick(set),d3=pick(set);
+    if(new Set([d1,d2,d3]).size<2)return null;
+    const t1=mk(),t2=mk(),t3=mk();
+    left=[{...t1,d:d1,sign:1},{...t2,d:d2,sign:-1}];
+    right=[{...t3,d:d3,sign:1},constTerm(rndInt(-6,6))];
+  }
+  const sol=solveFractionEquation(left,right); if(!sol)return null;
+  if(!lcdOk(sol.L)) return null;
+  const disp=renderFracSide(left,false)+' = '+renderFracSide(right,false);
+  const dRow=row(renderFracSide(left,false),renderFracSide(right,false),'| · '+sol.L+'  (Hauptnenner)');
+  return prob('sehr schwer',disp,[dRow,...sol.rows],sol.ans);
+}
+
+/* Dezimalzahlen erst in Brüche umwandeln, dann Hauptnenner */
+const QUARTERS=[{dec:'0,5',p:1,q:2},{dec:'0,25',p:1,q:4},{dec:'0,75',p:3,q:4},{dec:'1,25',p:5,q:4},{dec:'1,5',p:3,q:2},{dec:'2,5',p:5,q:2}];
+const TENTHS=[{dec:'0,2',p:1,q:5},{dec:'0,4',p:2,q:5},{dec:'0,6',p:3,q:5},{dec:'0,8',p:4,q:5},{dec:'0,5',p:1,q:2},{dec:'1,5',p:3,q:2},{dec:'1,2',p:6,q:5},{dec:'0,3',p:3,q:10},{dec:'0,7',p:7,q:10}];
+function genDecimal(){
+  const fam=pick([QUARTERS,TENTHS]), dv=()=>pick(fam);
+  const x1=dv(),x2=dv();
+  const lx={a:x1.p,b:0,d:x1.q,sign:1,dec:x1.dec};
+  const rx={a:x2.p,b:0,d:x2.q,sign:Math.random()<0.4?-1:1,dec:x2.dec};
+  const cterm=()=>{ if(Math.random()<0.55){const v=dv();return {a:0,b:v.p,d:v.q,sign:Math.random()<0.5?-1:1,dec:v.dec};} const k=rndInt(1,6);return {a:0,b:k,d:1,sign:Math.random()<0.5?-1:1,dec:''+k}; };
+  const left=[lx,cterm()], right=[rx,cterm()];
+  const sol=solveFractionEquation(left,right); if(!sol)return null;
+  const decRow=row(renderFracSide(left,true),renderFracSide(right,true),'| Kommazahlen in Brüche umwandeln');
+  const fracRow=row(renderFracSide(left,false),renderFracSide(right,false),'| · '+sol.L+'  (Hauptnenner)');
+  const disp=renderFracSide(left,true)+' = '+renderFracSide(right,true);
+  return prob('schwer',disp,[decRow,fracRow,...sol.rows],sol.ans);
+}
+
+/* Mix aus Brüchen UND Dezimalzahlen – beides umwandeln + Hauptnenner */
+function genMixedDecFrac(){
+  const useTenths=Math.random()<0.5;
+  const fam=useTenths?TENTHS:QUARTERS, fpool=useTenths?[2,4,5]:[2,3,4,6];
+  const d1=pick(fpool),d2=pick(fpool);
+  const t1={a:rndInt(2,5),b:rndInt(-7,7),d:d1,sign:1};
+  const t2={a:rndInt(2,5),b:rndInt(-7,7),d:d2,sign:Math.random()<0.45?-1:1};
+  const q1=pick(fam),q2=pick(fam);
+  const c1={a:0,b:q1.p,d:q1.q,sign:Math.random()<0.5?-1:1,dec:q1.dec};
+  const c2={a:0,b:q2.p,d:q2.q,sign:Math.random()<0.5?-1:1,dec:q2.dec};
+  const left=[t1,c1], right=[t2,c2];
+  const sol=solveFractionEquation(left,right); if(!sol)return null;
+  if(!lcdOk(sol.L)) return null;
+  const decRow=row(renderFracSide(left,true),renderFracSide(right,true),'| Kommazahlen in Brüche umwandeln');
+  const fracRow=row(renderFracSide(left,false),renderFracSide(right,false),'| · '+sol.L+'  (Hauptnenner)');
+  const disp=renderFracSide(left,true)+' = '+renderFracSide(right,true);
+  return prob('sehr schwer',disp,[decRow,fracRow,...sol.rows],sol.ans);
+}
+
+/* ENDGEGNER – Masteraufgabe: 2 Brüche + Dezimal links, Bruch + Dezimal rechts */
+function genBoss(){
+  const set=[2,3,4,5,6];
+  const d1=pick(set),d2=pick(set),d3=pick(set);
+  if(new Set([d1,d2,d3]).size<2) return null;
+  const mk=()=>({a:rndInt(2,5),b:rndInt(-9,9)});
+  const t1=mk(),t2=mk(),t3=mk();
+  const q1=pick(QUARTERS),q2=pick(QUARTERS);
+  const left=[{...t1,d:d1,sign:1},{...t2,d:d2,sign:Math.random()<0.6?-1:1},{a:0,b:q1.p,d:q1.q,sign:Math.random()<0.5?-1:1,dec:q1.dec}];
+  const right=[{...t3,d:d3,sign:1},{a:0,b:q2.p,d:q2.q,sign:Math.random()<0.5?-1:1,dec:q2.dec}];
+  const sol=solveFractionEquation(left,right); if(!sol)return null;
+  if(sol.L>24 || (sol.L===12 && Math.random()<0.5)) return null;
+  const decRow=row(renderFracSide(left,true),renderFracSide(right,true),'| Kommazahlen in Brüche umwandeln');
+  const fracRow=row(renderFracSide(left,false),renderFracSide(right,false),'| · '+sol.L+'  (Hauptnenner)');
+  const disp=renderFracSide(left,true)+' = '+renderFracSide(right,true);
+  const p=prob('sehr schwer',disp,[decRow,fracRow,...sol.rows],sol.ans);
+  p.isBoss=true; p.estSeconds=Math.min(220, p.estSeconds+25); // an sehr schwer orientiert, max 3:40
+  return p;
+}
+function makeBoss(){
+  if(state.mode==='prozent'){ for(let i=0;i<1500;i++){const p=genProzentBoss(); if(p)return p;} return makeProblem(); }
+  if(state.mode==='groessen'){ for(let i=0;i<1500;i++){const p=genGroessenBoss(); if(p)return p;} return makeProblem(); }
+  if(state.mode==='geo'){ for(let i=0;i<1500;i++){const p=genGeoBoss(); if(p)return p;} return makeProblem(); }
+  if(state.mode==='mix'){ const bosses=[genBoss,genProzentBoss,genGroessenBoss,genGeoBoss]; for(let i=0;i<1500;i++){const p=pick(bosses)(); if(p)return p;} return makeProblem(); }
+  for(let i=0;i<1500;i++){const p=genBoss(); if(p)return p;} return makeProblem();
+}
+
+const GENS=[
+  {w:0.8,f:genVarBoth},
+  {w:1,f:genBracketConst},
+  {w:2,f:genBracketBoth},
+  {w:2,f:genMinusBracket},
+  {w:0.6,f:genFracSimple},
+  {w:1,f:genFracDen},
+  {w:2,f:genFracCross},
+  {w:3,f:genFracBoth},
+  {w:8,f:genHardFrac},
+  {w:4,f:genDecimal},
+  {w:6,f:genMixedDecFrac},
+];
+function makeProblem(){
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : GENS;
+  for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
+  // Notfall-Fallback
+  if(state.mode==='prozent') return genProzentwert();
+  if(state.mode==='groessen'){ for(let i=0;i<400;i++){const p=genConvert('laenge'); if(p)return p;} }
+  if(state.mode==='geo') return genRechteck();
+  if(state.mode==='mix'){ for(let i=0;i<400;i++){const p=genHardFrac(); if(p)return p;} }
+  const s=standardSolve(3,5,1,11);
+  return prob('mittel','3x + 5 = x + 11',s.rows,s.ans);
+}
+
+/* ====================== PROZENT-RUN: Generatoren ======================
+   Prozentwert / Grundwert / Prozentsatz – per Dreisatz, ohne Taschenrechner.
+   Quali Bayern Teil A: glatte Zahlen, 1-%-Anker, Antwort ist eine Zahl. */
+const P_PCT=[5,10,15,20,25,30,40,50,60,75,80,90];
+const P_G=[20,25,30,40,50,60,75,80,100,120,150,160,200,240,250,300,400,500,600,800,1000];
+function pPick(){
+  for(let i=0;i<200;i++){
+    const G=pick(P_G), p=pick(P_PCT);
+    const W=new F(G*p,100);
+    if(![1,2].includes(W.d)) continue;   // W glatt (ganz oder x,5)
+    if(W.n===0) continue;
+    return {G,p,W};
+  }
+  return {G:80,p:25,W:new F(20,1)};
+}
+function probP(diff,displayHTML,steps,ansF,est){
+  return {difficulty:diff,displayHTML:displayHTML,steps:steps,answer:ansF,estSeconds:Math.max(18,Math.round(est))};
+}
+function ptype(t){ return '<div class="ptype">'+t+'</div>'; }
+/* W gesucht: p % von G */
+function genProzentwert(){
+  const {G,p,W}=pPick();
+  const op=new F(G,100);   // 1 %
+  const steps=[
+    row('100 %', numDE(G,1), 'Grundwert'),
+    row('1 %', numDE(op.n,op.d), '| : 100'),
+    {lhs:numDE(p,1)+' %', rhs:numDE(W.n,W.d), op:'| · '+p, final:true}
+  ];
+  const disp=ptype('Wie viel ist das?')+'<b>'+p+' %</b> von <b>'+numDE(G,1)+'</b>';
+  const pr=probP('leicht',disp,steps,W,22+rndInt(0,10));
+  pr._dbg={type:'pw',G:G,p:p,n:W.n,d:W.d}; return pr;
+}
+/* p gesucht: W von G = wie viel % */
+function genProzentsatz(){
+  const {G,p,W}=pPick();
+  const op=new F(G,100);   // 1 %
+  const steps=[
+    row('100 %', numDE(G,1), 'Grundwert'),
+    row('1 %', numDE(op.n,op.d), '| : 100'),
+    {lhs:numDE(W.n,W.d), rhs:numDE(p,1)+' %', op:'| '+numDE(W.n,W.d)+' : '+numDE(op.n,op.d), final:true}
+  ];
+  const disp=ptype('Wie viel Prozent?')+'<b>'+numDE(W.n,W.d)+'</b> von <b>'+numDE(G,1)+'</b>';
+  const pr=probP('mittel',disp,steps,new F(p,1),26+rndInt(0,12));
+  pr._dbg={type:'ps',G:G,p:p,n:p,d:1}; return pr;
+}
+/* G gesucht: p % sind W, wie viel ist 100 %? */
+function genGrundwert(){
+  const {G,p,W}=pPick();
+  const op=new F(W.n,W.d*p);   // 1 % = W/p = G/100
+  const steps=[
+    row(numDE(p,1)+' %', numDE(W.n,W.d), 'Prozentwert'),
+    row('1 %', numDE(op.n,op.d), '| : '+p),
+    {lhs:'100 %', rhs:numDE(G,1), op:'| · 100', final:true}
+  ];
+  const disp=ptype('Wie viel ist 100 %?')+'<b>'+p+' %</b> sind <b>'+numDE(W.n,W.d)+'</b>';
+  const pr=probP('schwer',disp,steps,new F(G,1),30+rndInt(0,14));
+  pr._dbg={type:'gw',G:G,p:p,n:G,d:1}; return pr;
+}
+/* ---- Textaufgaben (Kontext, eine gesuchte Größe pro Aufgabe) ---- */
+const P_ITEMS=['Fahrrad','Pullover','Drucker','Handy','Tisch','Sofa','Laptop','Fernseher','Rucksack','Monitor','Grill','Smartphone','Koffer','Staubsauger','Bürostuhl','Zelt','Kühlschrank'];
+function pItem(){return pick(P_ITEMS);}
+function eur(n,d){return numDE(n,d)+' €';}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+
+/* Rabatt / Aufschlag -> neuer Preis (verminderter/vermehrter Grundwert) */
+function genRabatt(){
+  const auf=Math.random()<0.4, item=pItem();
+  for(let i=0;i<60;i++){
+    const G=pick([20,40,50,60,80,100,120,150,180,200,240,250,300,400,500,600,800]);
+    const p=pick([5,10,15,20,25,30,40,50,60,75]);
+    const change=new F(G*p,100); if(change.d!==1) continue;
+    const neu=auf?G+change.n:G-change.n; if(neu<=0) continue;
+    const op=new F(G,100);
+    const steps=[
+      row('100 %', eur(G,1), 'Grundwert (alter Preis)'),
+      row('1 %', eur(op.n,op.d), '| : 100'),
+      row(p+' %', eur(change.n,1), '| · '+p+'  ('+(auf?'Aufschlag':'Rabatt')+')'),
+      {lhs:'neuer Preis', rhs:eur(neu,1), op:'| '+eur(G,1)+(auf?' + ':' − ')+eur(change.n,1), final:true}
+    ];
+    const disp=ptype('Neuer Preis?')+'<div class="wp">Ein '+item+' kostet <b>'+eur(G,1)+'</b>. Der Preis '+(auf?'steigt':'sinkt')+' um <b>'+p+' %</b>. Wie hoch ist der neue Preis?</div>';
+    const pr=probP('schwer',disp,steps,new F(neu,1),34+rndInt(0,16));
+    pr._dbg={type:'rab',G:G,p:p,auf:auf,n:neu,d:1}; return pr;
+  }
+  return null;
+}
+/* Mehrwertsteuer rein (Netto->Brutto) oder raus (Brutto->Netto) */
+function genMwSt(){
+  const mw=pick([19,7]), raus=Math.random()<0.5, item=pItem();
+  const netto=100*pick([1,2,3,4,5,6,8]);
+  const brutto=netto*(100+mw)/100, tax=netto*mw/100;
+  if(!raus){
+    const op=new F(netto,100);
+    const steps=[
+      row('Netto = 100 %', eur(netto,1), 'Grundwert'),
+      row('1 %', eur(op.n,op.d), '| : 100'),
+      row('MwSt = '+mw+' %', eur(tax,1), '| · '+mw),
+      {lhs:'Brutto = '+(100+mw)+' %', rhs:eur(brutto,1), op:'| '+eur(netto,1)+' + '+eur(tax,1), final:true}
+    ];
+    const disp=ptype('Bruttopreis?')+'<div class="wp">Ein '+item+' kostet <b>netto '+eur(netto,1)+'</b>. Dazu kommen <b>'+mw+' % MwSt</b>. Wie hoch ist der Bruttopreis?</div>';
+    const pr=probP('schwer',disp,steps,new F(brutto,1),34+rndInt(0,16));
+    pr._dbg={type:'mwst_rein',netto:netto,mw:mw,n:brutto,d:1}; return pr;
+  }
+  const op=new F(brutto,100+mw);
+  const steps=[
+    row('Brutto = '+(100+mw)+' %', eur(brutto,1), 'enthält '+mw+' % MwSt'),
+    row('1 %', eur(op.n,op.d), '| : '+(100+mw)),
+    {lhs:'Netto = 100 %', rhs:eur(netto,1), op:'| · 100', final:true}
+  ];
+  const disp=ptype('Nettopreis?')+'<div class="wp">Ein '+item+' kostet <b>brutto '+eur(brutto,1)+'</b> inkl. <b>'+mw+' % MwSt</b>. Wie hoch ist der Nettopreis?</div>';
+  const pr=probP('sehr schwer',disp,steps,new F(netto,1),38+rndInt(0,18));
+  pr._dbg={type:'mwst_raus',brutto:brutto,mw:mw,n:netto,d:1}; return pr;
+}
+/* Prozentuale Veränderung: alt -> neu, um wie viel % gestiegen/gesunken */
+function genVeraenderung(){
+  const item=pItem(), sink=Math.random()<0.5;
+  for(let i=0;i<60;i++){
+    const alt=pick([20,40,50,60,80,100,120,150,200,240,250,300,400,500]);
+    const p=pick([5,10,15,20,25,30,40,50,60,75]);
+    const diff=new F(alt*p,100); if(diff.d!==1) continue;
+    const neu=sink?alt-diff.n:alt+diff.n; if(neu<=0) continue;
+    const op=new F(alt,100);
+    const steps=[
+      row('alt = 100 %', eur(alt,1), 'Grundwert'),
+      row('Unterschied', eur(diff.n,1), '| '+eur(Math.max(alt,neu),1)+' − '+eur(Math.min(alt,neu),1)),
+      row('1 %', eur(op.n,op.d), '| : 100'),
+      {lhs:'Unterschied', rhs:p+' %', op:'| '+numDE(diff.n,1)+' : '+numDE(op.n,op.d), final:true}
+    ];
+    const disp=ptype(sink?'Um wie viel % gesunken?':'Um wie viel % gestiegen?')+'<div class="wp">Ein '+item+' kostete <b>'+eur(alt,1)+'</b>, jetzt <b>'+eur(neu,1)+'</b>. Um wie viel Prozent ist der Preis '+(sink?'gesunken':'gestiegen')+'?</div>';
+    const pr=probP('sehr schwer',disp,steps,new F(p,1),36+rndInt(0,18));
+    pr._dbg={type:'change',alt:alt,neu:neu,p:p,n:p,d:1}; return pr;
+  }
+  return null;
+}
+/* Verhältnis -> Prozent (wie ISB-Nüsse-Aufgabe) */
+const P_RATIO_CTX=[
+  {what:'eine Müslimischung',comps:['Haferflocken','Rosinen','Nüsse']},
+  {what:'ein Mischgetränk',comps:['Saft','Wasser','Sirup']},
+  {what:'eine Legierung',comps:['Kupfer','Zink','Nickel']},
+  {what:'ein Mörtel',comps:['Sand','Kies','Zement']},
+  {what:'eine Farbe',comps:['Weiß','Blau','Rot']}
+];
+const P_RATIO_SETS=[[2,3],[1,4],[3,2],[1,1,2],[1,3],[2,3,5],[1,3,6],[2,2,6],[4,1,5],[3,4,1],[5,2,1],[3,3,2]];
+function genVerhaeltnis(){
+  const ctx=pick(P_RATIO_CTX);
+  for(let i=0;i<40;i++){
+    const parts=pick(P_RATIO_SETS);
+    const T=parts.reduce((a,b)=>a+b,0);
+    const per=new F(100,T); if(![1,2].includes(per.d)) continue;
+    const idx=rndInt(0,parts.length-1);
+    const ansF=new F(100*parts[idx],T); if(![1,2].includes(ansF.d)) continue;
+    const comps=ctx.comps.slice(0,parts.length);
+    const steps=[
+      row('Teile gesamt', ''+T, parts.join(' + ')),
+      row('1 Teil', numDE(per.n,per.d)+' %', '| 100 % : '+T),
+      {lhs:comps[idx]+' ('+parts[idx]+(parts[idx]===1?' Teil':' Teile')+')', rhs:numDE(ansF.n,ansF.d)+' %', op:'| · '+parts[idx], final:true}
+    ];
+    const disp=ptype('Anteil '+comps[idx]+' in %?')+'<div class="wp">'+cap(ctx.what)+' enthält '+comps.join(', ')+' im Verhältnis <b>'+parts.join(' : ')+'</b>. Wie viel Prozent <b>'+comps[idx]+'</b>?</div>';
+    const pr=probP('mittel',disp,steps,ansF,30+rndInt(0,14));
+    pr._dbg={type:'ratio',parts:parts,idx:idx,T:T,n:ansF.n,d:ansF.d}; return pr;
+  }
+  return null;
+}
+
+/* ENDGEGNER: Grundwert -> davon Prozentwert (2 Schritte) */
+function genProzentBoss(){
+  const {G,p,W}=pPick();           // p % eines Betrags G sind W
+  const p2=pick(P_PCT);
+  const ans=new F(G*p2,100);
+  if(![1,2].includes(ans.d) || ans.n===0) return null;
+  const op1=new F(W.n,W.d*p);      // 1 % aus Schritt 1
+  const op2=new F(G,100);          // 1 % aus Schritt 2
+  const steps=[
+    row(numDE(p,1)+' %', numDE(W.n,W.d), 'Schritt 1 · Grundwert'),
+    row('1 %', numDE(op1.n,op1.d), '| : '+p),
+    row('100 %', numDE(G,1), '| · 100'),
+    row(numDE(G,1), '100 %', 'Schritt 2 · davon '+p2+' %'),
+    row('1 %', numDE(op2.n,op2.d), '| : 100'),
+    {lhs:numDE(p2,1)+' %', rhs:numDE(ans.n,ans.d), op:'| · '+p2, final:true}
+  ];
+  const disp=ptype('2 Schritte – Endgegner!')+'<b>'+p+' %</b> eines Betrags sind <b>'+numDE(W.n,W.d)+'</b>.<br>Wie viel sind <b>'+p2+' %</b> davon?';
+  const pr=probP('sehr schwer',disp,steps,ans,90+rndInt(0,40));
+  pr.isBoss=true; pr.estSeconds=Math.min(180,pr.estSeconds+30);
+  pr._dbg={type:'boss',G:G,p:p,p2:p2,n:ans.n,d:ans.d}; return pr;
+}
+const PGENS=[
+  {w:1.2,f:genProzentwert},
+  {w:1.2,f:genProzentsatz},
+  {w:1,f:genGrundwert},
+  {w:2.2,f:genRabatt},
+  {w:2.2,f:genMwSt},
+  {w:2,f:genVeraenderung},
+  {w:1.6,f:genVerhaeltnis},
+];
+
+/* ====================== GRÖSSEN-RUN: Einheiten umrechnen ======================
+   Länge / Masse / Fläche / Volumen / Zeit / Daten – Umrechnungszahl + Komma-Schieben.
+   Antwort ist immer eine Zahl (Einheit weglassen). Glatte, kopfrechenbare Werte. */
+const G_CATS={
+  laenge: {label:'Länge',   u:[['mm',1],['cm',10],['dm',100],['m',1000],['km',1000000]], deci:true},
+  masse:  {label:'Masse',   u:[['mg',1],['g',1000],['kg',1000000],['t',1000000000]], deci:true},
+  flaeche:{label:'Fläche',  u:[['cm²',1],['dm²',100],['m²',10000],['a',1000000],['ha',100000000],['km²',10000000000]], deci:true},
+  volumen:{label:'Volumen', u:[['ml',1],['cl',10],['l',1000],['hl',100000],['m³',1000000]], deci:true},
+  zeit:   {label:'Zeit',    u:[['s',1],['min',60],['h',3600],['Tag',86400],['Woche',604800],['Jahr',31536000]], deci:false},
+  daten:  {label:'Daten',   u:[['Byte',1],['KB',1000],['MB',1000000],['GB',1000000000],['TB',1000000000000]], deci:true}
+};
+const G_V=[2,3,4,5,6,8,12,15,20,24,25,36,45,2.5,1.5,0.5,7.5,1.25,3.2,4.8,1.2,1.8,0.75,0.25,9.6,6.4];
+const G_CTX={
+  laenge:[s=>'Ein Seil misst '+s+'.',s=>'Die Hauswand ist '+s+' hoch.',s=>'Ein Stabhochspringer überquert '+s+'.',s=>'Ein Marathonläufer schafft '+s+'.'],
+  masse: [s=>'Ein Koffer wiegt '+s+'.',s=>'Ein Elefant bringt '+s+' auf die Waage.',s=>'Ein Sack Zement wiegt '+s+'.',s=>'Ein Goldbarren wiegt '+s+'.'],
+  flaeche:[s=>'Ein Acker ist '+s+' groß.',s=>'Das Klassenzimmer hat '+s+' Fläche.',s=>'Ein Grundstück misst '+s+'.'],
+  volumen:[s=>'Ein Aquarium fasst '+s+'.',s=>'Ein Wassertank enthält '+s+'.',s=>'Ein Pool fasst '+s+'.'],
+  zeit:  [s=>'Ein Film dauert '+s+'.',s=>'Eine Wanderung dauert '+s+'.',s=>'Ein Marathon-Zock dauert '+s+'.'],
+  daten: [s=>'Eine Festplatte speichert '+s+'.',s=>'Ein Video belegt '+s+'.',s=>'Ein USB-Stick fasst '+s+'.']
+};
+function toF(x){ if(Number.isInteger(x)) return new F(x,1); const p=(''+x).split('.'); const d=Math.pow(10,p[1].length); return new F(Math.round(x*d),d); }
+function niceVal(f){ const s=numDE(f.n,f.d).replace('−',''); const i=s.indexOf(','); const dp=i<0?0:s.length-i-1; const ip=i<0?s.length:i; return dp<=3 && ip<=7; }
+
+/* Einfache Umrechnung A -> B (eine Einheit) */
+function genConvert(catKey){
+  const cat=G_CATS[catKey], us=cat.u;
+  const i=rndInt(0,us.length-1);
+  const stp=pick([1,1,1,2]);
+  const j=Math.random()<0.5? i+stp : i-stp;
+  if(j<0||j>=us.length||j===i) return null;
+  const bi=Math.max(i,j), si=Math.min(i,j);
+  const uBig=us[bi][0], fBig=us[bi][1], uSmall=us[si][0], fSmall=us[si][1];
+  if(fBig%fSmall!==0) return null;
+  const R=fBig/fSmall;
+  const V=toF(pick(G_V));
+  const small=new F(V.n*R, V.d);
+  if(!cat.deci && small.d!==1) return null;
+  if(!niceVal(V)||!niceVal(small)) return null;
+  const toSmall=Math.random()<0.5;
+  let src,srcU,ans,ansU,op,fSrc,fAns;
+  if(toSmall){ src=V; srcU=uBig; ans=small; ansU=uSmall; op='| · '+R; fSrc=fBig; fAns=fSmall; }
+  else { src=small; srcU=uSmall; ans=V; ansU=uBig; op='| : '+R; fSrc=fSmall; fAns=fBig; }
+  const srcStr=numDE(src.n,src.d)+' '+srcU;
+  const steps=[
+    row('1 '+uBig, numDE(R,1)+' '+uSmall, 'Umrechnungszahl'),
+    {lhs:srcStr, rhs:numDE(ans.n,ans.d)+' '+ansU, op:op, final:true}
+  ];
+  let disp;
+  if(Math.random()<0.45){
+    disp=ptype('Wie viele '+ansU+'?')+'<div class="wp">'+pick(G_CTX[catKey])(srcStr)+' Wie viele <b>'+ansU+'</b>?</div>';
+  } else {
+    disp=ptype('Größen umrechnen')+'<b>'+srcStr+'</b> = ? '+ansU;
+  }
+  const pr=probP('mittel',disp,steps,ans,24+rndInt(0,12));
+  pr._dbg={type:'conv',fSrc:fSrc,fAns:fAns,sn:src.n,sd:src.d,n:ans.n,d:ans.d}; return pr;
+}
+/* Zusammengesetzte Einheit: a uBig b uSmall -> alles in uSmall */
+function genMixedUnit(){
+  const key=pick(['laenge','masse','zeit','volumen']);
+  const cat=G_CATS[key], us=cat.u;
+  const i=rndInt(0,us.length-2);
+  const uSmall=us[i][0], fSmall=us[i][1], uBig=us[i+1][0], fBig=us[i+1][1];
+  const R=fBig/fSmall; if(!Number.isInteger(R)) return null;
+  const a=rndInt(1,9), b=rndInt(1,Math.min(R-1,12));
+  const ansN=a*R+b; if((''+ansN).length>7) return null;
+  const steps=[
+    row('1 '+uBig, numDE(R,1)+' '+uSmall, 'Umrechnungszahl'),
+    row(a+' '+uBig, numDE(a*R,1)+' '+uSmall, '| · '+R),
+    {lhs:a+' '+uBig+' '+b+' '+uSmall, rhs:numDE(ansN,1)+' '+uSmall, op:'| '+numDE(a*R,1)+' + '+b, final:true}
+  ];
+  const disp=ptype('Alles in '+uSmall+'!')+'<b>'+a+' '+uBig+' '+b+' '+uSmall+'</b> = ? '+uSmall;
+  const pr=probP('schwer',disp,steps,new F(ansN,1),32+rndInt(0,14));
+  pr._dbg={type:'mix',a:a,b:b,R:R,n:ansN,d:1}; return pr;
+}
+/* ENDGEGNER: dreifach zusammengesetzte Einheit */
+function genGroessenBoss(){
+  const key=pick(['laenge','zeit','masse','volumen']);
+  const cat=G_CATS[key], us=cat.u;
+  if(us.length<3) return null;
+  const i=rndInt(0,us.length-3);
+  const uS=us[i][0],fS=us[i][1], uM=us[i+1][0],fM=us[i+1][1], uB=us[i+2][0],fB=us[i+2][1];
+  const R1=fM/fS, R2=fB/fM; if(!Number.isInteger(R1)||!Number.isInteger(R2)) return null;
+  const a=rndInt(1,5), b=rndInt(1,Math.min(R2-1,12)), c=rndInt(1,Math.min(R1-1,12));
+  const ansN=a*R1*R2 + b*R1 + c; if((''+ansN).length>7) return null;
+  const steps=[
+    row('1 '+uB, numDE(R2,1)+' '+uM, 'Umrechnungszahlen'),
+    row('1 '+uM, numDE(R1,1)+' '+uS, ''),
+    row(a+' '+uB, numDE(a*R1*R2,1)+' '+uS, '| · '+(R1*R2)),
+    row(b+' '+uM, numDE(b*R1,1)+' '+uS, '| · '+R1),
+    {lhs:a+' '+uB+' '+b+' '+uM+' '+c+' '+uS, rhs:numDE(ansN,1)+' '+uS, op:'| alles addieren', final:true}
+  ];
+  const disp=ptype('Endgegner – alles in '+uS+'!')+'<div class="wp"><b>'+a+' '+uB+' '+b+' '+uM+' '+c+' '+uS+'</b> komplett in <b>'+uS+'</b> umrechnen.</div>';
+  const pr=probP('sehr schwer',disp,steps,new F(ansN,1),70+rndInt(0,30));
+  pr.isBoss=true; pr.estSeconds=Math.min(160,pr.estSeconds+30);
+  pr._dbg={type:'gboss',R1:R1,R2:R2,a:a,b:b,c:c,n:ansN,d:1}; return pr;
+}
+const GGENS=[
+  {w:3.5,f:()=>genConvert(pick(['laenge','masse','volumen','zeit','flaeche','daten']))},
+  {w:2,f:genMixedUnit},
+];
+
+/* ====================== GEOMETRIE-RUN (Quali Teil B: Rechner + Formelsammlung) ======================
+   π ≈ 3,14. Ergebnisse auf 2 Dezimalen gerundet, Antwort-Prüfung mit Toleranz (current.tol). */
+const PI=3.14;
+function gnum(v){ v=Math.round(v*1e6)/1e6; return (Math.round(v*100)/100).toString().replace('.',',').replace('-','−'); }
+function geoProb(diff,disp,steps,av,est,dbg){
+  av=Math.round(av*1e6)/1e6;
+  return {difficulty:diff,displayHTML:disp,steps:steps,av:av,tol:Math.max(0.05,0.015*Math.abs(av)),answer:toF(Math.round(av*100)/100),estSeconds:Math.max(20,Math.round(est)),isGeo:true,_dbg:dbg};
+}
+function fin(lhs,rhs){return {lhs:lhs,rhs:rhs,op:'',final:true};}
+function gT(t){return ptype(t);}
+/* --- schematische Figuren (monochrom, nicht maßstäblich) --- */
+function gsvg(b){return '<svg class="geofig" viewBox="0 0 200 132">'+b+'</svg>';}
+function figRect(la,lb){return '<svg class="geofig" viewBox="0 0 218 132"><rect x="22" y="24" width="142" height="80"/><text x="93" y="122" text-anchor="middle">'+la+'</text><text x="170" y="68">'+lb+'</text></svg>';}
+function figWindow(la,lb){return '<svg class="geofig" viewBox="0 0 218 150"><path d="M44 124 V62 H164 V124 Z"/><path d="M44 62 A60 34 0 0 1 164 62" fill="none"/><text x="104" y="142" text-anchor="middle">'+la+'</text><text x="170" y="96">'+lb+'</text></svg>';}
+function figRTri(la,lb,lc){return gsvg('<path d="M28 102 L172 102 L28 24 Z"/><path d="M28 90 H40 V102" fill="none"/><text x="104" y="120" text-anchor="middle">'+la+'</text><text x="4" y="66">'+lb+'</text><text x="106" y="56">'+lc+'</text>');}
+function figTri(lg,lh){return gsvg('<path d="M28 104 L172 104 L96 24 Z"/><line x1="96" y1="24" x2="96" y2="104" stroke-dasharray="4 3"/><text x="100" y="122" text-anchor="middle">'+lg+'</text><text x="100" y="72">'+lh+'</text>');}
+function figPara(lg,lh){return gsvg('<path d="M40 102 L150 102 L172 32 L62 32 Z"/><line x1="62" y1="32" x2="62" y2="102" stroke-dasharray="4 3"/><text x="100" y="120" text-anchor="middle">'+lg+'</text><text x="38" y="70">'+lh+'</text>');}
+function figTrap(la,lc,lh){return gsvg('<path d="M28 102 L172 102 L140 32 L60 32 Z"/><line x1="60" y1="32" x2="60" y2="102" stroke-dasharray="4 3"/><text x="100" y="120" text-anchor="middle">'+la+'</text><text x="100" y="26" text-anchor="middle">'+lc+'</text><text x="38" y="70">'+lh+'</text>');}
+function figCirc(l){return gsvg('<circle cx="100" cy="66" r="46"/><line x1="100" y1="66" x2="146" y2="66" stroke-dasharray="4 3"/><circle cx="100" cy="66" r="2.5" stroke="none" fill="currentColor"/><text x="116" y="60">'+l+'</text>');}
+function figRing(lR,lr){return gsvg('<circle cx="100" cy="66" r="46"/><circle cx="100" cy="66" r="24"/><line x1="100" y1="66" x2="146" y2="66" stroke-dasharray="4 3"/><line x1="100" y1="66" x2="100" y2="42"/><text x="118" y="60">'+lR+'</text><text x="104" y="58">'+lr+'</text>');}
+function figCuboid(la,lb,lc){return gsvg('<path d="M30 56 H120 V114 H30 Z"/><path d="M30 56 L60 30 H150 L120 56"/><path d="M120 56 L150 30 V88 L120 114"/><text x="74" y="130" text-anchor="middle">'+la+'</text><text x="126" y="94">'+lb+'</text><text x="92" y="46">'+lc+'</text>');}
+function figCyl(lr,lh){return gsvg('<ellipse cx="100" cy="30" rx="42" ry="13"/><path d="M58 30 V106"/><path d="M142 30 V106"/><path d="M58 106 A42 13 0 0 0 142 106"/><line x1="100" y1="30" x2="142" y2="30" stroke-dasharray="4 3"/><text x="116" y="24">'+lr+'</text><text x="150" y="72">'+lh+'</text>');}
+function figPyr(la,lh){return gsvg('<path d="M40 104 L160 104 L120 86 L60 86 Z" fill="none"/><path d="M100 20 L60 86 L120 86 Z"/><path d="M100 20 L40 104"/><path d="M100 20 L160 104"/><line x1="100" y1="20" x2="100" y2="95" stroke-dasharray="4 3"/><text x="100" y="120" text-anchor="middle">'+la+'</text><text x="104" y="64">'+lh+'</text>');}
+function figCone(lr,lh){return gsvg('<ellipse cx="100" cy="100" rx="44" ry="13"/><path d="M56 100 L100 20 L144 100"/><line x1="100" y1="20" x2="100" y2="100" stroke-dasharray="4 3"/><line x1="100" y1="100" x2="144" y2="100" stroke-dasharray="4 3"/><text x="92" y="64">'+lh+'</text><text x="118" y="116">'+lr+'</text>');}
+
+/* ----- Flächen ----- */
+function genRechteck(){
+  const a=rndInt(4,20), b=rndInt(3,a);
+  if(Math.random()<0.35){
+    const U=2*(a+b);
+    return geoProb('leicht',gT('Umfang U in cm?')+figRect(a+' cm',b+' cm')+'<div class="wp">Ein Rechteck ist <b>'+a+' cm</b> lang und <b>'+b+' cm</b> breit. Berechne den <b>Umfang</b>.</div>',
+      [{lhs:'U',rhs:'2 · (a + b)',op:'Formel'},{lhs:'U',rhs:'2 · ('+a+' + '+b+')',op:'| einsetzen'},fin('U',gnum(U)+' cm')],U,36,{type:'rectU',a:a,b:b});
+  }
+  const A=a*b;
+  return geoProb('leicht',gT('Fläche A in cm²?')+figRect(a+' cm',b+' cm')+'<div class="wp">Ein Rechteck ist <b>'+a+' cm</b> lang und <b>'+b+' cm</b> breit. Berechne den <b>Flächeninhalt</b>.</div>',
+    [{lhs:'A',rhs:'a · b',op:'Formel'},{lhs:'A',rhs:a+' · '+b,op:'| einsetzen'},fin('A',gnum(A)+' cm²')],A,34,{type:'rectA',a:a,b:b});
+}
+function genDreieck(){
+  const g=rndInt(4,22), h=rndInt(3,18), A=g*h/2;
+  return geoProb('mittel',gT('Fläche A in cm²?')+figTri('g = '+g+' cm','h = '+h+' cm')+'<div class="wp">Ein Dreieck hat die Grundseite <b>g = '+g+' cm</b> und die Höhe <b>h = '+h+' cm</b>. Berechne die <b>Fläche</b>.</div>',
+    [{lhs:'A',rhs:'½ · g · h',op:'Formel'},{lhs:'A',rhs:'½ · '+g+' · '+h,op:'| einsetzen'},fin('A',gnum(A)+' cm²')],A,42,{type:'tri',g:g,h:h});
+}
+function genParallelogramm(){
+  const g=rndInt(4,20), h=rndInt(3,16), A=g*h;
+  return geoProb('mittel',gT('Fläche A in cm²?')+figPara('g = '+g+' cm','h = '+h+' cm')+'<div class="wp">Ein Parallelogramm hat die Grundseite <b>g = '+g+' cm</b> und die Höhe <b>h = '+h+' cm</b>. Berechne die <b>Fläche</b>.</div>',
+    [{lhs:'A',rhs:'g · h',op:'Formel'},{lhs:'A',rhs:g+' · '+h,op:'| einsetzen'},fin('A',gnum(A)+' cm²')],A,38,{type:'para',g:g,h:h});
+}
+function genTrapez(){
+  const a=rndInt(8,24), c=rndInt(3,a-2), h=rndInt(3,15), A=(a+c)/2*h;
+  return geoProb('schwer',gT('Fläche A in cm²?')+figTrap('a = '+a+' cm','c = '+c+' cm','h = '+h+' cm')+'<div class="wp">Ein Trapez hat die parallelen Seiten <b>a = '+a+' cm</b> und <b>c = '+c+' cm</b> sowie die Höhe <b>h = '+h+' cm</b>. Berechne die <b>Fläche</b>.</div>',
+    [{lhs:'A',rhs:'½ · (a + c) · h',op:'Formel'},{lhs:'A',rhs:'½ · ('+a+' + '+c+') · '+h,op:'| einsetzen'},fin('A',gnum(A)+' cm²')],A,55,{type:'trap',a:a,c:c,h:h});
+}
+/* ----- Pythagoras ----- */
+function genPythagoras(){
+  if(Math.random()<0.55){
+    const a=rndInt(3,18), b=rndInt(3,18), s=a*a+b*b, c=Math.sqrt(s);
+    return geoProb('mittel',gT('Hypotenuse c in cm?')+figRTri('a = '+a+' cm','b = '+b+' cm','c = ?')+'<div class="wp">Rechtwinkliges Dreieck mit den Katheten <b>a = '+a+' cm</b> und <b>b = '+b+' cm</b>. Berechne die <b>Hypotenuse c</b>.</div>',
+      [{lhs:'c²',rhs:'a² + b²',op:'Pythagoras'},{lhs:'c²',rhs:a+'² + '+b+'²',op:'| einsetzen'},{lhs:'c²',rhs:gnum(s)+' cm²',op:''},fin('c',gnum(c)+' cm')],c,55,{type:'pyth_h',a:a,b:b});
+  }
+  const k=rndInt(3,14), c=rndInt(k+2,22), s=c*c-k*k, b=Math.sqrt(s);
+  return geoProb('schwer',gT('Kathete b in cm?')+figRTri('a = '+k+' cm','b = ?','c = '+c+' cm')+'<div class="wp">Rechtwinkliges Dreieck mit der Hypotenuse <b>c = '+c+' cm</b> und der Kathete <b>a = '+k+' cm</b>. Berechne die <b>zweite Kathete b</b>.</div>',
+    [{lhs:'b²',rhs:'c² − a²',op:'Pythagoras'},{lhs:'b²',rhs:c+'² − '+k+'²',op:'| einsetzen'},{lhs:'b²',rhs:gnum(s)+' cm²',op:''},fin('b',gnum(b)+' cm')],b,58,{type:'pyth_l',c:c,k:k});
+}
+/* ----- Kreis ----- */
+function genKreisflaeche(){
+  const fromD=Math.random()<0.4;
+  let r,given,pre=[];
+  if(fromD){ const d=rndInt(4,30); r=d/2; given='d = '+d+' cm'; pre=[{lhs:'r',rhs:'d : 2 = '+gnum(r)+' cm',op:'Radius'}]; }
+  else { r=rndInt(2,16); given='r = '+r+' cm'; }
+  const A=PI*r*r;
+  return geoProb('mittel',gT('Kreisfläche A in cm²?')+figCirc(fromD?'d':'r')+'<div class="wp">Ein Kreis hat <b>'+given+'</b>. Berechne den <b>Flächeninhalt</b> (π ≈ 3,14).</div>',
+    [...pre,{lhs:'A',rhs:'π · r²',op:'Formel'},{lhs:'A',rhs:'3,14 · '+gnum(r)+'²',op:'| einsetzen'},{lhs:'A',rhs:'3,14 · '+gnum(r*r),op:''},fin('A',gnum(A)+' cm²')],A,55,{type:'kA',r:r});
+}
+function genKreisumfang(){
+  const fromD=Math.random()<0.4;
+  let r,given,formel,einsetz;
+  if(fromD){ const d=rndInt(4,30); r=d/2; given='d = '+d+' cm'; formel='π · d'; einsetz='3,14 · '+d; }
+  else { r=rndInt(2,16); given='r = '+r+' cm'; formel='2 · π · r'; einsetz='2 · 3,14 · '+r; }
+  const U=2*PI*r;
+  return geoProb('mittel',gT('Umfang U in cm?')+figCirc(fromD?'d':'r')+'<div class="wp">Ein Kreis hat <b>'+given+'</b>. Berechne den <b>Umfang</b> (π ≈ 3,14).</div>',
+    [{lhs:'U',rhs:formel,op:'Formel'},{lhs:'U',rhs:einsetz,op:'| einsetzen'},fin('U',gnum(U)+' cm')],U,52,{type:'kU',r:r});
+}
+function genKreisring(){
+  const R=rndInt(6,16), r=rndInt(2,R-2), A=PI*(R*R-r*r);
+  return geoProb('schwer',gT('Ringfläche A in cm²?')+figRing('R = '+R,'r = '+r)+'<div class="wp">Ein Kreisring hat den Außenradius <b>R = '+R+' cm</b> und den Innenradius <b>r = '+r+' cm</b>. Berechne die <b>Ringfläche</b> (π ≈ 3,14).</div>',
+    [{lhs:'A',rhs:'π · (R² − r²)',op:'Formel'},{lhs:'A',rhs:'3,14 · ('+R+'² − '+r+'²)',op:'| einsetzen'},{lhs:'A',rhs:'3,14 · '+gnum(R*R-r*r),op:''},fin('A',gnum(A)+' cm²')],A,70,{type:'kR',R:R,r:r});
+}
+/* ----- Körper: Volumen & Oberfläche ----- */
+function genQuaderV(){
+  const a=rndInt(3,15), b=rndInt(3,15), c=rndInt(3,15), V=a*b*c;
+  return geoProb('mittel',gT('Volumen V in cm³?')+figCuboid('a = '+a,'b = '+b,'c = '+c)+'<div class="wp">Ein Quader hat die Kanten <b>a = '+a+' cm</b>, <b>b = '+b+' cm</b>, <b>c = '+c+' cm</b>. Berechne das <b>Volumen</b>.</div>',
+    [{lhs:'V',rhs:'a · b · c',op:'Formel'},{lhs:'V',rhs:a+' · '+b+' · '+c,op:'| einsetzen'},fin('V',gnum(V)+' cm³')],V,48,{type:'qV',a:a,b:b,c:c});
+}
+function genQuaderO(){
+  const a=rndInt(3,14), b=rndInt(3,14), c=rndInt(3,14), O=2*(a*b+a*c+b*c);
+  return geoProb('schwer',gT('Oberfläche O in cm²?')+figCuboid('a = '+a,'b = '+b,'c = '+c)+'<div class="wp">Ein Quader hat die Kanten <b>a = '+a+' cm</b>, <b>b = '+b+' cm</b>, <b>c = '+c+' cm</b>. Berechne die <b>Oberfläche</b>.</div>',
+    [{lhs:'O',rhs:'2 · (a·b + a·c + b·c)',op:'Formel'},{lhs:'O',rhs:'2 · ('+a*b+' + '+a*c+' + '+b*c+')',op:'| einsetzen'},fin('O',gnum(O)+' cm²')],O,72,{type:'qO',a:a,b:b,c:c});
+}
+function genWuerfel(){
+  const a=rndInt(2,13);
+  if(Math.random()<0.5){ const V=a*a*a;
+    return geoProb('leicht',gT('Volumen V in cm³?')+figCuboid('a = '+a,'a = '+a,'a = '+a)+'<div class="wp">Ein Würfel hat die Kantenlänge <b>a = '+a+' cm</b>. Berechne das <b>Volumen</b>.</div>',
+      [{lhs:'V',rhs:'a³',op:'Formel'},{lhs:'V',rhs:a+'³',op:'| einsetzen'},fin('V',gnum(V)+' cm³')],V,38,{type:'wV',a:a}); }
+  const O=6*a*a;
+  return geoProb('mittel',gT('Oberfläche O in cm²?')+figCuboid('a = '+a,'a = '+a,'a = '+a)+'<div class="wp">Ein Würfel hat die Kantenlänge <b>a = '+a+' cm</b>. Berechne die <b>Oberfläche</b>.</div>',
+    [{lhs:'O',rhs:'6 · a²',op:'Formel'},{lhs:'O',rhs:'6 · '+a+'²',op:'| einsetzen'},fin('O',gnum(O)+' cm²')],O,40,{type:'wO',a:a});
+}
+function genZylinderV(){
+  const r=rndInt(2,10), h=rndInt(4,20), V=PI*r*r*h;
+  return geoProb('schwer',gT('Volumen V in cm³?')+figCyl('r = '+r,'h = '+h)+'<div class="wp">Ein Zylinder hat den Radius <b>r = '+r+' cm</b> und die Höhe <b>h = '+h+' cm</b>. Berechne das <b>Volumen</b> (π ≈ 3,14).</div>',
+    [{lhs:'V',rhs:'π · r² · h',op:'Formel'},{lhs:'V',rhs:'3,14 · '+r+'² · '+h,op:'| einsetzen'},{lhs:'V',rhs:'3,14 · '+gnum(r*r*h),op:''},fin('V',gnum(V)+' cm³')],V,72,{type:'zV',r:r,h:h});
+}
+function genZylinderO(){
+  const r=rndInt(2,9), h=rndInt(4,18), O=2*PI*r*(r+h);
+  return geoProb('sehr schwer',gT('Oberfläche O in cm²?')+figCyl('r = '+r,'h = '+h)+'<div class="wp">Ein Zylinder hat den Radius <b>r = '+r+' cm</b> und die Höhe <b>h = '+h+' cm</b>. Berechne die <b>Oberfläche</b> (π ≈ 3,14).</div>',
+    [{lhs:'O',rhs:'2 · π · r · (r + h)',op:'Formel'},{lhs:'O',rhs:'2 · 3,14 · '+r+' · ('+r+' + '+h+')',op:'| einsetzen'},{lhs:'O',rhs:'6,28 · '+r+' · '+(r+h),op:''},fin('O',gnum(O)+' cm²')],O,90,{type:'zO',r:r,h:h});
+}
+function genPyramideV(){
+  const a=rndInt(3,14), h=rndInt(4,18), V=a*a*h/3;
+  return geoProb('schwer',gT('Volumen V in cm³?')+figPyr('a = '+a,'h = '+h)+'<div class="wp">Eine Pyramide hat eine quadratische Grundfläche mit <b>a = '+a+' cm</b> und die Höhe <b>h = '+h+' cm</b>. Berechne das <b>Volumen</b>.</div>',
+    [{lhs:'V',rhs:'⅓ · a² · h',op:'Formel'},{lhs:'V',rhs:'⅓ · '+a+'² · '+h,op:'| einsetzen'},{lhs:'V',rhs:'⅓ · '+gnum(a*a*h),op:''},fin('V',gnum(V)+' cm³')],V,75,{type:'pV',a:a,h:h});
+}
+function genKegelV(){
+  const r=rndInt(2,10), h=rndInt(4,18), V=PI*r*r*h/3;
+  return geoProb('sehr schwer',gT('Volumen V in cm³?')+figCone('r = '+r,'h = '+h)+'<div class="wp">Ein Kegel hat den Radius <b>r = '+r+' cm</b> und die Höhe <b>h = '+h+' cm</b>. Berechne das <b>Volumen</b> (π ≈ 3,14).</div>',
+    [{lhs:'V',rhs:'⅓ · π · r² · h',op:'Formel'},{lhs:'V',rhs:'⅓ · 3,14 · '+r+'² · '+h,op:'| einsetzen'},{lhs:'V',rhs:'⅓ · '+gnum(PI*r*r*h),op:''},fin('V',gnum(V)+' cm³')],V,90,{type:'cV',r:r,h:h});
+}
+/* ENDGEGNER: zusammengesetzte Fläche – Rechteck mit Halbkreis (Fenster) */
+function genGeoBoss(){
+  const a=2*rndInt(3,9), b=rndInt(5,16);   // a gerade -> Radius ganzzahlig
+  const r=a/2;
+  const Arect=a*b, Ahalf=PI*r*r/2, A=Arect+Ahalf;
+  const steps=[
+    {lhs:'A',rhs:'A(Rechteck) + A(Halbkreis)',op:'zusammengesetzt'},
+    {lhs:'A₁',rhs:'a · b = '+a+' · '+b+' = '+gnum(Arect)+' cm²',op:'Rechteck'},
+    {lhs:'r',rhs:'a : 2 = '+gnum(r)+' cm',op:'Radius'},
+    {lhs:'A₂',rhs:'½ · π · r² = ½ · 3,14 · '+gnum(r*r)+' = '+gnum(Ahalf)+' cm²',op:'Halbkreis'},
+    fin('A',gnum(Arect)+' + '+gnum(Ahalf)+' = '+gnum(A)+' cm²')
+  ];
+  const disp=gT('Endgegner · Gesamtfläche in cm²?')+figWindow('a = '+a+' cm','b = '+b+' cm')+'<div class="wp">Eine Fensterfläche besteht aus einem <b>Rechteck</b> (<b>'+a+' cm</b> breit, <b>'+b+' cm</b> hoch) mit einem aufgesetzten <b>Halbkreis</b> (Durchmesser = Breite). Berechne die <b>Gesamtfläche</b> (π ≈ 3,14).</div>';
+  const pr=geoProb('sehr schwer',disp,steps,A,120,{type:'gboss',a:a,b:b});
+  pr.isBoss=true; pr.estSeconds=Math.min(190,pr.estSeconds+20);
+  return pr;
+}
+const GEOGENS=[
+  {w:1.5,f:genRechteck},{w:1.5,f:genDreieck},{w:1,f:genParallelogramm},{w:1,f:genTrapez},
+  {w:2,f:genPythagoras},{w:1.6,f:genKreisflaeche},{w:1.2,f:genKreisumfang},{w:0.8,f:genKreisring},
+  {w:1.3,f:genQuaderV},{w:1,f:genQuaderO},{w:0.8,f:genWuerfel},
+  {w:1.3,f:genZylinderV},{w:0.9,f:genZylinderO},{w:0.9,f:genPyramideV},{w:0.9,f:genKegelV},
+];
+
+/* ====================== MIX-RUN: alles gemischt, sehr schwer überwiegt ====================== */
+const MIXGENS=[
+  /* sehr schwer (überwiegt) */
+  {w:5,f:genHardFrac},{w:3,f:genFracBoth},{w:3,f:genMixedDecFrac},{w:2.5,f:genFracCross},
+  {w:3,f:genVeraenderung},{w:2.5,f:genMwSt},{w:3,f:genZylinderO},{w:3,f:genKegelV},
+  /* schwer (Abwechslung, deckt alle Sektionen ab) */
+  {w:2,f:genQuaderO},{w:1.2,f:genDecimal},{w:1.2,f:genGrundwert},{w:1.2,f:genRabatt},
+  {w:1.5,f:genMixedUnit},{w:1.2,f:genTrapez},{w:1.2,f:genPyramideV},{w:1,f:genKreisring},{w:1,f:genZylinderV},
+  /* mittel (wenig – Luft holen + Größen/Sektionen sichtbar) */
+  {w:1,f:()=>genConvert(pick(['laenge','masse','volumen','flaeche','zeit','daten']))},
+  {w:0.8,f:genProzentsatz},{w:0.8,f:genPythagoras},{w:0.6,f:genDreieck},
+];
+
+/* ---------- Kesse Sprüche ---------- */
+const MSG={
+  blitz:[
+    "GOOD BOY, LOOIS! So schnell, dass die Uhr noch schläft.",
+    "GOOD BOY. Hast du das gelöst oder nur kurz hingeniest?",
+    "GOOD BOY, LOOIS – der Taschenrechner bewirbt sich gerade bei dir.",
+    "Affenartig flott. GOOD BOY, du kleine Rechenrakete.",
+    "GOOD BOY! Selbst der Dino braucht 'ne Pause vom Staunen.",
+    "Zack – fertig. GOOD BOY, LOOIS, du Show-off.",
+    "GOOD BOY! Volle Punktzahl, halbe Zeit. Unverschämt.",
+    "Blitz und Donner. GOOD BOY, LOOIS – das war Strom.",
+    "GOOD BOY. Die Aufgabe hat nicht mal piep gesagt.",
+    "Wahnsinnstempo. GOOD BOY – jetzt aber nicht überheblich werden.",
+    "GOOD BOY, LOOIS! Punktejäger-Modus aktiviert.",
+    "So schnell hätte selbst Pythagoras geschwitzt. GOOD BOY!"
+  ],
+  gut:[
+    "DU MUSST AUCH MAL NON CHALANT BLEIBEN.",
+    "Pünktlich wie die Maurer. Solide, LOOIS – mehr aber auch nicht.",
+    "Im Soll gelandet. Kein Feuerwerk, aber zählt.",
+    "Brauchbar. Der Dino nickt – minimal beeindruckt.",
+    "Passt scho. Ordentlicher Treffer, ganz ohne Drama, LOOIS.",
+    "DU MUSST AUCH MAL NON CHALANT BLEIBEN.",
+    "Sauber, aber gemütlich. Geht auch mit mehr Wumms, LOOIS.",
+    "Treffer im grünen Bereich. Langweilig korrekt.",
+    "Anständig. Nicht heldenhaft, aber anständig.",
+    "Mittelmaß mit Stil. Nimm die Punkte, LOOIS.",
+    "DU MUSST AUCH MAL NON CHALANT BLEIBEN.",
+    "Geschafft – der Dino gähnt höflich und klatscht."
+  ],
+  drueber:[
+    "Richtig... irgendwann. Nebenbei die Steuererklärung gemacht, LOOIS?",
+    "Korrekt, aber die Schnecke nebenan hat schon Feierabend. Minuspunkte.",
+    "Glückwunsch zur Zeitreise. Der Dino ist gealtert – Abzug.",
+    "Tempo eines kaputten Faxgeräts. Richtig, aber teuer, LOOIS.",
+    "So langsam, die Aufgabe hat zwischendurch geträumt. Minus.",
+    "Ergebnis top, Geschwindigkeit Flop. Minuspunkte, mein Freund.",
+    "Hast du die Zahlen einzeln per Brieftaube geholt? Abzug, LOOIS.",
+    "Die Sanduhr ist verdurstet. Richtig zwar – aber Minus.",
+    "Schneckenpost mit Bonus-Verspätung. Das kostet, LOOIS.",
+    "Du und die Zeit – das wird keine Freundschaft. Minuspunkte.",
+    "Richtig gerechnet, falsch getrödelt. Abzug.",
+    "Der Endgegner-Timer lacht. Tempo, LOOIS, sonst bleibt's bei Minus."
+  ],
+  peek:[
+    "Mit Spickzettel 'gelöst', LOOIS – null Punkte, null Ruhm.",
+    "Lösung gelinst? Süß. Dafür gibt's nichts, LOOIS.",
+    "Geschummelt geguckt. Der Dino hat alles gesehen. 0 Punkte.",
+    "Spickzettel ist auch eine Antwort – nur eben für 0 Punkte.",
+    "Abgeschrieben beim eigenen Spiel. Mutig. Trotzdem 0, LOOIS."
+  ],
+  falsch:[
+    "Falsch. Der Dino schüttelt enttäuscht den Kopf, LOOIS.",
+    "Nope. Nochmal – diesmal mit eingeschaltetem Hirn.",
+    "Daneben. So daneben, dass der Taschenrechner kichert.",
+    "Nada. Atmen, nachdenken, nochmal, LOOIS.",
+    "Fehler. Selbst der Dino hätte das gewusst.",
+    "Knapp vorbei ist auch falsch, LOOIS. Weiter.",
+    "Ähm, nein. Aber netter Versuch."
+  ],
+  boss:[
+    "ENDGEGNER ZERLEGT! LOOIS, du Legende.",
+    "BOSS DOWN. GOOD BOY – das war Chef-Niveau, LOOIS.",
+    "Masteraufgabe pulverisiert. Der Dino verbeugt sich.",
+    "Endgegner besiegt – express und eiskalt. GOOD BOY!",
+    "K.o. in der ersten Runde. Respekt, LOOIS."
+  ]
+};
+
+/* ---------- Pixel-Dino ---------- */
+const DINO=[
+"...........#####..",
+"..........######..",
+"..........#.#####.",
+"..........#######.",
+"#.........#######.",
+"##........######..",
+"###.......######..",
+"####.....#######..",
+"#################.",
+".################.",
+"..###############.",
+"..##############..",
+"..#############...",
+"..####....#####...",
+"..###.....####....",
+"..##......###.....",
+"..##......##......"
+];
+function buildDino(){
+  let r='';
+  for(let y=0;y<DINO.length;y++){const rs=DINO[y];for(let x=0;x<rs.length;x++){if(rs[x]==='#')r+='<rect x="'+x+'" y="'+y+'" width="1" height="1"/>';}}
+  return '<svg viewBox="0 0 18 17" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">'+r+'</svg>';
+}
+
+/* ---------- Sound (WebAudio – lustige Signale, offline) ---------- */
+let audioCtx=null, soundOn=true;
+function ac(){ try{ if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended')audioCtx.resume(); }catch(e){} return audioCtx; }
+function tone(start,freq,dur,type,vol){ const c=ac(); if(!c)return; const o=c.createOscillator(),g=c.createGain(); o.type=type||'square'; o.frequency.setValueAtTime(freq,start); g.gain.setValueAtTime(0.0001,start); g.gain.exponentialRampToValueAtTime(vol||0.16,start+0.012); g.gain.exponentialRampToValueAtTime(0.0001,start+dur); o.connect(g).connect(c.destination); o.start(start); o.stop(start+dur+0.03); }
+function playWrong(){ if(!soundOn)return; const c=ac(); if(!c)return; const t=c.currentTime; const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(300,t); o.frequency.exponentialRampToValueAtTime(110,t+0.45); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.5); o.connect(g).connect(c.destination); o.start(t); o.stop(t+0.55); }   // "wah-wahh"
+function playWarn(){ if(!soundOn)return; const c=ac(); if(!c)return; const t=c.currentTime; [784,988,784,988].forEach((f,i)=>tone(t+i*0.13,f,0.11,'square',0.15)); }   // lustiges Trillern
+function playRight(){ if(!soundOn)return; const c=ac(); if(!c)return; const t=c.currentTime; tone(t,659,0.1,'triangle',0.15); tone(t+0.1,988,0.16,'triangle',0.15); }
+function playWin(){ if(!soundOn)return; const c=ac(); if(!c)return; const t=c.currentTime; [523,659,784,1047].forEach((f,i)=>tone(t+i*0.1,f,0.16,'square',0.16)); }
+
+/* ---------- State + UI ---------- */
+const GOAL=1000;
+let state={mode:'gleich',points:0,streak:0,solved:0,aura:0,taskNum:0,roundNo:1,roundTime:0,peakStreak:0};
+let current=null, startTime=0, ticker=null, solvedThis=false, peeked=false, warned=false, nextIsBoss=false, roundDone=false;
+/* =========================================================================
+   CLOUD-SPEICHER (optional) – geräteübergreifender Fortschritt über einen Link
+   -------------------------------------------------------------------------
+   Ohne Konfiguration speichert das Spiel lokal im Browser (localStorage).
+   Für geräteübergreifendes Speichern ein kostenloses Supabase-Projekt anlegen:
+
+   1) Auf supabase.com ein Projekt erstellen.
+   2) Im SQL-Editor ausführen:
+        create table scores (
+          id bigint generated by default as identity primary key,
+          player text, round int, tasks int, time int, aura int,
+          peak int, pts int, boss boolean, ts bigint,
+          created_at timestamptz default now()
+        );
+        alter table scores enable row level security;
+        create policy "read"  on scores for select to anon using (true);
+        create policy "write" on scores for insert to anon with check (true);
+   3) Project Settings -> API: Project URL und anon public key kopieren
+      und hier unten eintragen. Datei dann hosten (z.B. Netlify/Vercel).
+   ========================================================================= */
+const SUPABASE_URL = '';   // z.B. 'https://abcd1234.supabase.co'
+const SUPABASE_KEY = '';   // anon public key
+const PLAYER = 'LOOIS';
+const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY);
+function cloudHeaders(extra){ return Object.assign({'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'}, extra||{}); }
+async function cloudFetch(){
+  const url=SUPABASE_URL+'/rest/v1/scores?player=eq.'+encodeURIComponent(PLAYER)+'&select=round,tasks,time,aura,peak,pts,boss,ts&order=ts.asc';
+  const r=await fetch(url,{headers:cloudHeaders()}); if(!r.ok) throw new Error('GET '+r.status); return await r.json();
+}
+async function cloudPush(entry){
+  const r=await fetch(SUPABASE_URL+'/rest/v1/scores',{method:'POST',headers:cloudHeaders({'Prefer':'return=minimal'}),body:JSON.stringify(entry)});
+  if(!r.ok) throw new Error('POST '+r.status);
+}
+
+let scores=[];
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : 'gleichungsrun_scores'; }
+function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
+function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
+async function initScores(){
+  if(CLOUD){
+    try{ scores=await cloudFetch(); saveScoresLocal(); }
+    catch(e){ console.warn('Cloud nicht erreichbar – nutze lokalen Speicher:',e); loadScoresLocal(); }
+  } else { loadScoresLocal(); }
+  state.roundNo=scores.length+1; renderBoard(); updateStats();
+}
+function resetRound(){ state.points=0;state.aura=0;state.streak=0;state.solved=0;state.roundTime=0;state.peakStreak=0; roundDone=false; nextIsBoss=false; state.roundNo=scores.length+1; updateStats(); }
+
+const $=id=>document.getElementById(id);
+function fmt(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0');}
+
+/* Antwort parsen: Ganzzahl, Bruch a/b oder Dezimal (Komma/Punkt) */
+function parseDec(s){
+  if(!/^[-+]?\d*\.?\d+$/.test(s))return null;
+  const neg=s[0]==='-'; s=s.replace(/^[-+]/,'');
+  if(s.indexOf('.')>=0){const p=s.split('.');const d=Math.pow(10,p[1].length);const n=(parseInt(p[0]||'0',10))*d+parseInt(p[1],10);return {n:neg?-n:n,d:d};}
+  return {n:neg?-parseInt(s,10):parseInt(s,10),d:1};
+}
+function parseAnswer(str){
+  let s=str.trim().replace(/^x\s*=\s*/i,'').replace(/[%€]/g,'').replace(/\s+/g,'').replace(/−/g,'-').replace(',','.').replace(/[a-zµ²³]+$/i,'');
+  if(s==='')return null;
+  if(s.indexOf('/')>=0){
+    const p=s.split('/'); if(p.length!==2)return null;
+    const a=parseDec(p[0]), b=parseDec(p[1]); if(!a||!b||b.n===0)return null;
+    let n=a.n*b.d, d=a.d*b.n; if(d<0){n=-n;d=-d;} return {n:n,d:d};
+  }
+  return parseDec(s);
+}
+
+function loadProblem(){
+  current = nextIsBoss ? makeBoss() : makeProblem();
+  nextIsBoss=false;
+  solvedThis=false; peeked=false; warned=false;
+  state.taskNum++; $('taskNum').textContent=state.taskNum;
+  $('equation').innerHTML=current.displayHTML;
+  $('estTime').textContent=fmt(current.estSeconds);
+  const badge=$('diffBadge');
+  if(current.isBoss){ badge.textContent='ENDGEGNER'; badge.className='badge b-boss'; $('bossBanner').className='bossbanner show'; $('card').classList.add('boss'); }
+  else { badge.textContent=current.difficulty; badge.className='badge b-'+current.difficulty.replace(' ','-'); $('bossBanner').className='bossbanner'; $('card').classList.remove('boss'); }
+
+  if(state.mode==='mix'){ $('eqHint').textContent = current.isGeo ? 'Geometrie: Taschenrechner · π ≈ 3,14 · auf 2 Dezimalen runden' : 'Zahl, Bruch (3/4) oder Dezimal (1,75) · ohne Taschenrechner'; }
+  const sc=$('steps'); sc.innerHTML='';
+  current.steps.forEach(st=>{
+    const wordOp=st.op && !/[|]\s*[·:+−\-]/.test(st.op) && /[a-zä]/i.test(st.op);
+    const d=document.createElement('div'); d.className='srow'+(st.final?' final':'');
+    d.innerHTML='<div class="seq"><span>'+st.lhs+'</span><span class="eqsign">=</span><span>'+st.rhs+'</span></div>'+
+                '<div class="sop'+(wordOp?' word':'')+'">'+(st.op||'')+'</div>';
+    sc.appendChild(d);
+  });
+
+  $('solution').className=''; $('btnSolution').textContent='Lösung zeigen';
+  $('result').className=''; $('result').innerHTML='';
+  $('feedback').className='feedback'; $('feedback').textContent='';
+  const inp=$('answer'); inp.value=''; inp.disabled=false; $('btnCheck').disabled=false;
+  $('track').classList.remove('paused','over'); $('timer').classList.remove('over'); $('overhint').textContent='';
+  $('runner').style.left='0%'; $('railFill').style.width='0%';
+  updateDino(); updateStats();
+  startTimer(); inp.focus();
+}
+
+function startTimer(){startTime=Date.now(); if(ticker)clearInterval(ticker); tick(); ticker=setInterval(tick,100);}
+function tick(){
+  const elapsed=(Date.now()-startTime)/1000, est=current.estSeconds, frac=elapsed/est, pos=Math.min(1,frac);
+  $('timer').textContent=fmt(elapsed);
+  $('runner').style.left=(pos*100)+'%';
+  $('railFill').style.width=(pos*100)+'%';
+  const rem=est-elapsed;
+  if(est>35 && !warned && rem<=30 && rem>0){ warned=true; playWarn(); }   // 30-Sekunden-Warnung
+  if(frac>1){$('track').classList.add('over');$('timer').classList.add('over');$('overhint').textContent='SOLL überschritten (+'+fmt(elapsed-est)+') – Minuspunkte drohen!';}
+  else{$('track').classList.remove('over');$('timer').classList.remove('over');$('overhint').textContent='';}
+}
+
+function shake(){const inp=$('answer');inp.classList.remove('shake');void inp.offsetWidth;inp.classList.add('shake');}
+
+function checkAnswer(){
+  if(solvedThis)return;
+  const inp=$('answer'), fb=$('feedback'), ua=parseAnswer(inp.value);
+  if(!ua){fb.className='feedback wrong';fb.textContent='✗ Bitte Zahl, Bruch (7/4) oder Dezimal (1,75) eingeben.';shake();return;}
+  let correct;
+  if(current.tol!=null){ correct = Math.abs(ua.n/ua.d - current.av) <= current.tol; }   // Geometrie: gerundet, mit Toleranz
+  else { const t=current.answer; correct = (ua.n*t.d===t.n*ua.d); }
+  if(correct){onCorrect();}
+  else{fb.className='feedback wrong';fb.textContent='✗ FALSCH – '+pick(MSG.falsch);shake();playWrong();}
+}
+
+function onCorrect(){
+  solvedThis=true; if(ticker)clearInterval(ticker); $('track').classList.add('paused');
+  const elapsed=(Date.now()-startTime)/1000, est=current.estSeconds, ratio=elapsed/est;
+  const base = current.isBoss?80:{'leicht':10,'mittel':20,'schwer':35,'sehr schwer':50}[current.difficulty];
+  let pts,bk,aura=0,master=0;
+  if(peeked){ pts=0; bk='peek'; state.streak=0; }
+  else if(ratio<=1.0){
+    const mult=ratio<=0.5?2:ratio<=0.8?1.5:1.2;
+    pts=Math.round(base*mult);
+    state.streak++;
+    if(state.streak>=3){ aura=(state.streak-2)*5; state.aura+=aura; pts+=aura; }   // AURA PUNKTE ab 3er-Serie, wachsend
+    if(current.isBoss){ master=100; pts+=master; }
+    bk = current.isBoss ? 'boss' : (ratio<=0.5?'blitz':'gut');
+  } else {
+    const over=ratio-1; pts=-Math.round(base*Math.min(2,0.5+over)); state.streak=0; bk='drueber';
+  }
+  state.points+=pts; state.solved++;
+  state.roundTime+=elapsed; state.peakStreak=Math.max(state.peakStreak,state.streak);
+  updateStats(); updateDino();
+  if(state.streak>0 && state.streak%10===0) nextIsBoss=true;   // nach 10 in Folge: Endgegner
+
+  $('feedback').className='feedback right';
+  $('feedback').textContent = (current.isBoss && pts>0) ? '✓ ENDGEGNER BESIEGT!' : '✓ RICHTIG, LOOIS!';
+  $('answer').disabled=true; $('btnCheck').disabled=true;
+  if(soundOn){ if(bk==='boss')playWin(); else if(pts>0)playRight(); }
+  const neg=pts<0;
+  const res=$('result'); res.className='show'+(neg?' neg':'');
+  res.innerHTML=
+    '<div class="res-time">ZEIT <b>'+fmt(elapsed)+'</b> · SOLL '+fmt(est)+(nextIsBoss?' · NÄCHSTE: ENDGEGNER!':'')+'</div>'+
+    '<div class="res-msg">'+pick(MSG[bk])+'</div>'+
+    '<div><span class="res-pts '+(neg?'pts-neg':'pts-pos')+'">'+(pts>=0?'+':'−')+Math.abs(pts)+' Punkte</span>'+
+      (aura>0?'<span class="res-aura">+'+aura+' AURA ✦ Serie ×'+state.streak+'</span>':'')+
+      (master>0?'<span class="res-aura">+'+master+' MASTER-BONUS</span>':'')+
+      (peeked?'<span class="res-streak">(mit Lösung)</span>':'')+'</div>';
+  showTaskResult(elapsed,pts,aura,master,bk);
+  if(!roundDone){
+    if(bk==='boss'){ finishRound(true); }                          // Endgegner in der Zeit besiegt -> Runde sofort beenden
+    else if(state.points>=GOAL && !nextIsBoss){ finishRound(false); } // sonst: 1000 Punkte erreicht -> einfach weiter
+  }
+}
+
+function updateStats(){
+  $('stPoints').textContent=state.points;
+  $('stAura').textContent=state.aura;
+  $('stStreak').textContent=state.streak;
+  $('stSolved').textContent=state.solved;
+  $('stRound').textContent=state.roundNo;
+  const pc=Math.max(0,Math.min(100,state.points/GOAL*100));
+  const ac=Math.max(0,Math.min(100,state.aura/GOAL*100));
+  $('goalFill').style.width=pc+'%'; $('goalAura').style.width=ac+'%';
+  $('goalTxt').innerHTML='<b>'+Math.max(0,state.points)+'</b> / '+GOAL;
+  $('goalAuraTxt').textContent = state.aura>0 ? ('davon '+state.aura+' AURA') : '';
+}
+function updateDino(){ $('dino').classList.toggle('gold', state.streak>=3); }
+
+function renderBoard(){
+  const chart=$('boardChart'), list=$('boardList'), best=$('boardBest');
+  if(!scores.length){ chart.innerHTML=''; list.innerHTML='<div class="board-empty">Noch keine Runde abgeschlossen – erreiche 1000 Punkte!</div>'; best.textContent=''; return; }
+  const tasksArr=scores.map(s=>s.tasks), bestTasks=Math.min.apply(null,tasksArr), maxTasks=Math.max.apply(null,tasksArr);
+  best.innerHTML='Rekord: <b>'+bestTasks+'</b> Aufgaben';
+  const lastIdx=scores.length-1;
+  chart.innerHTML=scores.slice(-12).map((s,i,arr)=>{
+    const h=Math.round(s.tasks/maxTasks*70)+6;
+    const isCur=(scores.indexOf(s)===lastIdx), isBest=(s.tasks===bestTasks);
+    return '<div class="bar'+(isBest?' best':'')+(isCur?' cur':'')+'"><div class="bv">'+s.tasks+'</div><div class="col" style="height:'+h+'px"></div><div class="bn">R'+s.round+'</div></div>';
+  }).join('');
+  list.innerHTML=scores.slice().reverse().slice(0,8).map(s=>
+    '<div class="brow'+(s.tasks===bestTasks?' best':'')+'"><span>R'+s.round+(s.boss?'★':'')+'</span><span><b>'+s.tasks+'</b> Aufg.</span><span>'+fmt(s.time)+'</span><span>×'+s.peak+'</span><span>'+s.aura+' AURA</span></div>'
+  ).join('');
+}
+
+function finishRound(viaBoss){
+  roundDone=true; nextIsBoss=false;
+  const prevBest = scores.length? Math.min.apply(null,scores.map(s=>s.tasks)) : null;
+  const last = scores.length? scores[scores.length-1] : null;
+  const entry={player:PLAYER, round:scores.length+1, tasks:state.solved, time:Math.round(state.roundTime), aura:state.aura, peak:state.peakStreak, pts:state.points, boss:!!viaBoss, ts:Date.now()};
+  scores.push(entry); saveScoresLocal(); if(CLOUD) cloudPush(entry).catch(e=>console.warn('Cloud-Push fehlgeschlagen:',e)); renderBoard();
+  let note;
+  if(prevBest===null) note='Erste Runde gespeichert – ab jetzt heißt es: schneller werden!';
+  else if(entry.tasks<prevBest) note='🏆 NEUER REKORD! '+(prevBest-entry.tasks)+' Aufgabe(n) weniger als dein Bestwert ('+prevBest+').';
+  else if(last && entry.tasks<last.tasks) note='↓ Besser als letzte Runde ('+last.tasks+' Aufg.). Weiter so, LOOIS!';
+  else if(last && entry.tasks>last.tasks) note='↑ '+(entry.tasks-last.tasks)+' Aufgabe(n) mehr als letzte Runde. Mehr Serien = schneller am Ziel!';
+  else note='Gleich wie zuletzt ('+entry.tasks+' Aufg.). Knack den Rekord!';
+  playWin();
+  const title = viaBoss ? ('ENDGEGNER BESIEGT — RUNDE '+entry.round+' IM EILTEMPO!') : ('RUNDE '+entry.round+' GESCHAFFT — '+entry.pts+' PUNKTE!');
+  const res=$('result'); res.className='show win';
+  res.innerHTML=
+    '<div class="win-title">'+title+'</div>'+
+    '<div class="res-time">'+entry.tasks+' Aufgaben · '+entry.pts+' Punkte · Zeit '+fmt(entry.time)+' · beste Serie ×'+entry.peak+' · '+entry.aura+' AURA</div>'+
+    '<div class="res-msg">'+note+'</div>'+
+    '<div class="res-time">'+(viaBoss?'Der Endgegner war dein Express-Ticket – Serie halten lohnt sich!':'Mit längeren Serien sammelst du AURA und erreichst die 1000 schneller.')+'</div>';
+  $('btnNext').textContent='▶ Neue Runde';
+  // Overlay (Rundenende)
+  $('ovResult').className='ov-result win';
+  $('ovrSpruch').textContent=title;
+  $('ovrStats').innerHTML='<span class="pos">'+entry.pts+' Punkte</span><span>'+entry.tasks+' Aufgaben</span><span>Zeit '+fmt(entry.time)+'</span><span class="au">'+entry.aura+' AURA</span>';
+  $('ovrNote').textContent=note;
+  $('ovWeiter').textContent='▶ Neue Runde';
+  $('overlay').classList.remove('hidden');
+  $('ovStart').style.display='none'; $('ovCount').style.display='none'; $('ovResult').style.display='flex';
+  $('ovWeiter').focus();
+}
+
+$('btnCheck').addEventListener('click',checkAnswer);
+$('answer').addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
+$('btnSolution').addEventListener('click',()=>{
+  const s=$('solution'), show=s.className!=='show';
+  s.className=show?'show':''; $('btnSolution').textContent=show?'Lösung verbergen':'Lösung zeigen';
+  if(show&&!solvedThis)peeked=true;
+});
+function beep(f,dur){ if(!soundOn)return; const c=ac(); if(!c)return; tone(c.currentTime,f,dur||0.15,'square',0.16); }
+function bumpCount(){ const e=$('ovNum'); e.style.animation='none'; void e.offsetWidth; e.style.animation='pop .5s ease'; }
+function runCountdown(then){
+  ac();
+  $('overlay').classList.remove('hidden');
+  $('ovStart').style.display='none'; $('ovResult').style.display='none'; $('ovCount').style.display='block';
+  let n=3; $('ovNum').textContent=n; bumpCount(); beep(720);
+  const iv=setInterval(()=>{
+    n--;
+    if(n>0){ $('ovNum').textContent=n; bumpCount(); beep(720); }
+    else if(n===0){ $('ovNum').textContent='LOS!'; bumpCount(); beep(1150,0.28); }
+    else { clearInterval(iv); $('overlay').classList.add('hidden'); $('ovCount').style.display='none'; if(then)then(); }
+  },800);
+}
+function showStart(){
+  if(ticker)clearInterval(ticker);
+  roundDone=false; nextIsBoss=false; solvedThis=false;
+  resetRound();
+  $('btnNext').textContent='Nächste Aufgabe →';
+  $('feedback').className='feedback'; $('feedback').textContent='';
+  $('result').className=''; $('result').innerHTML='';
+  $('solution').className=''; $('btnSolution').textContent='Lösung zeigen';
+  $('equation').innerHTML=''; $('steps').innerHTML='';
+  $('bossBanner').className='bossbanner'; $('card').classList.remove('boss');
+  $('track').classList.remove('over','paused'); $('timer').classList.remove('over');
+  $('overlay').classList.remove('hidden');
+  $('ovResult').style.display='none'; $('ovCount').style.display='none'; $('ovStart').style.display='flex';
+}
+function startGame(){ runCountdown(loadProblem); }
+function goNext(){ if(roundDone){ resetRound(); $('btnNext').textContent='Nächste Aufgabe →'; } runCountdown(loadProblem); }
+function showTaskResult(elapsed,pts,aura,master,bk){
+  const neg=pts<0;
+  $('ovResult').className='ov-result';
+  $('ovrSpruch').textContent=pick(MSG[bk]);
+  $('ovrStats').innerHTML=
+    '<span class="'+(neg?'neg':'pos')+'">'+(pts>=0?'+':'−')+Math.abs(pts)+' Punkte</span>'+
+    '<span>Zeit '+fmt(elapsed)+'</span>'+
+    (aura>0?'<span class="au">+'+aura+' AURA</span>':'')+
+    (master>0?'<span class="au">+'+master+' MASTER</span>':'');
+  $('ovrNote').textContent='Ziel '+Math.max(0,state.points)+' / '+GOAL+(state.streak>0?'   ·   Serie ×'+state.streak:'');
+  $('ovWeiter').textContent='Weiter →';
+  $('overlay').classList.remove('hidden');
+  $('ovStart').style.display='none'; $('ovCount').style.display='none'; $('ovResult').style.display='flex';
+  $('ovWeiter').focus();
+}
+
+$('btnNext').addEventListener('click',goNext);
+$('ovWeiter').addEventListener('click',goNext);
+$('ovLoesung').addEventListener('click',()=>{ $('overlay').classList.add('hidden'); $('solution').className='show'; $('btnSolution').textContent='Lösung verbergen'; });
+$('btnStart').addEventListener('click',startGame);
+$('btnMenu').addEventListener('click',showStart);
+$('btnSound').addEventListener('click',()=>{ soundOn=!soundOn; $('soundIco').textContent=soundOn?'♪':'✕'; if(soundOn)ac(); });
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>ac(),{once:true}));
+
+/* ---------- Modus-Umschalter (nur auf der Startseite) ---------- */
+const MODE_TXT={
+  gleich:{
+    brand:'Hauptschulabschluss Bayern · nach x auflösen · ohne Taschenrechner',
+    sub:'Knack die Gleichungen, halte deine <b>Serie</b> für AURA-Punkte und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück wartet der Endgegner. Bereit?',
+    ph:'x = ?   z. B. 7/4 oder 1,75',
+    hint:'Bruch als 3/4 · Dezimal mit Komma 1,75 · negativ mit − oder -'
+  },
+  prozent:{
+    brand:'Hauptschulabschluss Bayern · Prozentrechnung · Dreisatz · ohne Taschenrechner',
+    sub:'Knack die Prozentaufgaben – <b>Prozentwert</b>, <b>Grundwert</b>, <b>Prozentsatz</b>, MwSt &amp; Rabatt. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Bereit?',
+    ph:'Antwort eingeben · z. B. 12 oder 7,5',
+    hint:'Nur die Zahl eintippen · Dezimal mit Komma, z. B. 7,5 · das % weglassen'
+  },
+  groessen:{
+    brand:'Hauptschulabschluss Bayern · Größen umrechnen · ohne Taschenrechner',
+    sub:'Rechne <b>Größen</b> um – Länge, Masse, Fläche, Volumen, Zeit, Daten. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Bereit?',
+    ph:'Antwort eingeben · z. B. 2500 oder 1,5',
+    hint:'Nur die Zahl eintippen · Dezimal mit Komma · Einheit weglassen'
+  },
+  geo:{
+    brand:'Hauptschulabschluss Bayern · Geometrie · mit Formelsammlung & Taschenrechner',
+    sub:'<b>Geometrie</b> – Pythagoras, Flächen, Kreis, Volumen &amp; Oberfläche. <b>Taschenrechner &amp; Formelsammlung erlaubt</b> (π ≈ 3,14, gerundet). Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Endgegner bei 10 Richtigen. Bereit?',
+    ph:'Antwort eingeben · z. B. 78,5',
+    hint:'Mit Taschenrechner · π ≈ 3,14 · auf 2 Dezimalen runden · Einheit weglassen'
+  },
+  mix:{
+    brand:'Hauptschulabschluss Bayern · Alles gemischt · überwiegend sehr schwer',
+    sub:'Der ultimative <b>Mix</b> aus allen vier Sektionen – <b>überwiegend sehr schwere</b> Aufgaben, jedes Mal neu zusammengewürfelt. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück kommt ein zufälliger Endgegner. Traust du dich, LOOIS?',
+    ph:'Antwort eingeben · Zahl, Bruch oder Dezimal',
+    hint:'Pro Aufgabe lesen: Gleichung/Prozent/Größe ohne Rechner · Geometrie mit Rechner & runden'
+  }
+};
+function setMode(m){
+  state.mode=m;
+  $('btnModeEq').classList.toggle('active',m==='gleich');
+  $('btnModeP').classList.toggle('active',m==='prozent');
+  $('btnModeG').classList.toggle('active',m==='groessen');
+  $('btnModeGeo').classList.toggle('active',m==='geo');
+  $('btnModeMix').classList.toggle('active',m==='mix');
+  const t=MODE_TXT[m];
+  $('ovSub').innerHTML=t.sub; $('brandSub').textContent=t.brand;
+  $('answer').placeholder=t.ph; $('eqHint').textContent=t.hint;
+  loadScoresLocal(); resetRound(); renderBoard();
+}
+$('btnModeEq').addEventListener('click',()=>setMode('gleich'));
+$('btnModeP').addEventListener('click',()=>setMode('prozent'));
+$('btnModeG').addEventListener('click',()=>setMode('groessen'));
+$('btnModeGeo').addEventListener('click',()=>setMode('geo'));
+$('btnModeMix').addEventListener('click',()=>setMode('mix'));
+
+$('dino').innerHTML=buildDino();
+$('playerDino').innerHTML=buildDino();
+$('ovDino').innerHTML=buildDino();
+initScores();   // lädt Punkte aus der Cloud (falls konfiguriert), sonst lokal
+/* Startseite anzeigen – erste Aufgabe wird erst nach dem Countdown freigegeben */
+</script>
+</body>
+</html>
