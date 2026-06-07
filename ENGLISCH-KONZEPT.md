@@ -213,7 +213,7 @@ Inhalt ist der Aufwandstreiber. Vorschlag in Stufen, jede für sich spielbar:
   - Satzbau: 22 Sätze (Aussagen, Fragen, Verneinungen).
   - UX: Countdown 3·2·1 nur am Rundenstart, dazwischen kurzes „LOS!"; Return/Enter löst Prüfen aus (nicht „weiter").
 - **Phase 2 ✅:** Grammatik-Templates (if-clauses I/II, passive, reported speech, relative clauses, modals, question tags) + **Satzbau** (Antworttyp `order`, Antipp-Bausteine).
-- **Phase 3:** **Leseverstehen** (Text-Bank) + **Englisch-Mix**.
+- **Phase 3 ✅:** **Leseverstehen** (`reading`) — eigener Button „Lesen", 7 kurze A2+-Texte (E-Mail, Aushang, Blog, Sachtext, Landeskunde …) mit Fragen (MC, richtig/falsch/nicht-im-Text, Detail-Tippantwort), längere SOLL-Zeit, eigenes Board/Filter. Englisch-Mix bleibt vorerst Vokabeln+Grammatik.
 - **Phase 4:** **Sprachmittlung** (Faktfragen).
 - **Phase 5 (zuletzt):** **Hörverstehen** (TTS + Fallbacks).
 - **Laufend:** Inhalte Richtung 1.850 Wörter ausbauen, eigene EN-Sprüche, Mix-Schieberegler, Fehler-Wiederholung.

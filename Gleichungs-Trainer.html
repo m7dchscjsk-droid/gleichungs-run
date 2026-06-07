@@ -266,6 +266,9 @@
   .shit-input{max-width:300px;}
   .shit-fb{font-family:var(--mono);font-size:14px;min-height:18px;font-weight:800;}
   .shit-fb.ok{color:var(--hi);} .shit-fb.no{color:var(--gold);}
+  /* Leseverstehen: Textpanel */
+  .engtext{text-align:left;font-size:15px;line-height:1.65;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px auto;max-width:560px;}
+  .engquestion{font-weight:800;font-size:clamp(16px,3.6vw,19px);color:var(--ink);margin:10px 0 2px;}
 </style>
 </head>
 <body>
@@ -306,6 +309,7 @@
         <div class="modepick" id="modepickEng" style="display:none">
           <button class="modebtn" id="btnModeVocab">Vokabeln</button>
           <button class="modebtn" id="btnModeGrammar">Grammatik</button>
+          <button class="modebtn" id="btnModeReading">Lesen</button>
           <button class="modebtn" id="btnModeEngMix">Mix</button>
         </div>
         <div class="ov-sub" id="ovSub">Knack die Gleichungen, halte deine <b>Serie</b> für AURA-Punkte und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück wartet der Endgegner. Bereit?</div>
@@ -737,6 +741,7 @@ function makeBoss(){
   if(state.mode==='mix'){ const bosses=[genBoss,genProzentBoss,genGroessenBoss,genGeoBoss]; for(let i=0;i<1500;i++){const p=pick(bosses)(); if(p)return p;} return makeProblem(); }
   if(state.mode==='vocab'){ return genVocBoss(); }
   if(state.mode==='grammar'){ return genGrammarBoss(); }
+  if(state.mode==='reading'){ return genReadingBoss(); }
   if(state.mode==='engmix'){ return genEngMixBoss(); }
   for(let i=0;i<1500;i++){const p=genBoss(); if(p)return p;} return makeProblem();
 }
@@ -755,8 +760,9 @@ const GENS=[
   {w:6,f:genMixedDecFrac},
 ];
 function makeProblem(){
-  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
   for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
+  if(state.mode==='reading'){ return genReading(); }
   if(state.mode==='vocab'||state.mode==='grammar'||state.mode==='engmix'){ return genVocEN2DE(); }
   // Notfall-Fallback
   if(state.mode==='prozent') return genProzentwert();
@@ -2155,6 +2161,70 @@ const ENGMIXGENS=[
 ];
 function genEngMixBoss(){ return Math.random()<0.5?genVocBoss():genGrammarBoss(); }
 
+/* ---------- LESEVERSTEHEN (Teil C) – kurze Texte + Fragen ---------- */
+const TF=['Richtig','Falsch','Nicht im Text'];
+const EN_TEXTS=[
+{title:'E-Mail · Ferienjob',level:'mittel',
+ text:"Hi Tom,<br>thanks for your email. We have a summer job at our café in Munich. You would work from Monday to Friday, 9 a.m. to 1 p.m. The pay is 11 euros per hour. You don't need experience, but you must be friendly and reliable. Please call me before Friday.<br>Best wishes, Mrs Brown",
+ qs:[
+  {q:'When would Tom work?',choices:['At the weekend','Monday to Friday','Only on Friday','Every evening'],ai:1},
+  {q:'Tom needs work experience for this job.',choices:TF,ai:1,ex:'Im Text: „You don’t need experience."'},
+  {q:'How much is the pay per hour? (nur die Zahl)',answer:'11',accept:['11','11 euros','€11','11€'],ex:'„11 euros per hour"'}
+ ]},
+{title:'Aushang · Schwimmbad',level:'mittel',
+ text:"CITY POOL — Opening hours: Monday to Friday 7 a.m.–8 p.m., Saturday 9 a.m.–6 p.m. Closed on Sundays. Tickets: adults £5, children £3. On Wednesdays, students pay only £2. Lockers cost £1.",
+ qs:[
+  {q:'When is the pool closed?',choices:['On Saturdays','On Sundays','On Mondays','Never'],ai:1},
+  {q:'How much do children pay? (nur die Zahl)',answer:'3',accept:['3','£3','3 pounds'],ex:'„children £3"'},
+  {q:'Students pay less on Wednesdays.',choices:TF,ai:0,ex:'„students pay only £2"'}
+ ]},
+{title:'Blog · School trip to York',level:'schwer',
+ text:"Last week our class went to York by train. The trip took three hours. First, we visited an old castle. After lunch, we walked through the city and saw the famous cathedral. It started to rain in the afternoon, so we went to a museum. Everyone was tired but happy. I want to go back next year!",
+ qs:[
+  {q:'How did the class travel to York?',choices:['By bus','By train','By car','By plane'],ai:1},
+  {q:'What did they do when it started to rain?',choices:['They went home','They went to a museum','They visited the castle','They had lunch'],ai:1},
+  {q:'The trip to York took two hours.',choices:TF,ai:1,ex:'„The trip took three hours."'}
+ ]},
+{title:'Text · Plastic and the sea',level:'schwer',
+ text:"Every year, millions of tons of plastic end up in the sea. Many animals think the plastic is food and eat it. This makes them ill. We can help: use fewer plastic bags, recycle bottles, and take your rubbish home after a day at the beach. Small steps can make a big difference.",
+ qs:[
+  {q:'Why is plastic dangerous for sea animals?',choices:['It is too cold','They eat it and get ill','It is too loud','They like the colour'],ai:1},
+  {q:'What should you do with your rubbish at the beach?',choices:['Leave it there','Take it home','Burn it','Give it to the animals'],ai:1},
+  {q:'Recycling bottles can help.',choices:TF,ai:0}
+ ]},
+{title:'Text · London',level:'mittel',
+ text:"London is the capital of the United Kingdom. About nine million people live there. The river Thames flows through the city. Tourists love the Tower of London, Big Ben and the big wheel called the London Eye. You can travel by the famous red buses or by the underground, which people call 'the Tube'.",
+ qs:[
+  {q:'Which river flows through London?',choices:['The Rhine','The Thames','The Seine','The Danube'],ai:1},
+  {q:'London is the capital of the USA.',choices:TF,ai:1},
+  {q:'What do people call the London underground?',answer:'the tube',accept:['the tube','tube'],ex:"„…the underground, which people call 'the Tube'."}
+ ]},
+{title:"Text · Mia's day",level:'schwer',
+ text:"Mia is fifteen and lives in Hamburg. On school days she gets up at half past six. She has breakfast with her brother and then cycles to school. After school she does her homework and plays volleyball twice a week. In the evening she likes watching series and chatting with friends online. At ten o'clock she goes to bed.",
+ qs:[
+  {q:'How does Mia get to school?',choices:['By bus','She cycles','She walks','By train'],ai:1},
+  {q:'How often does she play volleyball?',answer:'twice a week',accept:['twice a week','two times a week','twice'],ex:'„plays volleyball twice a week"'},
+  {q:'Mia goes to bed at eleven o’clock.',choices:TF,ai:1,ex:"„At ten o'clock she goes to bed."}
+ ]},
+{title:'Text · Phones at school',level:'schwer',
+ text:"At many schools, students are not allowed to use their phones during lessons. Teachers say phones can be a problem because students don't listen. But some people think phones can help: you can look up words or facts quickly. At our school, we can use phones only in the breaks. I think that is a fair rule.",
+ qs:[
+  {q:"When can students use phones at the writer's school?",choices:['During lessons','Only in the breaks','Never','All the time'],ai:1},
+  {q:'The writer thinks the rule is fair.',choices:TF,ai:0},
+  {q:'Why do some people think phones can help?',choices:['They are fun','You can look up words or facts','They are cheap','They make noise'],ai:1}
+ ]}
+];
+function readingEst(t){ const w=t.text.replace(/<[^>]+>/g,' ').split(/\s+/).length; return Math.min(150,Math.max(50,Math.round(w*0.8)+20)); }
+function readingPanel(t,qtext){ return '<div class="engq"><span class="ptype">Leseverstehen · '+t.title+'</span><div class="engtext">'+t.text+'</div><div class="engquestion">'+qtext+'</div></div>'; }
+function qToProb(t,q,boss){
+  const base={difficulty:(boss?'sehr schwer':(q.level||t.level||'mittel')),estSeconds:readingEst(t),isBoss:!!boss};
+  if(q.choices) return engProb(Object.assign(base,{kind:'choice',displayHTML:readingPanel(t,q.q),choices:q.choices,answerIndex:q.ai,explainHTML:q.ex||('Richtig: <b>'+q.choices[q.ai]+'</b>')}));
+  return engProb(Object.assign(base,{kind:'text',displayHTML:readingPanel(t,q.q),answer:q.answer,accept:q.accept||[q.answer],explainHTML:q.ex||('Antwort: <b>'+q.answer+'</b>')}));
+}
+function genReading(){ const t=pick(EN_TEXTS); return qToProb(t,pick(t.qs),false); }
+function genReadingBoss(){ const t=EN_TEXTS.slice().sort((a,b)=>b.text.length-a.text.length)[0]; return qToProb(t,pick(t.qs),true); }
+const READINGGENS=[{w:1,f:genReading}];
+
 /* ---------- Kesse Sprüche ---------- */
 const MSG={
   blitz:[
@@ -2323,7 +2393,7 @@ async function cloudPush(entry){
 }
 
 let scores=[];
-function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
 function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
 function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
 async function initScores(){
@@ -2736,6 +2806,12 @@ const MODE_TXT={
     ph:'richtige Form eingeben',
     hint:'Setze die richtige Form ein · Groß-/Kleinschreibung egal'
   },
+  reading:{
+    brand:'Quali Bayern · Englisch · Leseverstehen (Teil C)',
+    sub:'<b>Leseverstehen</b> – lies kurze englische Texte (E-Mails, Aushänge, Blogs) und beantworte Fragen dazu (Auswahl, richtig/falsch, Detail). Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Ready, LOOIS?',
+    ph:'kurze Antwort eingeben',
+    hint:'Erst den Text lesen, dann die Frage beantworten'
+  },
   engmix:{
     brand:'Quali Bayern · Englisch · Alles gemischt',
     sub:'Der <b>Englisch-Mix</b> aus Wortschatz und Grammatik, jedes Mal neu. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt ein zufälliger Endgegner. Ready, LOOIS?',
@@ -2743,7 +2819,7 @@ const MODE_TXT={
     hint:'Mal Vokabel, mal Grammatik – lies die Aufgabe genau'
   }
 };
-const ENG_MODES=['vocab','grammar','engmix'];
+const ENG_MODES=['vocab','grammar','reading','engmix'];
 function setMode(m){
   state.mode=m;
   $('btnModeEq').classList.toggle('active',m==='gleich');
@@ -2753,6 +2829,7 @@ function setMode(m){
   $('btnModeMix').classList.toggle('active',m==='mix');
   $('btnModeVocab').classList.toggle('active',m==='vocab');
   $('btnModeGrammar').classList.toggle('active',m==='grammar');
+  $('btnModeReading').classList.toggle('active',m==='reading');
   $('btnModeEngMix').classList.toggle('active',m==='engmix');
   const t=MODE_TXT[m];
   $('ovSub').innerHTML=nm(t.sub); $('brandSub').textContent=t.brand;
@@ -2781,6 +2858,7 @@ $('btnModeGeo').addEventListener('click',()=>setMode('geo'));
 $('btnModeMix').addEventListener('click',()=>setMode('mix'));
 $('btnModeVocab').addEventListener('click',()=>setMode('vocab'));
 $('btnModeGrammar').addEventListener('click',()=>setMode('grammar'));
+$('btnModeReading').addEventListener('click',()=>setMode('reading'));
 $('btnModeEngMix').addEventListener('click',()=>setMode('engmix'));
 $('subjMath').addEventListener('click',()=>setSubject('math'));
 $('subjEng').addEventListener('click',()=>setSubject('eng'));
@@ -2807,7 +2885,7 @@ $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); }
 
 /* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
 let boardView='own', classMetric='tasks', classFilter='all';
-const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['engmix','Eng-Mix']];
+const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['engmix','Eng-Mix']];
 function filterLabel(f){ const e=BOARD_FILTERS.find(x=>x[0]===f); return e?e[1]:'Alle'; }
 function renderClassFilters(){
   $('classFilters').innerHTML=BOARD_FILTERS.map(p=>'<button class="board-tab'+(p[0]===classFilter?' active':'')+'" data-f="'+p[0]+'">'+p[1]+'</button>').join('');
