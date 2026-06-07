@@ -256,6 +256,16 @@
   /* Klassen-Board: Themen-Filter */
   .board-filters{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px;}
   .board-filters .board-tab{font-size:10px;padding:5px 10px;}
+
+  /* SHITLIST (Wiederholung falscher Vokabeln) */
+  .ov-shit{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;max-width:420px;width:100%;padding:0 10px;}
+  .shit-title{font-size:30px;font-weight:900;letter-spacing:.12em;color:var(--gold);}
+  .shit-sub{font-family:var(--mono);font-size:13px;color:var(--muted);}
+  .shit-prog{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em;}
+  .shit-word{font-size:clamp(26px,6vw,40px);font-weight:800;color:var(--ink);line-height:1.2;}
+  .shit-input{max-width:300px;}
+  .shit-fb{font-family:var(--mono);font-size:14px;min-height:18px;font-weight:800;}
+  .shit-fb.ok{color:var(--hi);} .shit-fb.no{color:var(--gold);}
 </style>
 </head>
 <body>
@@ -310,6 +320,15 @@
           <button class="btn-ghost" id="ovLoesung">Lösungsweg</button>
           <button class="btn-start" id="ovWeiter">Weiter →</button>
         </div>
+      </div>
+      <div class="ov-shit" id="ovShit" style="display:none">
+        <div class="shit-title">💩 SHITLIST</div>
+        <div class="shit-sub" id="shitSub">Prüfen wir, ob du es dir gemerkt hast!</div>
+        <div class="shit-prog" id="shitProg"></div>
+        <div class="shit-word" id="shitWord"></div>
+        <input class="nm-input shit-input" id="shitInput" type="text" autocomplete="off" spellcheck="false" placeholder="auf Englisch …">
+        <div class="shit-fb" id="shitFb"></div>
+        <button class="btn-start" id="shitCheck">PRÜFEN</button>
       </div>
     </div>
     <div class="goal">
@@ -1414,6 +1433,7 @@ const EN_VOCAB=[
 {en:"training",de:"Schulung",topic:"jobs",level:"mittel",deAlt:["ausbildung"]},
 {en:"to work overtime",de:"Überstunden machen",topic:"jobs",level:"sehr schwer"},
 {en:"responsible",de:"verantwortlich",topic:"jobs",level:"schwer",deAlt:["zuständig"]},
+{en:"reliable",de:"zuverlässig",topic:"jobs",level:"mittel"},
 /* home */
 {en:"living room",de:"Wohnzimmer",topic:"home",level:"leicht"},
 {en:"bathroom",de:"Badezimmer",topic:"home",level:"leicht",deAlt:["bad"]},
@@ -1790,10 +1810,10 @@ function vPick(){ return pick(EN_VOCAB); }
 function vCap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 function genVocEN2DE(){ const e=vPick(); return engProb({difficulty:e.level,kind:'text',
   displayHTML:'<div class="engq"><span class="ptype">Vokabel · Englisch → Deutsch</span><div class="engword">'+e.en+'</div><div class="enghint">Wie heißt das auf Deutsch?</div></div>',
-  answer:e.de,accept:vAcceptDE(e),explainHTML:'<b>'+e.en+'</b> = '+e.de+' <span class="dim">· '+EN_TOPIC_DE[e.topic]+'</span>'}); }
+  answer:e.de,accept:vAcceptDE(e),vocabRef:e,explainHTML:'<b>'+e.en+'</b> = '+e.de+' <span class="dim">· '+EN_TOPIC_DE[e.topic]+'</span>'}); }
 function genVocDE2EN(){ const e=vPick(); return engProb({difficulty:e.level==='leicht'?'mittel':e.level,kind:'text',
   displayHTML:'<div class="engq"><span class="ptype">Vokabel · Deutsch → Englisch</span><div class="engword">'+vCap(e.de)+'</div><div class="enghint">What is this in English?</div></div>',
-  answer:e.en,accept:vAcceptEN(e),explainHTML:'<b>'+vCap(e.de)+'</b> = '+e.en+' <span class="dim">· '+EN_TOPIC_DE[e.topic]+'</span>'}); }
+  answer:e.en,accept:vAcceptEN(e),vocabRef:e,explainHTML:'<b>'+vCap(e.de)+'</b> = '+e.en+' <span class="dim">· '+EN_TOPIC_DE[e.topic]+'</span>'}); }
 function genVocMC(){ const e=vPick(); const en2de=Math.random()<0.6;
   const pool=EN_VOCAB.filter(x=>x.topic===e.topic&&x!==e); const distract=[];
   for(let i=0;i<60&&distract.length<3;i++){ const d=pick(pool.length?pool:EN_VOCAB); if(d!==e&&distract.indexOf(d)<0)distract.push(d); }
@@ -1801,16 +1821,16 @@ function genVocMC(){ const e=vPick(); const en2de=Math.random()<0.6;
   const q=en2de?e.en:vCap(e.de); const choices=opts.map(o=>en2de?o.de:o.en);
   return engProb({difficulty:e.level==='sehr schwer'?'schwer':(e.level==='leicht'?'leicht':'mittel'),kind:'choice',
     displayHTML:'<div class="engq"><span class="ptype">Vokabel · richtige Übersetzung wählen</span><div class="engword">'+q+'</div></div>',
-    choices:choices,answerIndex:ai,explainHTML:'<b>'+e.en+'</b> = '+e.de}); }
+    choices:choices,answerIndex:ai,vocabRef:e,explainHTML:'<b>'+e.en+'</b> = '+e.de}); }
 function genVocGap(){ const pool=EN_VOCAB.filter(x=>x.sentence); if(!pool.length)return null; const e=pick(pool);
   const sent=e.sentence.replace('___','<span class="gap">_____</span>');
   return engProb({difficulty:'schwer',kind:'text',
     displayHTML:'<div class="engq"><span class="ptype">Lücke · setze die passende Wendung ein</span><div class="engsent">'+sent+'</div><div class="enghint">('+e.de+')</div></div>',
-    answer:e.en,accept:vAcceptEN(e),explainHTML:e.sentence.replace('___','<u>'+e.en+'</u>')+' <span class="dim">· '+e.de+'</span>'}); }
+    answer:e.en,accept:vAcceptEN(e),vocabRef:e,explainHTML:e.sentence.replace('___','<u>'+e.en+'</u>')+' <span class="dim">· '+e.de+'</span>'}); }
 function genVocBoss(){ const pool=EN_VOCAB.filter(x=>x.level==='schwer'||x.level==='sehr schwer'); const e=pick(pool);
   return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
     displayHTML:'<div class="engq"><span class="ptype">★ ENDGEGNER · Vokabel-Sprint</span><div class="engword">'+vCap(e.de)+'</div><div class="enghint">Schreibe es auf Englisch!</div></div>',
-    answer:e.en,accept:vAcceptEN(e),explainHTML:'<b>'+vCap(e.de)+'</b> = '+e.en}); }
+    answer:e.en,accept:vAcceptEN(e),vocabRef:e,explainHTML:'<b>'+vCap(e.de)+'</b> = '+e.en}); }
 const VOCABGENS=[ {w:3,f:genVocEN2DE},{w:3,f:genVocDE2EN},{w:2,f:genVocMC},{w:1.2,f:genVocGap} ];
 
 /* ---------- Grammatik: Tabellen (Formen gespeichert = garantiert korrekt) ---------- */
@@ -2313,7 +2333,7 @@ async function initScores(){
   } else { loadScoresLocal(); }
   state.roundNo=scores.length+1; renderBoard(); updateStats();
 }
-function resetRound(){ state.points=0;state.aura=0;state.streak=0;state.solved=0;state.roundTime=0;state.peakStreak=0; roundDone=false; nextIsBoss=false; state.roundNo=scores.length+1; updateStats(); }
+function resetRound(){ state.points=0;state.aura=0;state.streak=0;state.solved=0;state.roundTime=0;state.peakStreak=0; roundDone=false; nextIsBoss=false; shitlist=[]; state.roundNo=scores.length+1; updateStats(); }
 
 const $=id=>document.getElementById(id);
 function fmt(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0');}
@@ -2403,7 +2423,7 @@ function wrongFeedback(msg){ const fb=$('feedback'); fb.className='feedback wron
 function checkChoice(i,btn){
   if(solvedThis)return;
   if(i===current.answerIndex){ if(btn)btn.classList.add('rightpick'); onCorrect(); }
-  else{ if(btn){btn.disabled=true; btn.classList.add('wrongpick');} wrongFeedback(); }
+  else{ if(btn){btn.disabled=true; btn.classList.add('wrongpick');} if(current.vocabRef)addShit(current.vocabRef); wrongFeedback(); }
 }
 let orderSel=[];   // Reihenfolge der angetippten Token-Indizes (Satzbau)
 function renderOrder(){
@@ -2427,7 +2447,7 @@ function checkAnswer(){
     const val=normalizeEN(inp.value);
     if(!val){ wrongFeedback('✗ Bitte tippe deine Antwort ein.'); return; }
     const ok=(current.accept||[current.answer]).some(a=>normalizeEN(a)===val);
-    if(ok) onCorrect(); else wrongFeedback();
+    if(ok) onCorrect(); else { if(current.vocabRef)addShit(current.vocabRef); wrongFeedback(); }
     return;
   }
   const ua=parseAnswer(inp.value);
@@ -2512,6 +2532,51 @@ function renderBoard(){
   ).join('');
 }
 
+/* ---------- SHITLIST: am Rundenende falsche Vokabeln wiederholen ---------- */
+let shitlist=[], shitQueue=[], shitTotal=0, shitDone=0, shitThen=null, shitCur=null, _win={};
+function addShit(e){ if(e && !shitlist.some(x=>x.en===e.en)) shitlist.push(e); }
+function startShitlist(then){
+  shitThen=then; shitQueue=shitlist.slice(); shitTotal=shitQueue.length; shitDone=0;
+  $('overlay').classList.remove('hidden');
+  $('ovStart').style.display='none'; $('ovCount').style.display='none'; $('ovResult').style.display='none';
+  $('ovShit').style.display='flex'; $('shitInput').style.display=''; $('shitCheck').disabled=false;
+  shitNext();
+}
+function shitNext(){
+  $('shitFb').textContent=''; $('shitFb').className='shit-fb';
+  if(!shitQueue.length){   // alles gemerkt
+    shitCur=null;
+    $('shitSub').textContent='Stark! Alles gemerkt. 💪';
+    $('shitProg').textContent=shitTotal+' / '+shitTotal+' richtig';
+    $('shitWord').textContent='✨ SHITLIST abgearbeitet ✨';
+    $('shitInput').style.display='none'; $('shitCheck').textContent='Weiter →';
+    return;
+  }
+  shitCur=shitQueue[0];
+  $('shitSub').textContent='Prüfen wir, ob du es dir gemerkt hast!';
+  $('shitProg').textContent='noch '+shitQueue.length+' · '+shitDone+'/'+shitTotal+' geschafft';
+  $('shitWord').textContent=vCap(shitCur.de);
+  $('shitInput').style.display=''; $('shitInput').value=''; $('shitCheck').textContent='PRÜFEN';
+  setTimeout(()=>$('shitInput').focus(),30);
+}
+function checkShit(){
+  if(!shitCur){ finishShit(); return; }   // "Weiter" nach Erfolg
+  const val=normalizeEN($('shitInput').value); if(!val){ $('shitInput').focus(); return; }
+  const ok=vAcceptEN(shitCur).some(a=>normalizeEN(a)===val);
+  if(ok){ shitQueue.shift(); shitDone++; if(soundOn)playRight(); $('shitFb').textContent='✓ richtig!'; $('shitFb').className='shit-fb ok'; setTimeout(shitNext,550); }
+  else { shitQueue.push(shitQueue.shift()); if(soundOn)playWrong(); $('shitFb').textContent='✗ richtig wäre: '+shitCur.en+' — kommt gleich nochmal!'; $('shitFb').className='shit-fb no'; setTimeout(shitNext,1300); }
+}
+function finishShit(){ shitlist=[]; $('ovShit').style.display='none'; $('shitInput').style.display=''; const t=shitThen; shitThen=null; if(t)t(); }
+function showWinOverlay(){
+  $('ovResult').className='ov-result win';
+  $('ovrSpruch').textContent=_win.title;
+  $('ovrStats').innerHTML=_win.stats;
+  $('ovrNote').textContent=_win.note;
+  $('ovWeiter').textContent='▶ Neue Runde';
+  $('ovShit').style.display='none';
+  $('overlay').classList.remove('hidden');
+  $('ovStart').style.display='none'; $('ovCount').style.display='none'; $('ovResult').style.display='flex';
+}
 function finishRound(viaBoss){
   roundDone=true; nextIsBoss=false;
   const prevBest = scores.length? Math.min.apply(null,scores.map(s=>s.tasks)) : null;
@@ -2536,19 +2601,19 @@ function finishRound(viaBoss){
     '<div class="res-msg">'+note+'</div>'+
     '<div class="res-time">'+(viaBoss?'Der Endgegner war dein Express-Ticket – Serie halten lohnt sich!':'Mit längeren Serien sammelst du AURA und erreichst die 1000 schneller.')+'</div>';
   $('btnNext').textContent='▶ Neue Runde';
-  // Overlay (Rundenende)
-  $('ovResult').className='ov-result win';
-  $('ovrSpruch').textContent=title;
-  $('ovrStats').innerHTML='<span class="pos">'+entry.pts+' Punkte</span><span>'+entry.tasks+' Aufgaben</span><span>Zeit '+fmt(entry.time)+'</span><span class="au">'+entry.aura+' AURA</span>';
-  $('ovrNote').textContent=note;
-  $('ovWeiter').textContent='▶ Neue Runde';
-  $('overlay').classList.remove('hidden');
-  $('ovStart').style.display='none'; $('ovCount').style.display='none'; $('ovResult').style.display='flex';
+  // Rundenende: Sieg-Overlay vorbereiten – bei falschen Vokabeln erst die SHITLIST
+  _win={ title:title,
+    stats:'<span class="pos">'+entry.pts+' Punkte</span><span>'+entry.tasks+' Aufgaben</span><span>Zeit '+fmt(entry.time)+'</span><span class="au">'+entry.aura+' AURA</span>',
+    note:note };
+  if(shitlist.length){ startShitlist(showWinOverlay); }
+  else { showWinOverlay(); }
 }
 
 $('btnCheck').addEventListener('click',checkAnswer);
 $('orderCheck').addEventListener('click',checkOrder);
 $('orderReset').addEventListener('click',()=>{ if(solvedThis)return; orderSel=[]; renderOrder(); });
+$('shitCheck').addEventListener('click',checkShit);
+$('shitInput').addEventListener('keydown',e=>{ if(e.key==='Enter') checkShit(); });
 /* Return/Enter löst IMMER nur das Prüfen aus (nie "weiter") */
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
@@ -2568,7 +2633,7 @@ function beep(f,dur){ if(!soundOn)return; const c=ac(); if(!c)return; tone(c.cur
 function bumpCount(){ const e=$('ovNum'); e.style.animation='none'; void e.offsetWidth; e.style.animation='pop .5s ease'; }
 function runCountdown(then,short){
   ac();
-  $('overlay').classList.remove('hidden');
+  $('overlay').classList.remove('hidden'); $('ovShit').style.display='none';
   $('ovStart').style.display='none'; $('ovResult').style.display='none'; $('ovCount').style.display='block';
   if(short){   // zwischen den Aufgaben: nur kurz "LOS!"
     $('ovNum').textContent='LOS!'; bumpCount(); beep(1150,0.28);
@@ -2593,6 +2658,7 @@ function showStart(){
   $('solution').className=''; $('btnSolution').textContent='Lösung zeigen';
   $('equation').innerHTML=''; $('steps').innerHTML='';
   $('choices').style.display='none'; $('orderbox').style.display='none'; $('answerbar').style.display='flex';
+  $('ovShit').style.display='none'; shitlist=[];
   $('bossBanner').className='bossbanner'; $('card').classList.remove('boss');
   $('track').classList.remove('over','paused'); $('timer').classList.remove('over');
   $('overlay').classList.remove('hidden');
