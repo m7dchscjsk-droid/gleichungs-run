@@ -342,51 +342,118 @@
   .row2.top1{background:linear-gradient(90deg,rgba(255,176,46,.16),transparent);}
   .row2.top1 .rk,.row2.top1 .pl,.row2.top1 .mv{color:var(--gold);}
   .row2.me{box-shadow:0 0 0 2px var(--blue) inset;}
+
+  /* ===== FORTNITE LAYOUT (Struktur) ===== */
+  .top{display:block;}
+  .topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid var(--line);border-radius:16px;padding:10px 14px;
+     background:linear-gradient(180deg,rgba(26,44,110,.85),rgba(16,28,74,.8));}
+  .lvl{display:flex;align-items:center;gap:12px;flex:1;min-width:230px;}
+  .lvbadge{position:relative;width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,var(--purple),var(--blue));
+     display:grid;place-items:center;color:#fff;font-family:var(--disp);font-weight:400;font-size:24px;box-shadow:0 5px 0 rgba(0,0,0,.28);}
+  .lvbadge .lvk{position:absolute;top:3px;left:6px;font-family:ui-sans-serif,system-ui;font-size:9px;font-weight:800;letter-spacing:.06em;opacity:.8;}
+  .lvmeta{flex:1;min-width:0;max-width:360px;}
+  .lvmeta .player{display:inline-flex;}
+  .xp{height:9px;border-radius:999px;background:#0c1640;border:1px solid var(--line);margin-top:6px;overflow:hidden;}
+  .xp i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .35s ease;}
+  .xptxt{font-size:11px;color:var(--muted);margin-top:3px;font-weight:600;letter-spacing:.02em;}
+  .coins{display:flex;gap:8px;}
+  .coin{display:flex;align-items:center;gap:8px;background:#0d1746;border:1px solid var(--line);border-radius:12px;padding:7px 12px;}
+  .coin .cic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#10130a;font-weight:900;}
+  .coin.cash .cic{background:var(--green);} .coin.aura .cic{background:var(--gold);}
+  .coin .val{font-family:var(--disp);font-weight:400;font-size:19px;}
+  .coin.cash .val{color:var(--green);} .coin.aura .val{color:var(--gold);}
+  .topicons{display:flex;gap:8px;}
+  .iconbtn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:#0d1746;display:grid;place-items:center;color:var(--muted);font-size:18px;cursor:pointer;}
+  .iconbtn:hover{border-color:var(--blue);color:var(--ink);}
+
+  /* Hero / Lobby */
+  .overlay{overflow:auto;align-items:safe center;}
+  .ov-start{display:block;width:100%;padding:20px;}
+  .hero2{display:grid;grid-template-columns:230px 1fr;gap:18px;max-width:720px;margin:0 auto;text-align:left;}
+  @media(max-width:640px){.hero2{grid-template-columns:1fr;}}
+  .charcard{position:relative;border-radius:16px;border:1px solid var(--line);padding:18px;min-height:210px;
+     background:radial-gradient(120% 80% at 50% 0,rgba(177,92,255,.4),transparent 60%),linear-gradient(180deg,#1a2c6e,#0c1640);
+     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+  .charcard .ov-dino{width:120px;height:112px;}
+  .ctag{font-family:var(--disp);font-weight:400;font-size:22px;letter-spacing:.02em;text-align:center;}
+  .crank{font-size:11px;color:var(--gold);font-weight:800;letter-spacing:.1em;text-transform:uppercase;}
+  .heroR{display:flex;flex-direction:column;gap:10px;min-width:0;}
+  .kicker{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);}
+  .herotitle{font-family:var(--disp);font-weight:400;font-size:clamp(34px,7vw,54px);line-height:.92;margin:0;color:#fff;
+     text-shadow:0 3px 0 #0a1230,0 0 30px rgba(39,182,255,.35);}
+  .heroR .subjectpick{justify-content:flex-start;margin:2px 0;}
+  .heroR .ov-sub{text-align:left;max-width:none;margin:0;}
+  /* Rarity-Modi-Karten */
+  .heroR .modepick{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;}
+  .modebtn{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;
+     padding:12px 12px 11px;border-radius:14px;border:2px solid var(--line);background:linear-gradient(180deg,#16245e,#0e1a48);}
+  .modebtn .mc-no{font-family:ui-sans-serif,system-ui;font-weight:800;font-size:11px;color:var(--dim);letter-spacing:.08em;}
+  .modebtn .mc-nm{font-family:var(--disp);font-weight:400;font-size:18px;letter-spacing:.02em;color:var(--ink);line-height:1.05;}
+  .modebtn:before{content:"";position:absolute;left:0;right:0;top:0;height:44%;opacity:.45;pointer-events:none;}
+  .modebtn.rare{border-color:var(--blue);} .modebtn.rare:before{background:radial-gradient(80% 100% at 50% 0,var(--blue),transparent);}
+  .modebtn.epic{border-color:var(--purple);} .modebtn.epic:before{background:radial-gradient(80% 100% at 50% 0,var(--purple),transparent);}
+  .modebtn.legend{border-color:var(--gold);} .modebtn.legend:before{background:radial-gradient(80% 100% at 50% 0,var(--gold),transparent);}
+  .modebtn:hover{transform:translateY(-3px);}
+  .modebtn.active{background:linear-gradient(180deg,#21357e,#13235c);box-shadow:0 0 0 2px #fff inset,0 10px 22px rgba(0,0,0,.45);transform:translateY(-2px);}
+  .modebtn.active .mc-nm{color:#fff;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand">
-      <h1 id="brandTitle">Gleichungs&nbsp;Run</h1>
-      <p id="brandSub">Hauptschulabschluss Bayern · nach x auflösen · ohne Taschenrechner</p>
-    </div>
-    <div class="stats">
-      <div class="player" id="playerChip" title="Name ändern"><span class="dico" id="playerDino"></span><span id="playerName">LOOIS</span></div>
-      <div class="chip stat-btn" id="btnMenu" title="Zurück zur Auswahl">↩ Auswahl</div>
-      <div class="chip"><span class="lbl">RUNDE</span><span class="val" id="stRound">1</span></div>
-      <div class="chip"><span class="lbl">PKT</span><span class="val" id="stPoints">0</span></div>
-      <div class="chip aura"><span class="lbl">AURA</span><span class="val" id="stAura">0</span></div>
-      <div class="chip"><span class="lbl">SERIE</span><span class="val" id="stStreak">0</span></div>
-      <div class="chip"><span class="lbl">OK</span><span class="val" id="stSolved">0</span></div>
-      <div class="chip stat-btn" id="btnSound" title="Sound an/aus"><span id="soundIco">♪</span></div>
+    <div class="topbar">
+      <div class="lvl">
+        <div class="lvbadge"><span class="lvk">LV</span><span id="stRound">1</span></div>
+        <div class="lvmeta">
+          <div class="player" id="playerChip" title="Name ändern"><span class="dico" id="playerDino"></span><span id="playerName">LOOIS</span></div>
+          <div class="xp"><i id="xpFill"></i></div>
+          <div class="xptxt"><span id="stSolved">0</span> gelöst · Serie <span id="stStreak">0</span></div>
+        </div>
+      </div>
+      <div class="coins">
+        <div class="coin cash"><span class="cic">$</span><span class="val" id="stPoints">0</span></div>
+        <div class="coin aura"><span class="cic">✦</span><span class="val" id="stAura">0</span></div>
+      </div>
+      <div class="topicons">
+        <div class="iconbtn stat-btn" id="btnMenu" title="Zurück zur Auswahl">↩</div>
+        <div class="iconbtn stat-btn" id="btnSound" title="Sound an/aus"><span id="soundIco">♪</span></div>
+      </div>
     </div>
   </header>
 
   <main class="card" id="card">
     <div class="overlay" id="overlay">
       <div class="ov-start" id="ovStart">
-        <div class="ov-dino" id="ovDino"></div>
-        <div class="ov-title" id="ovTitle">Servus, LOOIS!</div>
-        <div class="subjectpick">
-          <button class="subjbtn active" id="subjMath">📐 Mathe</button>
-          <button class="subjbtn" id="subjEng">🇬🇧 Englisch</button>
+        <div class="hero2">
+          <div class="charcard">
+            <div class="ov-dino" id="ovDino"></div>
+            <div class="ctag" id="ovTitle">Servus, LOOIS!</div>
+            <div class="crank">Quali Bayern · Online</div>
+          </div>
+          <div class="heroR">
+            <div class="kicker" id="brandSub">Hauptschulabschluss Bayern · nach x auflösen · ohne Taschenrechner</div>
+            <h1 class="herotitle" id="brandTitle">Gleichungs&nbsp;Run</h1>
+            <div class="subjectpick">
+              <button class="subjbtn active" id="subjMath">📐 Mathe</button>
+              <button class="subjbtn" id="subjEng">🇬🇧 Englisch</button>
+            </div>
+            <div class="modepick" id="modepickMath">
+              <button class="modebtn rare active" id="btnModeEq"><span class="mc-no">01</span><span class="mc-nm">Gleichungen</span></button>
+              <button class="modebtn rare" id="btnModeP"><span class="mc-no">02</span><span class="mc-nm">Prozent</span></button>
+              <button class="modebtn epic" id="btnModeG"><span class="mc-no">03</span><span class="mc-nm">Größen</span></button>
+              <button class="modebtn epic" id="btnModeGeo"><span class="mc-no">04</span><span class="mc-nm">Geometrie</span></button>
+              <button class="modebtn legend" id="btnModeMix"><span class="mc-no">05</span><span class="mc-nm">Mix</span></button>
+            </div>
+            <div class="modepick" id="modepickEng" style="display:none">
+              <button class="modebtn rare" id="btnModeVocab"><span class="mc-no">01</span><span class="mc-nm">Vokabeln</span></button>
+              <button class="modebtn epic" id="btnModeGrammar"><span class="mc-no">02</span><span class="mc-nm">Grammatik</span></button>
+              <button class="modebtn epic" id="btnModeReading"><span class="mc-no">03</span><span class="mc-nm">Lesen</span></button>
+              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">04</span><span class="mc-nm">Mix</span></button>
+            </div>
+            <div class="ov-sub" id="ovSub">Knack die Gleichungen, halte deine <b>Serie</b> für AURA-Punkte und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück wartet der Endgegner. Bereit?</div>
+            <button class="btn-start" id="btnStart">▶ Start</button>
+          </div>
         </div>
-        <div class="modepick" id="modepickMath">
-          <button class="modebtn active" id="btnModeEq">Gleichungen</button>
-          <button class="modebtn" id="btnModeP">Prozent</button>
-          <button class="modebtn" id="btnModeG">Größen</button>
-          <button class="modebtn" id="btnModeGeo">Geometrie</button>
-          <button class="modebtn" id="btnModeMix">Mix</button>
-        </div>
-        <div class="modepick" id="modepickEng" style="display:none">
-          <button class="modebtn" id="btnModeVocab">Vokabeln</button>
-          <button class="modebtn" id="btnModeGrammar">Grammatik</button>
-          <button class="modebtn" id="btnModeReading">Lesen</button>
-          <button class="modebtn" id="btnModeEngMix">Mix</button>
-        </div>
-        <div class="ov-sub" id="ovSub">Knack die Gleichungen, halte deine <b>Serie</b> für AURA-Punkte und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück wartet der Endgegner. Bereit?</div>
-        <button class="btn-start" id="btnStart">START</button>
       </div>
       <div class="ov-count" id="ovCount" style="display:none"><span id="ovNum">3</span></div>
       <div class="ov-result" id="ovResult" style="display:none">
@@ -2501,6 +2568,7 @@ function parseAnswer(str){
 
 function loadProblem(){
   current = nextIsBoss ? makeBoss() : makeProblem();
+  $('card').style.minHeight='';   // Lobby-Höhe zurücksetzen, sobald gespielt wird
   nextIsBoss=false;
   solvedThis=false; peeked=false; warned=false;
   state.taskNum++; $('taskNum').textContent=state.taskNum;
@@ -2654,6 +2722,7 @@ function updateStats(){
   const pc=Math.max(0,Math.min(100,state.points/GOAL*100));
   const ac=Math.max(0,Math.min(100,state.aura/GOAL*100));
   $('goalFill').style.width=pc+'%'; $('goalAura').style.width=ac+'%';
+  { const xf=$('xpFill'); if(xf) xf.style.width=pc+'%'; }   // XP-Leiste im HUD = Fortschritt zum Ziel
   $('goalTxt').innerHTML='<b>'+Math.max(0,state.points)+'</b> / '+GOAL;
   $('goalAuraTxt').textContent = state.aura>0 ? ('davon '+state.aura+' AURA') : '';
 }
@@ -2807,8 +2876,11 @@ function showStart(){
   $('bossBanner').className='bossbanner'; $('card').classList.remove('boss');
   $('track').classList.remove('over','paused'); $('timer').classList.remove('over');
   $('overlay').classList.remove('hidden');
-  $('ovResult').style.display='none'; $('ovCount').style.display='none'; $('ovStart').style.display='flex';
+  $('ovResult').style.display='none'; $('ovCount').style.display='none'; $('ovStart').style.display='block';
+  fitLobby();
 }
+function fitLobby(){ try{ if($('overlay').classList.contains('hidden'))return; if($('ovStart').style.display==='none')return; const h=$('ovStart').scrollHeight; if(h>0) $('card').style.minHeight=(h+44)+'px'; }catch(e){} }
+window.addEventListener('resize',()=>{ fitLobby(); });
 function startGame(){ runCountdown(loadProblem); }   // Rundenstart: voller Countdown
 function goNext(){
   if(roundDone){ resetRound(); $('btnNext').textContent='Nächste Aufgabe →'; runCountdown(loadProblem); }   // neue Runde: voller Countdown
@@ -2910,14 +2982,14 @@ function setMode(m){
   $('ovSub').innerHTML=nm(t.sub); $('brandSub').textContent=t.brand;
   $('brandTitle').innerHTML = ENG_MODES.indexOf(m)>=0 ? 'English&nbsp;Run' : 'Gleichungs&nbsp;Run';
   $('answer').placeholder=t.ph; $('eqHint').textContent=t.hint;
-  resetRound(); reloadScores();
+  resetRound(); reloadScores(); fitLobby();
 }
 function setSubject(s){
   const eng=(s==='eng');
   $('subjMath').classList.toggle('active',!eng);
   $('subjEng').classList.toggle('active',eng);
-  $('modepickMath').style.display=eng?'none':'flex';
-  $('modepickEng').style.display=eng?'flex':'none';
+  $('modepickMath').style.display=eng?'none':'';
+  $('modepickEng').style.display=eng?'':'none';
   setMode(eng?'vocab':'gleich');
 }
 function reloadScores(){
@@ -3020,6 +3092,7 @@ applyPlayerName();
 initScores();   // lädt Punkte aus der Cloud (falls konfiguriert), sonst lokal
 setBoardView('class');   // Startseite: sofort das Klassen-Board (alle Spieler, alle Themen) zeigen
 (function(){ let hasName=false; try{ hasName=!!(localStorage.getItem(NAME_KEY)||'').trim(); }catch(e){} if(!hasName) openNameModal(); })();
+requestAnimationFrame(fitLobby); setTimeout(fitLobby,300);   // Lobby-Höhe initial einpassen
 /* Startseite anzeigen – erste Aufgabe wird erst nach dem Countdown freigegeben */
 </script>
 </body>
