@@ -252,6 +252,10 @@
   .orderactions{display:flex;gap:10px;margin-top:14px;}
   .orderactions .btn-ghost{flex:0 0 auto;min-width:0;padding:12px 18px;}
   .orderactions .btn-check{flex:1;}
+
+  /* Klassen-Board: Themen-Filter */
+  .board-filters{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px;}
+  .board-filters .board-tab{font-size:10px;padding:5px 10px;}
 </style>
 </head>
 <body>
@@ -371,6 +375,7 @@
       <div class="board-list" id="boardList"></div>
     </div>
     <div id="classBoard" style="display:none">
+      <div class="board-filters" id="classFilters"></div>
       <div class="board-tabs">
         <button class="board-tab active" id="metricTasks">Beste Runde</button>
         <button class="board-tab" id="metricAura">AURA</button>
@@ -1570,7 +1575,7 @@ const EN_VOCAB=[
 {en:"university",de:"Universität",topic:"school",level:"schwer",deAlt:["uni"]},
 {en:"blackboard",de:"Tafel",topic:"school",level:"mittel"},
 {en:"to copy",de:"abschreiben",topic:"school",level:"schwer",deAlt:["kopieren"]},
-{en:"schoolbag",de:"Schultasche",topic:"school",level:"mittel",deAlt:["ranzen"]},
+{en:"schoolbag",de:"Schultasche",topic:"school",level:"mittel",deAlt:["ranzen"],enAlt:["school bag","satchel"]},
 /* jobs */
 {en:"boss",de:"Chef",topic:"jobs",level:"leicht"},
 {en:"company",de:"Firma",topic:"jobs",level:"mittel",deAlt:["unternehmen"]},
@@ -2288,7 +2293,8 @@ async function cloudFetch(){
   const r=await fetch(url,{headers:cloudHeaders()}); if(!r.ok) throw new Error('GET '+r.status); return await r.json();
 }
 async function cloudFetchAll(mode){
-  const url=SUPABASE_URL+'/rest/v1/scores?mode=eq.'+encodeURIComponent(mode)+'&select=player,tasks,time,aura,peak,boss,ts&order=ts.asc';
+  const base=SUPABASE_URL+'/rest/v1/scores?select=player,mode,tasks,time,aura,peak,boss,ts&order=ts.asc';
+  const url=(!mode||mode==='all') ? base : base+'&mode=eq.'+encodeURIComponent(mode);
   const r=await fetch(url,{headers:cloudHeaders()}); if(!r.ok) throw new Error('GET '+r.status); return await r.json();
 }
 async function cloudPush(entry){
@@ -2372,6 +2378,7 @@ function loadProblem(){
   $('result').className=''; $('result').innerHTML='';
   $('feedback').className='feedback'; $('feedback').textContent='';
   const inp=$('answer'); inp.value=''; inp.disabled=false; $('btnCheck').disabled=false;
+  $('orderCheck').disabled=false; $('orderReset').disabled=false;
   $('track').classList.remove('paused','over'); $('timer').classList.remove('over'); $('overhint').textContent='';
   $('runner').style.left='0%'; $('railFill').style.width='0%';
   updateDino(); updateStats();
@@ -2733,15 +2740,22 @@ $('nameSave').addEventListener('click',saveName);
 $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); });
 
 /* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
-let boardView='own', classMetric='tasks';
+let boardView='own', classMetric='tasks', classFilter='all';
+const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['engmix','Eng-Mix']];
+function filterLabel(f){ const e=BOARD_FILTERS.find(x=>x[0]===f); return e?e[1]:'Alle'; }
+function renderClassFilters(){
+  $('classFilters').innerHTML=BOARD_FILTERS.map(p=>'<button class="board-tab'+(p[0]===classFilter?' active':'')+'" data-f="'+p[0]+'">'+p[1]+'</button>').join('');
+  $('classFilters').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setClassFilter(b.dataset.f)));
+}
+function setClassFilter(f){ classFilter=f; renderClassFilters(); renderSharedBoard(); }
 function setBoardView(v){
   boardView=v;
   $('tabOwn').classList.toggle('active',v==='own');
   $('tabClass').classList.toggle('active',v==='class');
   $('ownBoard').style.display=(v==='own')?'':'none';
   $('classBoard').style.display=(v==='class')?'':'none';
-  $('boardTitle').textContent=(v==='class')?'Klassen-Board · alle Spieler':'Scoreboard · Runden bis 1000';
-  if(v==='class') renderSharedBoard();
+  if(v==='class'){ renderClassFilters(); renderSharedBoard(); }
+  else { $('boardTitle').textContent='Scoreboard · Runden bis 1000'; }
 }
 function setMetric(m){ classMetric=m; $('metricTasks').classList.toggle('active',m==='tasks'); $('metricAura').classList.toggle('active',m==='aura'); renderSharedBoard(); }
 $('tabOwn').addEventListener('click',()=>setBoardView('own'));
@@ -2765,7 +2779,7 @@ function aggregateClass(raw){
 }
 function renderClassRows(rows){
   const list=$('classList');
-  if(!rows.length){ list.innerHTML='<div class="board-empty">Noch keine Ergebnisse in diesem Modus.</div>'; return; }
+  if(!rows.length){ list.innerHTML='<div class="board-empty">Noch keine Ergebnisse – sei die/der Erste!</div>'; return; }
   list.innerHTML=rows.map((r,i)=>{
     const me=(r.player===PLAYER)?' me':''; const top=(i===0)?' top1':'';
     const main = classMetric==='tasks'
@@ -2775,12 +2789,14 @@ function renderClassRows(rows){
   }).join('');
 }
 function renderSharedBoard(){
-  $('classCap').textContent = classMetric==='tasks'
-    ? 'Beste Runde je Spieler · wenigste Aufgaben (dann schnellste Zeit)'
-    : 'Höchste AURA je Spieler';
+  const scope = classFilter==='all' ? 'alle Themen' : filterLabel(classFilter);
+  $('boardTitle').textContent='Klassen-Board · '+scope;
+  $('classCap').textContent = (classMetric==='tasks'
+    ? 'Beste Runde je Spieler · wenigste Aufgaben (dann Zeit)'
+    : 'Höchste AURA je Spieler') + ' · ' + scope;
   if(!CLOUD){ $('classList').innerHTML='<div class="board-empty">Gemeinsames Board ist erst nach der Cloud-Einrichtung aktiv.</div>'; return; }
   $('classList').innerHTML='<div class="board-empty">Lade …</div>';
-  cloudFetchAll(state.mode).then(raw=>{ renderClassRows(aggregateClass(raw)); })
+  cloudFetchAll(classFilter).then(raw=>{ renderClassRows(aggregateClass(raw)); })
     .catch(e=>{ console.warn('Klassen-Board-Fehler:',e); $('classList').innerHTML='<div class="board-empty">Konnte das Board gerade nicht laden.</div>'; });
 }
 
@@ -2789,6 +2805,7 @@ $('playerDino').innerHTML=buildDino();
 $('ovDino').innerHTML=buildDino();
 applyPlayerName();
 initScores();   // lädt Punkte aus der Cloud (falls konfiguriert), sonst lokal
+setBoardView('class');   // Startseite: sofort das Klassen-Board (alle Spieler, alle Themen) zeigen
 (function(){ let hasName=false; try{ hasName=!!(localStorage.getItem(NAME_KEY)||'').trim(); }catch(e){} if(!hasName) openNameModal(); })();
 /* Startseite anzeigen – erste Aufgabe wird erst nach dem Countdown freigegeben */
 </script>
