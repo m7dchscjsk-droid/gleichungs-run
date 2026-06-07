@@ -2141,7 +2141,7 @@ const GRAMMARGENS=[
   {w:1.2,f:genComparative},{w:1,f:genSuperlative},{w:1.2,f:genPlural},{w:1,f:genArticle},
   /* Phase 2 */
   {w:1.6,f:genIfClause},{w:1.4,f:genPassive},{w:1.4,f:genReported},{w:1.2,f:genRelative},
-  {w:1.4,f:genModal},{w:1.2,f:genTag},{w:1.4,f:genOrder}
+  {w:1.4,f:genModal},{w:1.2,f:genTag},{w:4.5,f:genOrder}
 ];
 
 /* ---------- Englisch-Mix ---------- */
@@ -2150,7 +2150,7 @@ const ENGMIXGENS=[
   {w:2,f:genTensePast},{w:1.5,f:genTensePerfect},{w:1.2,f:genThirdPerson},{w:1.2,f:genComparative},
   {w:1.2,f:genFutureWill},{w:1,f:genPlural},{w:1,f:genProgressive},{w:0.8,f:genArticle},
   {w:1.3,f:genIfClause},{w:1.1,f:genPassive},{w:1.1,f:genReported},{w:1,f:genRelative},
-  {w:1.1,f:genModal},{w:1,f:genTag},{w:1.2,f:genOrder},
+  {w:1.1,f:genModal},{w:1,f:genTag},{w:2.5,f:genOrder},
   {w:1,f:genFutureGoingTo},{w:1.1,f:genPastNegative},{w:0.9,f:genSinceFor}
 ];
 function genEngMixBoss(){ return Math.random()<0.5?genVocBoss():genGrammarBoss(); }
