@@ -216,6 +216,29 @@
   .lbrow .mv{color:var(--ink);font-weight:800;}
   .lbrow.me{outline:1px solid var(--hi);outline-offset:-1px;}
   .lbrow.top1 .rk,.lbrow.top1 .mv,.lbrow.top1 .pl{color:var(--gold);}
+
+  /* Fach-Umschalter (Mathe/Englisch) */
+  .subjectpick{display:flex;gap:8px;justify-content:center;margin-bottom:6px;}
+  .subjbtn{font-weight:800;padding:8px 18px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;font-size:14px;letter-spacing:.02em;}
+  .subjbtn.active{background:var(--gold);color:#000;border-color:var(--gold);}
+
+  /* Englisch: Multiple-Choice */
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px;}
+  .choicebtn{padding:15px 16px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s,opacity .15s;}
+  .choicebtn:hover{border-color:var(--hi);}
+  .choicebtn.wrongpick{opacity:.45;border-color:var(--muted);text-decoration:line-through;cursor:default;}
+  .choicebtn.rightpick{background:var(--hi);color:#000;border-color:var(--hi);}
+
+  /* Englisch: Aufgaben-Darstellung */
+  .engq{text-align:center;}
+  .engword{font-size:clamp(26px,6vw,42px);font-weight:800;color:var(--ink);margin:10px 0 6px;line-height:1.2;}
+  .engsent{font-size:clamp(19px,4.4vw,27px);line-height:1.55;color:var(--ink);margin:10px 0 6px;font-weight:600;}
+  .enghint{font-size:13px;color:var(--muted);font-family:var(--mono);}
+  .gap{color:var(--gold);font-weight:800;letter-spacing:1px;}
+  .engsol{font-family:var(--mono);font-size:14px;color:var(--ink);line-height:1.6;text-align:left;}
+  .engrule{color:var(--muted);margin-bottom:5px;}
+  .engsol-line{color:var(--gold);font-weight:800;}
+  .dim{color:var(--dim);}
 </style>
 </head>
 <body>
@@ -242,12 +265,21 @@
       <div class="ov-start" id="ovStart">
         <div class="ov-dino" id="ovDino"></div>
         <div class="ov-title" id="ovTitle">Servus, LOOIS!</div>
-        <div class="modepick">
+        <div class="subjectpick">
+          <button class="subjbtn active" id="subjMath">📐 Mathe</button>
+          <button class="subjbtn" id="subjEng">🇬🇧 Englisch</button>
+        </div>
+        <div class="modepick" id="modepickMath">
           <button class="modebtn active" id="btnModeEq">Gleichungen</button>
           <button class="modebtn" id="btnModeP">Prozent</button>
           <button class="modebtn" id="btnModeG">Größen</button>
           <button class="modebtn" id="btnModeGeo">Geometrie</button>
           <button class="modebtn" id="btnModeMix">Mix</button>
+        </div>
+        <div class="modepick" id="modepickEng" style="display:none">
+          <button class="modebtn" id="btnModeVocab">Vokabeln</button>
+          <button class="modebtn" id="btnModeGrammar">Grammatik</button>
+          <button class="modebtn" id="btnModeEngMix">Mix</button>
         </div>
         <div class="ov-sub" id="ovSub">Knack die Gleichungen, halte deine <b>Serie</b> für AURA-Punkte und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück wartet der Endgegner. Bereit?</div>
         <button class="btn-start" id="btnStart">START</button>
@@ -288,10 +320,11 @@
       <div id="equation"></div>
     </div>
 
-    <div class="answerbar">
+    <div class="answerbar" id="answerbar">
       <input class="answer" id="answer" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="x = ?   z. B. 7/4 oder 1,75">
       <button class="btn-check" id="btnCheck">PRÜFEN</button>
     </div>
+    <div class="choices" id="choices" style="display:none"></div>
     <div class="feedback" id="feedback"></div>
     <div class="eqhint" id="eqHint">Bruch als 3/4 · Dezimal mit Komma 1,75 · negativ mit − oder -</div>
 
@@ -660,6 +693,9 @@ function makeBoss(){
   if(state.mode==='groessen'){ for(let i=0;i<1500;i++){const p=genGroessenBoss(); if(p)return p;} return makeProblem(); }
   if(state.mode==='geo'){ for(let i=0;i<1500;i++){const p=genGeoBoss(); if(p)return p;} return makeProblem(); }
   if(state.mode==='mix'){ const bosses=[genBoss,genProzentBoss,genGroessenBoss,genGeoBoss]; for(let i=0;i<1500;i++){const p=pick(bosses)(); if(p)return p;} return makeProblem(); }
+  if(state.mode==='vocab'){ return genVocBoss(); }
+  if(state.mode==='grammar'){ return genGrammarBoss(); }
+  if(state.mode==='engmix'){ return genEngMixBoss(); }
   for(let i=0;i<1500;i++){const p=genBoss(); if(p)return p;} return makeProblem();
 }
 
@@ -677,8 +713,9 @@ const GENS=[
   {w:6,f:genMixedDecFrac},
 ];
 function makeProblem(){
-  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : GENS;
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
   for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
+  if(state.mode==='vocab'||state.mode==='grammar'||state.mode==='engmix'){ return genVocEN2DE(); }
   // Notfall-Fallback
   if(state.mode==='prozent') return genProzentwert();
   if(state.mode==='groessen'){ for(let i=0;i<400;i++){const p=genConvert('laenge'); if(p)return p;} }
@@ -1147,6 +1184,379 @@ const MIXGENS=[
   {w:0.8,f:genProzentsatz},{w:0.8,f:genPythagoras},{w:0.6,f:genDreieck},
 ];
 
+/* =========================================================================
+   ENGLISCH-RUN — Quali Bayern (A2+) · Phase 1: Vokabeln + Grammatik (generiert)
+   Inhaltsgetrieben: kuratierte Listen + regelbasierte Generatoren.
+   Antwort: kind:'text' (String-Vergleich gegen accept) oder kind:'choice' (MC).
+   ========================================================================= */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;} return a; }
+function normalizeEN(s){ return (s||'').toLowerCase().trim().replace(/[’‘`´]/g,"'").replace(/[“”]/g,'"').replace(/\s+/g,' ').replace(/[.!?]+$/,''); }
+function engEst(diff){ const b={'leicht':22,'mittel':30,'schwer':42,'sehr schwer':55}[diff]||30; return Math.max(15,b+rndInt(-5,8)); }
+function engProb(o){ o.eng=true; o.engText=(o.kind!=='choice'); if(o.estSeconds==null) o.estSeconds=o.isBoss?90:engEst(o.difficulty); o.steps=o.steps||[]; if(o.isBoss)o.difficulty='sehr schwer'; return o; }
+const EN_TOPIC_DE={school:'Schule',jobs:'Beruf',home:'Zuhause',food:'Essen & Einkauf',clothes:'Kleidung',body:'Körper & Gesundheit',family:'Familie & Leute',feelings:'Gefühle & Charakter',freetime:'Freizeit & Sport',travel:'Reisen & Verkehr',nature:'Natur & Umwelt',tech:'Technik & Medien',town:'Stadt & Orte',time:'Zeit & Datum',verbs:'Verben',adjectives:'Adjektive',phrases:'Wendungen'};
+
+/* ---------- Vokabel-Liste (A2+, alle Quali-Themen; erweiterbar) ---------- */
+const EN_VOCAB=[
+/* school / Bildung */
+{en:"teacher",de:"Lehrer",topic:"school",level:"leicht"},
+{en:"pupil",de:"Schüler",topic:"school",level:"leicht",enAlt:["student"]},
+{en:"homework",de:"Hausaufgabe",topic:"school",level:"leicht",deAlt:["hausaufgaben"]},
+{en:"subject",de:"Schulfach",topic:"school",level:"mittel",deAlt:["fach"]},
+{en:"exam",de:"Prüfung",topic:"school",level:"mittel",enAlt:["test"]},
+{en:"mark",de:"Note",topic:"school",level:"mittel",enAlt:["grade"]},
+{en:"to pass",de:"bestehen",topic:"school",level:"schwer"},
+{en:"to fail",de:"durchfallen",topic:"school",level:"schwer"},
+{en:"timetable",de:"Stundenplan",topic:"school",level:"mittel"},
+{en:"certificate",de:"Zeugnis",topic:"school",level:"schwer"},
+{en:"to learn",de:"lernen",topic:"school",level:"leicht"},
+{en:"knowledge",de:"Wissen",topic:"school",level:"schwer"},
+/* jobs / Beruf & Bewerbung */
+{en:"job",de:"Arbeit",topic:"jobs",level:"leicht",deAlt:["job","stelle"]},
+{en:"to apply for",de:"sich bewerben um",topic:"jobs",level:"schwer",deAlt:["bewerben"],sentence:"I want to ___ ___ a job at the bakery."},
+{en:"application",de:"Bewerbung",topic:"jobs",level:"schwer"},
+{en:"interview",de:"Vorstellungsgespräch",topic:"jobs",level:"schwer",deAlt:["interview"]},
+{en:"employer",de:"Arbeitgeber",topic:"jobs",level:"schwer"},
+{en:"employee",de:"Arbeitnehmer",topic:"jobs",level:"schwer",deAlt:["angestellter"]},
+{en:"salary",de:"Gehalt",topic:"jobs",level:"schwer",enAlt:["wage"],deAlt:["lohn"]},
+{en:"experience",de:"Erfahrung",topic:"jobs",level:"mittel"},
+{en:"to earn",de:"verdienen",topic:"jobs",level:"mittel"},
+{en:"colleague",de:"Kollege",topic:"jobs",level:"schwer"},
+{en:"apprenticeship",de:"Ausbildung",topic:"jobs",level:"sehr schwer",deAlt:["lehre"]},
+{en:"skill",de:"Fähigkeit",topic:"jobs",level:"mittel",deAlt:["kompetenz"]},
+{en:"nurse",de:"Krankenpfleger",topic:"jobs",level:"mittel",deAlt:["krankenschwester","pfleger"]},
+/* home / Alltag */
+{en:"flat",de:"Wohnung",topic:"home",level:"leicht",enAlt:["apartment"]},
+{en:"kitchen",de:"Küche",topic:"home",level:"leicht"},
+{en:"bedroom",de:"Schlafzimmer",topic:"home",level:"leicht"},
+{en:"furniture",de:"Möbel",topic:"home",level:"mittel"},
+{en:"rent",de:"Miete",topic:"home",level:"mittel"},
+{en:"neighbour",de:"Nachbar",topic:"home",level:"mittel",enAlt:["neighbor"]},
+{en:"to clean",de:"putzen",topic:"home",level:"leicht",deAlt:["sauber machen","reinigen"]},
+{en:"to tidy up",de:"aufräumen",topic:"home",level:"mittel"},
+{en:"key",de:"Schlüssel",topic:"home",level:"leicht"},
+{en:"garden",de:"Garten",topic:"home",level:"leicht"},
+/* food / Essen & Einkauf */
+{en:"breakfast",de:"Frühstück",topic:"food",level:"leicht"},
+{en:"meal",de:"Mahlzeit",topic:"food",level:"mittel",deAlt:["essen"]},
+{en:"vegetable",de:"Gemüse",topic:"food",level:"mittel"},
+{en:"fruit",de:"Obst",topic:"food",level:"leicht",deAlt:["frucht"]},
+{en:"to buy",de:"kaufen",topic:"food",level:"leicht"},
+{en:"cheap",de:"billig",topic:"food",level:"leicht",deAlt:["günstig"]},
+{en:"expensive",de:"teuer",topic:"food",level:"mittel"},
+{en:"to order",de:"bestellen",topic:"food",level:"mittel"},
+{en:"bill",de:"Rechnung",topic:"food",level:"mittel"},
+{en:"shop",de:"Geschäft",topic:"food",level:"leicht",enAlt:["store"],deAlt:["laden"]},
+/* clothes */
+{en:"clothes",de:"Kleidung",topic:"clothes",level:"leicht",deAlt:["kleider"]},
+{en:"shoes",de:"Schuhe",topic:"clothes",level:"leicht"},
+{en:"jacket",de:"Jacke",topic:"clothes",level:"leicht"},
+{en:"trousers",de:"Hose",topic:"clothes",level:"mittel",enAlt:["pants"]},
+{en:"to wear",de:"tragen",topic:"clothes",level:"mittel"},
+{en:"size",de:"Größe",topic:"clothes",level:"mittel"},
+/* body / health */
+{en:"head",de:"Kopf",topic:"body",level:"leicht"},
+{en:"hand",de:"Hand",topic:"body",level:"leicht"},
+{en:"healthy",de:"gesund",topic:"body",level:"mittel"},
+{en:"ill",de:"krank",topic:"body",level:"leicht",enAlt:["sick"]},
+{en:"pain",de:"Schmerz",topic:"body",level:"mittel",deAlt:["schmerzen"]},
+{en:"doctor",de:"Arzt",topic:"body",level:"leicht"},
+{en:"medicine",de:"Medizin",topic:"body",level:"mittel",deAlt:["medikament"]},
+{en:"to hurt",de:"wehtun",topic:"body",level:"schwer",deAlt:["verletzen","schmerzen"]},
+/* family / people */
+{en:"parents",de:"Eltern",topic:"family",level:"leicht"},
+{en:"brother",de:"Bruder",topic:"family",level:"leicht"},
+{en:"sister",de:"Schwester",topic:"family",level:"leicht"},
+{en:"friend",de:"Freund",topic:"family",level:"leicht"},
+{en:"child",de:"Kind",topic:"family",level:"leicht"},
+{en:"adult",de:"Erwachsener",topic:"family",level:"mittel"},
+{en:"relative",de:"Verwandter",topic:"family",level:"schwer"},
+{en:"to marry",de:"heiraten",topic:"family",level:"mittel"},
+/* feelings / character */
+{en:"happy",de:"glücklich",topic:"feelings",level:"leicht",deAlt:["froh"]},
+{en:"sad",de:"traurig",topic:"feelings",level:"leicht"},
+{en:"angry",de:"wütend",topic:"feelings",level:"mittel",deAlt:["böse","sauer"]},
+{en:"afraid",de:"ängstlich",topic:"feelings",level:"mittel",enAlt:["scared"],deAlt:["verängstigt"]},
+{en:"proud",de:"stolz",topic:"feelings",level:"mittel"},
+{en:"friendly",de:"freundlich",topic:"feelings",level:"leicht"},
+{en:"shy",de:"schüchtern",topic:"feelings",level:"mittel"},
+{en:"brave",de:"mutig",topic:"feelings",level:"schwer"},
+{en:"polite",de:"höflich",topic:"feelings",level:"schwer"},
+{en:"to feel",de:"fühlen",topic:"feelings",level:"mittel"},
+/* free time / sport */
+{en:"holiday",de:"Urlaub",topic:"freetime",level:"mittel",enAlt:["holidays","vacation"],deAlt:["ferien"]},
+{en:"hobby",de:"Hobby",topic:"freetime",level:"leicht"},
+{en:"team",de:"Mannschaft",topic:"freetime",level:"mittel",deAlt:["team"]},
+{en:"to win",de:"gewinnen",topic:"freetime",level:"mittel"},
+{en:"to lose",de:"verlieren",topic:"freetime",level:"mittel"},
+{en:"match",de:"Spiel",topic:"freetime",level:"mittel",deAlt:["wettkampf"]},
+{en:"to swim",de:"schwimmen",topic:"freetime",level:"leicht"},
+{en:"to ride",de:"reiten",topic:"freetime",level:"mittel",deAlt:["fahren"]},
+/* travel / transport */
+{en:"trip",de:"Reise",topic:"travel",level:"mittel",deAlt:["ausflug"]},
+{en:"flight",de:"Flug",topic:"travel",level:"mittel"},
+{en:"luggage",de:"Gepäck",topic:"travel",level:"schwer",enAlt:["baggage"]},
+{en:"ticket",de:"Fahrkarte",topic:"travel",level:"leicht",deAlt:["ticket","fahrschein"]},
+{en:"to travel",de:"reisen",topic:"travel",level:"leicht"},
+{en:"abroad",de:"im Ausland",topic:"travel",level:"schwer",deAlt:["ausland"]},
+{en:"station",de:"Bahnhof",topic:"travel",level:"leicht"},
+{en:"to arrive",de:"ankommen",topic:"travel",level:"mittel"},
+/* nature / environment */
+{en:"weather",de:"Wetter",topic:"nature",level:"leicht"},
+{en:"environment",de:"Umwelt",topic:"nature",level:"schwer"},
+{en:"to recycle",de:"recyceln",topic:"nature",level:"schwer",deAlt:["wiederverwerten"]},
+{en:"rubbish",de:"Müll",topic:"nature",level:"mittel",enAlt:["garbage","trash"],deAlt:["abfall"]},
+{en:"climate change",de:"Klimawandel",topic:"nature",level:"sehr schwer"},
+{en:"river",de:"Fluss",topic:"nature",level:"leicht"},
+{en:"to protect",de:"schützen",topic:"nature",level:"mittel"},
+{en:"energy",de:"Energie",topic:"nature",level:"mittel"},
+/* tech / media */
+{en:"computer",de:"Computer",topic:"tech",level:"leicht",deAlt:["rechner"]},
+{en:"screen",de:"Bildschirm",topic:"tech",level:"mittel"},
+{en:"to download",de:"herunterladen",topic:"tech",level:"mittel"},
+{en:"message",de:"Nachricht",topic:"tech",level:"mittel"},
+{en:"to switch on",de:"einschalten",topic:"tech",level:"schwer",deAlt:["anschalten","anmachen"]},
+{en:"news",de:"Nachrichten",topic:"tech",level:"mittel"},
+{en:"password",de:"Passwort",topic:"tech",level:"mittel",deAlt:["kennwort"]},
+/* town / places */
+{en:"town",de:"Stadt",topic:"town",level:"leicht",enAlt:["city"]},
+{en:"street",de:"Straße",topic:"town",level:"leicht",enAlt:["road"]},
+{en:"church",de:"Kirche",topic:"town",level:"mittel"},
+{en:"bridge",de:"Brücke",topic:"town",level:"mittel"},
+{en:"library",de:"Bücherei",topic:"town",level:"mittel",deAlt:["bibliothek"]},
+{en:"to cross",de:"überqueren",topic:"town",level:"schwer"},
+{en:"corner",de:"Ecke",topic:"town",level:"mittel"},
+/* time / dates */
+{en:"today",de:"heute",topic:"time",level:"leicht"},
+{en:"yesterday",de:"gestern",topic:"time",level:"leicht"},
+{en:"tomorrow",de:"morgen",topic:"time",level:"leicht"},
+{en:"week",de:"Woche",topic:"time",level:"leicht"},
+{en:"month",de:"Monat",topic:"time",level:"leicht"},
+{en:"early",de:"früh",topic:"time",level:"mittel"},
+{en:"late",de:"spät",topic:"time",level:"leicht"},
+{en:"always",de:"immer",topic:"time",level:"leicht"},
+{en:"sometimes",de:"manchmal",topic:"time",level:"mittel"},
+{en:"never",de:"nie",topic:"time",level:"leicht"},
+/* verbs (häufig) */
+{en:"to make",de:"machen",topic:"verbs",level:"leicht",deAlt:["herstellen"]},
+{en:"to take",de:"nehmen",topic:"verbs",level:"leicht"},
+{en:"to bring",de:"bringen",topic:"verbs",level:"mittel"},
+{en:"to find",de:"finden",topic:"verbs",level:"leicht"},
+{en:"to think",de:"denken",topic:"verbs",level:"mittel"},
+{en:"to understand",de:"verstehen",topic:"verbs",level:"mittel"},
+{en:"to choose",de:"wählen",topic:"verbs",level:"schwer",deAlt:["auswählen","aussuchen"]},
+{en:"to decide",de:"entscheiden",topic:"verbs",level:"schwer"},
+{en:"to remember",de:"sich erinnern",topic:"verbs",level:"schwer",deAlt:["erinnern"]},
+{en:"to explain",de:"erklären",topic:"verbs",level:"mittel"},
+{en:"to allow",de:"erlauben",topic:"verbs",level:"schwer"},
+{en:"to improve",de:"verbessern",topic:"verbs",level:"schwer"},
+/* adjectives (häufig) */
+{en:"difficult",de:"schwierig",topic:"adjectives",level:"mittel",enAlt:["hard"],deAlt:["schwer"]},
+{en:"easy",de:"einfach",topic:"adjectives",level:"leicht",deAlt:["leicht"]},
+{en:"important",de:"wichtig",topic:"adjectives",level:"mittel"},
+{en:"dangerous",de:"gefährlich",topic:"adjectives",level:"mittel"},
+{en:"famous",de:"berühmt",topic:"adjectives",level:"mittel",deAlt:["bekannt"]},
+{en:"strong",de:"stark",topic:"adjectives",level:"leicht"},
+{en:"slow",de:"langsam",topic:"adjectives",level:"leicht"},
+{en:"clean",de:"sauber",topic:"adjectives",level:"leicht"},
+{en:"empty",de:"leer",topic:"adjectives",level:"mittel"},
+{en:"true",de:"wahr",topic:"adjectives",level:"mittel",deAlt:["richtig"]},
+/* phrases / Wendungen */
+{en:"to take care of",de:"sich kümmern um",topic:"phrases",level:"sehr schwer",deAlt:["kümmern"],sentence:"Can you ___ ___ ___ the dog while I'm away?"},
+{en:"to give up",de:"aufgeben",topic:"phrases",level:"schwer",sentence:"Never ___ ___ — keep trying!"},
+{en:"to look for",de:"suchen",topic:"phrases",level:"schwer",sentence:"I'm trying to ___ ___ my keys."},
+{en:"to find out",de:"herausfinden",topic:"phrases",level:"schwer",sentence:"Let's ___ ___ when the shop opens."},
+{en:"on time",de:"pünktlich",topic:"phrases",level:"mittel",sentence:"Please be ___ ___ for the interview."},
+{en:"as soon as possible",de:"so bald wie möglich",topic:"phrases",level:"sehr schwer"},
+{en:"by the way",de:"übrigens",topic:"phrases",level:"schwer"},
+{en:"of course",de:"natürlich",topic:"phrases",level:"mittel",deAlt:["klar","sicher"]}
+];
+
+/* ---------- Vokabel-Generatoren ---------- */
+function vAcceptDE(e){ return [e.de].concat(e.deAlt||[]); }
+function vAcceptEN(e){ return [e.en].concat(e.enAlt||[]); }
+function vPick(){ return pick(EN_VOCAB); }
+function vCap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function genVocEN2DE(){ const e=vPick(); return engProb({difficulty:e.level,kind:'text',
+  displayHTML:'<div class="engq"><span class="ptype">Vokabel · Englisch → Deutsch</span><div class="engword">'+e.en+'</div><div class="enghint">Wie heißt das auf Deutsch?</div></div>',
+  answer:e.de,accept:vAcceptDE(e),explainHTML:'<b>'+e.en+'</b> = '+e.de+' <span class="dim">· '+EN_TOPIC_DE[e.topic]+'</span>'}); }
+function genVocDE2EN(){ const e=vPick(); return engProb({difficulty:e.level==='leicht'?'mittel':e.level,kind:'text',
+  displayHTML:'<div class="engq"><span class="ptype">Vokabel · Deutsch → Englisch</span><div class="engword">'+vCap(e.de)+'</div><div class="enghint">What is this in English?</div></div>',
+  answer:e.en,accept:vAcceptEN(e),explainHTML:'<b>'+vCap(e.de)+'</b> = '+e.en+' <span class="dim">· '+EN_TOPIC_DE[e.topic]+'</span>'}); }
+function genVocMC(){ const e=vPick(); const en2de=Math.random()<0.6;
+  const pool=EN_VOCAB.filter(x=>x.topic===e.topic&&x!==e); const distract=[];
+  for(let i=0;i<60&&distract.length<3;i++){ const d=pick(pool.length?pool:EN_VOCAB); if(d!==e&&distract.indexOf(d)<0)distract.push(d); }
+  const opts=shuffle([e].concat(distract)); const ai=opts.indexOf(e);
+  const q=en2de?e.en:vCap(e.de); const choices=opts.map(o=>en2de?o.de:o.en);
+  return engProb({difficulty:e.level==='sehr schwer'?'schwer':(e.level==='leicht'?'leicht':'mittel'),kind:'choice',
+    displayHTML:'<div class="engq"><span class="ptype">Vokabel · richtige Übersetzung wählen</span><div class="engword">'+q+'</div></div>',
+    choices:choices,answerIndex:ai,explainHTML:'<b>'+e.en+'</b> = '+e.de}); }
+function genVocGap(){ const pool=EN_VOCAB.filter(x=>x.sentence); if(!pool.length)return null; const e=pick(pool);
+  const sent=e.sentence.replace('___','<span class="gap">_____</span>');
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">Lücke · setze die passende Wendung ein</span><div class="engsent">'+sent+'</div><div class="enghint">('+e.de+')</div></div>',
+    answer:e.en,accept:vAcceptEN(e),explainHTML:e.sentence.replace('___','<u>'+e.en+'</u>')+' <span class="dim">· '+e.de+'</span>'}); }
+function genVocBoss(){ const pool=EN_VOCAB.filter(x=>x.level==='schwer'||x.level==='sehr schwer'); const e=pick(pool);
+  return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">★ ENDGEGNER · Vokabel-Sprint</span><div class="engword">'+vCap(e.de)+'</div><div class="enghint">Schreibe es auf Englisch!</div></div>',
+    answer:e.en,accept:vAcceptEN(e),explainHTML:'<b>'+vCap(e.de)+'</b> = '+e.en}); }
+const VOCABGENS=[ {w:3,f:genVocEN2DE},{w:3,f:genVocDE2EN},{w:2,f:genVocMC},{w:1.2,f:genVocGap} ];
+
+/* ---------- Grammatik: Tabellen (Formen gespeichert = garantiert korrekt) ---------- */
+const EN_VERBS=[
+{inf:"go",past:"went",pp:"gone",ing:"going",s3:"goes",de:"gehen"},
+{inf:"do",past:"did",pp:"done",ing:"doing",s3:"does",de:"tun/machen"},
+{inf:"have",past:"had",pp:"had",ing:"having",s3:"has",de:"haben"},
+{inf:"make",past:"made",pp:"made",ing:"making",s3:"makes",de:"machen"},
+{inf:"take",past:"took",pp:"taken",ing:"taking",s3:"takes",de:"nehmen"},
+{inf:"see",past:"saw",pp:"seen",ing:"seeing",s3:"sees",de:"sehen"},
+{inf:"come",past:"came",pp:"come",ing:"coming",s3:"comes",de:"kommen"},
+{inf:"give",past:"gave",pp:"given",ing:"giving",s3:"gives",de:"geben"},
+{inf:"buy",past:"bought",pp:"bought",ing:"buying",s3:"buys",de:"kaufen"},
+{inf:"think",past:"thought",pp:"thought",ing:"thinking",s3:"thinks",de:"denken"},
+{inf:"bring",past:"brought",pp:"brought",ing:"bringing",s3:"brings",de:"bringen"},
+{inf:"find",past:"found",pp:"found",ing:"finding",s3:"finds",de:"finden"},
+{inf:"eat",past:"ate",pp:"eaten",ing:"eating",s3:"eats",de:"essen"},
+{inf:"drink",past:"drank",pp:"drunk",ing:"drinking",s3:"drinks",de:"trinken"},
+{inf:"write",past:"wrote",pp:"written",ing:"writing",s3:"writes",de:"schreiben"},
+{inf:"read",past:"read",pp:"read",ing:"reading",s3:"reads",de:"lesen"},
+{inf:"speak",past:"spoke",pp:"spoken",ing:"speaking",s3:"speaks",de:"sprechen"},
+{inf:"drive",past:"drove",pp:"driven",ing:"driving",s3:"drives",de:"fahren"},
+{inf:"run",past:"ran",pp:"run",ing:"running",s3:"runs",de:"rennen"},
+{inf:"swim",past:"swam",pp:"swum",ing:"swimming",s3:"swims",de:"schwimmen"},
+{inf:"sing",past:"sang",pp:"sung",ing:"singing",s3:"sings",de:"singen"},
+{inf:"sleep",past:"slept",pp:"slept",ing:"sleeping",s3:"sleeps",de:"schlafen"},
+{inf:"leave",past:"left",pp:"left",ing:"leaving",s3:"leaves",de:"verlassen"},
+{inf:"meet",past:"met",pp:"met",ing:"meeting",s3:"meets",de:"treffen"},
+{inf:"pay",past:"paid",pp:"paid",ing:"paying",s3:"pays",de:"bezahlen"},
+{inf:"win",past:"won",pp:"won",ing:"winning",s3:"wins",de:"gewinnen"},
+{inf:"lose",past:"lost",pp:"lost",ing:"losing",s3:"loses",de:"verlieren"},
+{inf:"send",past:"sent",pp:"sent",ing:"sending",s3:"sends",de:"senden"},
+{inf:"build",past:"built",pp:"built",ing:"building",s3:"builds",de:"bauen"},
+{inf:"teach",past:"taught",pp:"taught",ing:"teaching",s3:"teaches",de:"unterrichten"},
+{inf:"work",past:"worked",pp:"worked",ing:"working",s3:"works",de:"arbeiten"},
+{inf:"play",past:"played",pp:"played",ing:"playing",s3:"plays",de:"spielen"},
+{inf:"watch",past:"watched",pp:"watched",ing:"watching",s3:"watches",de:"ansehen"},
+{inf:"study",past:"studied",pp:"studied",ing:"studying",s3:"studies",de:"lernen"},
+{inf:"travel",past:"travelled",pp:"travelled",ing:"travelling",s3:"travels",de:"reisen"},
+{inf:"open",past:"opened",pp:"opened",ing:"opening",s3:"opens",de:"öffnen"},
+{inf:"clean",past:"cleaned",pp:"cleaned",ing:"cleaning",s3:"cleans",de:"putzen"},
+{inf:"help",past:"helped",pp:"helped",ing:"helping",s3:"helps",de:"helfen"},
+{inf:"call",past:"called",pp:"called",ing:"calling",s3:"calls",de:"anrufen"},
+{inf:"live",past:"lived",pp:"lived",ing:"living",s3:"lives",de:"wohnen/leben"}
+];
+const EN_ADJ=[
+{adj:"big",comp:"bigger",sup:"biggest",de:"groß"},
+{adj:"small",comp:"smaller",sup:"smallest",de:"klein"},
+{adj:"old",comp:"older",sup:"oldest",de:"alt"},
+{adj:"young",comp:"younger",sup:"youngest",de:"jung"},
+{adj:"fast",comp:"faster",sup:"fastest",de:"schnell"},
+{adj:"slow",comp:"slower",sup:"slowest",de:"langsam"},
+{adj:"high",comp:"higher",sup:"highest",de:"hoch"},
+{adj:"cheap",comp:"cheaper",sup:"cheapest",de:"billig"},
+{adj:"nice",comp:"nicer",sup:"nicest",de:"nett"},
+{adj:"easy",comp:"easier",sup:"easiest",de:"einfach"},
+{adj:"happy",comp:"happier",sup:"happiest",de:"glücklich"},
+{adj:"good",comp:"better",sup:"best",de:"gut"},
+{adj:"bad",comp:"worse",sup:"worst",de:"schlecht"},
+{adj:"far",comp:"farther",sup:"farthest",de:"weit"},
+{adj:"expensive",comp:"more expensive",sup:"most expensive",de:"teuer"},
+{adj:"important",comp:"more important",sup:"most important",de:"wichtig"},
+{adj:"difficult",comp:"more difficult",sup:"most difficult",de:"schwierig"},
+{adj:"famous",comp:"more famous",sup:"most famous",de:"berühmt"}
+];
+const EN_NOUNS=[
+{sg:"book",pl:"books",de:"Buch"},{sg:"car",pl:"cars",de:"Auto"},{sg:"house",pl:"houses",de:"Haus"},
+{sg:"box",pl:"boxes",de:"Schachtel"},{sg:"bus",pl:"buses",de:"Bus"},{sg:"watch",pl:"watches",de:"Uhr"},
+{sg:"dish",pl:"dishes",de:"Teller"},{sg:"city",pl:"cities",de:"Stadt"},{sg:"baby",pl:"babies",de:"Baby"},
+{sg:"party",pl:"parties",de:"Party"},{sg:"family",pl:"families",de:"Familie"},
+{sg:"man",pl:"men",de:"Mann"},{sg:"woman",pl:"women",de:"Frau"},{sg:"child",pl:"children",de:"Kind"},
+{sg:"person",pl:"people",de:"Person"},{sg:"foot",pl:"feet",de:"Fuß"},{sg:"tooth",pl:"teeth",de:"Zahn"},
+{sg:"mouse",pl:"mice",de:"Maus"},{sg:"knife",pl:"knives",de:"Messer"},{sg:"life",pl:"lives",de:"Leben"},
+{sg:"leaf",pl:"leaves",de:"Blatt"},{sg:"country",pl:"countries",de:"Land"},{sg:"story",pl:"stories",de:"Geschichte"}
+];
+const EN_ARTNOUNS=[
+{w:"apple",art:"an"},{w:"orange",art:"an"},{w:"egg",art:"an"},{w:"hour",art:"an"},{w:"umbrella",art:"an"},
+{w:"idea",art:"an"},{w:"answer",art:"an"},{w:"island",art:"an"},{w:"animal",art:"an"},{w:"email",art:"an"},
+{w:"banana",art:"a"},{w:"car",art:"a"},{w:"house",art:"a"},{w:"job",art:"a"},{w:"university",art:"a"},
+{w:"book",art:"a"},{w:"phone",art:"a"},{w:"dog",art:"a"},{w:"teacher",art:"a"},{w:"European",art:"a"}
+];
+
+/* ---------- Grammatik-Generatoren (Phase 1, generiert) ---------- */
+const EN_SUBJ_S=["He","She","My friend","The teacher","My brother","Anna","Tom","The man"];
+const EN_SUBJ_PL=["I","We","They","You","My friends"];
+function gExplain(rule,sol){ return '<div class="engrule">'+rule+'</div><div class="engsol-line">✓ <b>'+sol+'</b></div>'; }
+function genTensePast(){ const v=pick(EN_VERBS); const subj=pick(EN_SUBJ_S.concat(EN_SUBJ_PL));
+  const cue=pick(["yesterday","last week","two days ago","last year"]);
+  return engProb({difficulty:v.past===v.inf+"ed"?'leicht':'mittel',kind:'text',
+    displayHTML:gTaskHTML('Simple Past',subj+' ___ ('+v.inf+') '+pick(["to school.","home.","a lot.","there."])+' <i>('+cue+')</i>'),
+    answer:v.past,accept:[v.past],explainHTML:gExplain('Simple Past: Signalwort „'+cue+'" → Vergangenheitsform von <b>'+v.inf+'</b>.',v.past)}); }
+function genTensePerfect(){ const v=pick(EN_VERBS); const subj=pick(["I","We","They","You"]);
+  const cue=pick(["already","just","never","ever"]);
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:gTaskHTML('Present Perfect',subj+' have '+cue+' ___ ('+v.inf+') it.'),
+    answer:v.pp,accept:[v.pp],explainHTML:gExplain('Present Perfect: have/has + 3. Form (past participle) von <b>'+v.inf+'</b>.',v.pp)}); }
+function genTensePerfectHas(){ const v=pick(EN_VERBS); const subj=pick(["He","She","My friend","Tom"]);
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:gTaskHTML('Present Perfect',subj+' has just ___ ('+v.inf+') the work.'),
+    answer:v.pp,accept:[v.pp],explainHTML:gExplain('Present Perfect (he/she/it): has + 3. Form von <b>'+v.inf+'</b>.',v.pp)}); }
+function genThirdPerson(){ const v=pick(EN_VERBS); const subj=pick(EN_SUBJ_S);
+  const cue=pick(["every day.","usually.","often.","on Mondays."]);
+  return engProb({difficulty:'leicht',kind:'text',
+    displayHTML:gTaskHTML('Simple Present (he/she/it)',subj+' ___ ('+v.inf+') '+cue),
+    answer:v.s3,accept:[v.s3],explainHTML:gExplain('Simple Present mit he/she/it → Endung -s/-es: <b>'+v.inf+'</b>.',v.s3)}); }
+function genProgressive(){ const v=pick(EN_VERBS); const subj=pick(["He","She","Tom","Anna"]);
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:gTaskHTML('Present Progressive',"Look! "+subj+' ___ ('+v.inf+') right now.'),
+    answer:'is '+v.ing,accept:['is '+v.ing,subj.toLowerCase()+"'s "+v.ing],explainHTML:gExplain('Present Progressive: am/is/are + Verb+ing. Mit he/she/it → <b>is '+v.ing+'</b>.','is '+v.ing)}); }
+function genProgressivePl(){ const v=pick(EN_VERBS); const subj=pick(["They","We"]);
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:gTaskHTML('Present Progressive',subj+' ___ ('+v.inf+') at the moment.'),
+    answer:'are '+v.ing,accept:['are '+v.ing],explainHTML:gExplain('Present Progressive mit they/we → are + Verb+ing.','are '+v.ing)}); }
+function genFutureWill(){ const v=pick(EN_VERBS); const subj=pick(EN_SUBJ_S.concat(EN_SUBJ_PL));
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:gTaskHTML("Future (will)",'Tomorrow '+subj.toLowerCase()+' ___ ('+v.inf+') it. <i>(will)</i>'),
+    answer:'will '+v.inf,accept:['will '+v.inf,"'ll "+v.inf],explainHTML:gExplain('will-Future: will + Grundform.','will '+v.inf)}); }
+function genPastProgressive(){ const v=pick(EN_VERBS); const subj=pick(["he","she","I","they"]);
+  const be = (subj==='they')?'were':(subj==='I'?'was':'was');
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:gTaskHTML('Past Progressive','While '+subj+' '+be+' ___ ('+v.inf+'), the phone rang.'),
+    answer:v.ing,accept:[v.ing],explainHTML:gExplain('Past Progressive: was/were + Verb+ing.',be+' '+v.ing)}); }
+function genComparative(){ const a=pick(EN_ADJ);
+  return engProb({difficulty:a.comp.indexOf(' ')<0?'mittel':'schwer',kind:'text',
+    displayHTML:gTaskHTML('Comparative (Steigerung)','A train is ___ ('+a.adj+') than a bike.'),
+    answer:a.comp,accept:[a.comp],explainHTML:gExplain('Komparativ von <b>'+a.adj+'</b> (… than …).',a.comp)}); }
+function genSuperlative(){ const a=pick(EN_ADJ);
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:gTaskHTML('Superlative (Steigerung)','This is the ___ ('+a.adj+') one of all.'),
+    answer:a.sup,accept:[a.sup,'the '+a.sup],explainHTML:gExplain('Superlativ von <b>'+a.adj+'</b> (the …).',a.sup)}); }
+function genPlural(){ const n=pick(EN_NOUNS);
+  return engProb({difficulty:(n.pl===n.sg+'s')?'leicht':'mittel',kind:'text',
+    displayHTML:gTaskHTML('Plural','one '+n.sg+', two ___'),
+    answer:n.pl,accept:[n.pl],explainHTML:gExplain('Pluralform von <b>'+n.sg+'</b> ('+n.de+').',n.pl)}); }
+function genArticle(){ const n=pick(EN_ARTNOUNS);
+  const opts=shuffle(['a','an']); const ai=opts.indexOf(n.art);
+  return engProb({difficulty:'leicht',kind:'choice',
+    displayHTML:gTaskHTML('a / an','I have ___ '+n.w+'.'),
+    choices:opts,answerIndex:ai,explainHTML:gExplain('„an" vor Vokal-<i>Laut</i>, sonst „a".','<b>'+n.art+' '+n.w+'</b>')}); }
+function gTaskHTML(label,sentence){ return '<div class="engq"><span class="ptype">Grammatik · '+label+'</span><div class="engsent">'+sentence+'</div><div class="enghint">Setze die richtige Form ein.</div></div>'; }
+function genGrammarBoss(){ const v=pick(EN_VERBS);
+  return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
+    displayHTML:gTaskHTML('★ ENDGEGNER · Present Perfect','I have never ___ ('+v.inf+') such a thing! <i>(3. Form)</i>'),
+    answer:v.pp,accept:[v.pp],explainHTML:gExplain('Present Perfect: have + past participle (3. Form).',v.pp)}); }
+const GRAMMARGENS=[
+  {w:3,f:genTensePast},{w:2,f:genThirdPerson},{w:2,f:genTensePerfect},{w:1.5,f:genTensePerfectHas},
+  {w:1.5,f:genProgressive},{w:1,f:genProgressivePl},{w:1.5,f:genFutureWill},{w:1.2,f:genPastProgressive},
+  {w:1.5,f:genComparative},{w:1.2,f:genSuperlative},{w:1.5,f:genPlural},{w:1.2,f:genArticle}
+];
+
+/* ---------- Englisch-Mix ---------- */
+const ENGMIXGENS=[
+  {w:2,f:genVocEN2DE},{w:2,f:genVocDE2EN},{w:1.5,f:genVocMC},{w:1,f:genVocGap},
+  {w:2,f:genTensePast},{w:1.5,f:genTensePerfect},{w:1.2,f:genThirdPerson},{w:1.2,f:genComparative},
+  {w:1.2,f:genFutureWill},{w:1,f:genPlural},{w:1,f:genProgressive},{w:0.8,f:genArticle}
+];
+function genEngMixBoss(){ return Math.random()<0.5?genVocBoss():genGrammarBoss(); }
+
 /* ---------- Kesse Sprüche ---------- */
 const MSG={
   blitz:[
@@ -1314,7 +1724,7 @@ async function cloudPush(entry){
 }
 
 let scores=[];
-function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : 'gleichungsrun_scores'; }
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
 function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
 function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
 async function initScores(){
@@ -1359,14 +1769,30 @@ function loadProblem(){
   else { badge.textContent=current.difficulty; badge.className='badge b-'+current.difficulty.replace(' ','-'); $('bossBanner').className='bossbanner'; $('card').classList.remove('boss'); }
 
   if(state.mode==='mix'){ $('eqHint').textContent = current.isGeo ? 'Geometrie: Taschenrechner · π ≈ 3,14 · auf 2 Dezimalen runden' : 'Zahl, Bruch (3/4) oder Dezimal (1,75) · ohne Taschenrechner'; }
+  // --- Englisch: Antwort-UI (Multiple-Choice vs. Texteingabe) ---
+  const isChoice = current.eng && current.kind==='choice';
+  const chBox=$('choices');
+  if(isChoice){
+    $('answerbar').style.display='none';
+    chBox.style.display='grid';
+    chBox.innerHTML=current.choices.map((c,i)=>'<button class="choicebtn" data-i="'+i+'">'+c+'</button>').join('');
+    chBox.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>checkChoice(+b.dataset.i,b)));
+  } else {
+    $('answerbar').style.display='flex'; chBox.style.display='none'; chBox.innerHTML='';
+  }
+  if(current.eng){ $('eqHint').textContent = isChoice ? 'Tippe auf die richtige Antwort.' : 'Tippe deine Antwort ein (Groß/Klein egal).'; }
   const sc=$('steps'); sc.innerHTML='';
-  current.steps.forEach(st=>{
-    const wordOp=st.op && !/[|]\s*[·:+−\-]/.test(st.op) && /[a-zä]/i.test(st.op);
-    const d=document.createElement('div'); d.className='srow'+(st.final?' final':'');
-    d.innerHTML='<div class="seq"><span>'+st.lhs+'</span><span class="eqsign">=</span><span>'+st.rhs+'</span></div>'+
-                '<div class="sop'+(wordOp?' word':'')+'">'+(st.op||'')+'</div>';
-    sc.appendChild(d);
-  });
+  if(current.explainHTML){
+    sc.innerHTML='<div class="engsol">'+current.explainHTML+'</div>';
+  } else {
+    current.steps.forEach(st=>{
+      const wordOp=st.op && !/[|]\s*[·:+−\-]/.test(st.op) && /[a-zä]/i.test(st.op);
+      const d=document.createElement('div'); d.className='srow'+(st.final?' final':'');
+      d.innerHTML='<div class="seq"><span>'+st.lhs+'</span><span class="eqsign">=</span><span>'+st.rhs+'</span></div>'+
+                  '<div class="sop'+(wordOp?' word':'')+'">'+(st.op||'')+'</div>';
+      sc.appendChild(d);
+    });
+  }
 
   $('solution').className=''; $('btnSolution').textContent='Lösung zeigen';
   $('result').className=''; $('result').innerHTML='';
@@ -1375,7 +1801,7 @@ function loadProblem(){
   $('track').classList.remove('paused','over'); $('timer').classList.remove('over'); $('overhint').textContent='';
   $('runner').style.left='0%'; $('railFill').style.width='0%';
   updateDino(); updateStats();
-  startTimer(); inp.focus();
+  startTimer(); if(!(current.eng && current.kind==='choice')) inp.focus();
 }
 
 function startTimer(){startTime=Date.now(); if(ticker)clearInterval(ticker); tick(); ticker=setInterval(tick,100);}
@@ -1392,15 +1818,29 @@ function tick(){
 
 function shake(){const inp=$('answer');inp.classList.remove('shake');void inp.offsetWidth;inp.classList.add('shake');}
 
+function wrongFeedback(msg){ const fb=$('feedback'); fb.className='feedback wrong'; fb.textContent=msg||('✗ FALSCH – '+nm(pick(MSG.falsch))); shake(); playWrong(); }
+function checkChoice(i,btn){
+  if(solvedThis)return;
+  if(i===current.answerIndex){ if(btn)btn.classList.add('rightpick'); onCorrect(); }
+  else{ if(btn){btn.disabled=true; btn.classList.add('wrongpick');} wrongFeedback(); }
+}
 function checkAnswer(){
   if(solvedThis)return;
-  const inp=$('answer'), fb=$('feedback'), ua=parseAnswer(inp.value);
+  const inp=$('answer'), fb=$('feedback');
+  if(current.eng){   // Englisch: String-Vergleich gegen akzeptierte Antworten
+    const val=normalizeEN(inp.value);
+    if(!val){ wrongFeedback('✗ Bitte tippe deine Antwort ein.'); return; }
+    const ok=(current.accept||[current.answer]).some(a=>normalizeEN(a)===val);
+    if(ok) onCorrect(); else wrongFeedback();
+    return;
+  }
+  const ua=parseAnswer(inp.value);
   if(!ua){fb.className='feedback wrong';fb.textContent='✗ Bitte Zahl, Bruch (7/4) oder Dezimal (1,75) eingeben.';shake();return;}
   let correct;
   if(current.tol!=null){ correct = Math.abs(ua.n/ua.d - current.av) <= current.tol; }   // Geometrie: gerundet, mit Toleranz
   else { const t=current.answer; correct = (ua.n*t.d===t.n*ua.d); }
   if(correct){onCorrect();}
-  else{fb.className='feedback wrong';fb.textContent='✗ FALSCH – '+nm(pick(MSG.falsch));shake();playWrong();}
+  else{ wrongFeedback(); }
 }
 
 function onCorrect(){
@@ -1427,6 +1867,7 @@ function onCorrect(){
   $('feedback').className='feedback right';
   $('feedback').textContent = (current.isBoss && pts>0) ? '✓ ENDGEGNER BESIEGT!' : ('✓ RICHTIG, '+PLAYER+'!');
   $('answer').disabled=true; $('btnCheck').disabled=true;
+  $('choices').querySelectorAll('button').forEach(b=>b.disabled=true);
   if(soundOn){ if(bk==='boss')playWin(); else if(pts>0)playRight(); }
   const neg=pts<0;
   const res=$('result'); res.className='show'+(neg?' neg':'');
@@ -1601,8 +2042,27 @@ const MODE_TXT={
     sub:'Der ultimative <b>Mix</b> aus allen vier Sektionen – <b>überwiegend sehr schwere</b> Aufgaben, jedes Mal neu zusammengewürfelt. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück kommt ein zufälliger Endgegner. Traust du dich, LOOIS?',
     ph:'Antwort eingeben · Zahl, Bruch oder Dezimal',
     hint:'Pro Aufgabe lesen: Gleichung/Prozent/Größe ohne Rechner · Geometrie mit Rechner & runden'
+  },
+  vocab:{
+    brand:'Quali Bayern · Englisch · Wortschatz (Alltag & Beruf)',
+    sub:'Trainiere deinen <b>Wortschatz</b> – Englisch ↔ Deutsch, Wendungen und Lückensätze. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Vokabel-Endgegner. Ready, LOOIS?',
+    ph:'Antwort eingeben (Groß/Klein egal)',
+    hint:'Tippe deine Antwort ein · Groß-/Kleinschreibung egal'
+  },
+  grammar:{
+    brand:'Quali Bayern · Englisch · Sprachgebrauch & Grammatik',
+    sub:'Trainiere die <b>Grammatik</b> (Teil B) – Zeitformen, Steigerung, Plural, Artikel u. v. m. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen wartet der Endgegner. Ready, LOOIS?',
+    ph:'richtige Form eingeben',
+    hint:'Setze die richtige Form ein · Groß-/Kleinschreibung egal'
+  },
+  engmix:{
+    brand:'Quali Bayern · Englisch · Alles gemischt',
+    sub:'Der <b>Englisch-Mix</b> aus Wortschatz und Grammatik, jedes Mal neu. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt ein zufälliger Endgegner. Ready, LOOIS?',
+    ph:'Antwort eingeben',
+    hint:'Mal Vokabel, mal Grammatik – lies die Aufgabe genau'
   }
 };
+const ENG_MODES=['vocab','grammar','engmix'];
 function setMode(m){
   state.mode=m;
   $('btnModeEq').classList.toggle('active',m==='gleich');
@@ -1610,10 +2070,22 @@ function setMode(m){
   $('btnModeG').classList.toggle('active',m==='groessen');
   $('btnModeGeo').classList.toggle('active',m==='geo');
   $('btnModeMix').classList.toggle('active',m==='mix');
+  $('btnModeVocab').classList.toggle('active',m==='vocab');
+  $('btnModeGrammar').classList.toggle('active',m==='grammar');
+  $('btnModeEngMix').classList.toggle('active',m==='engmix');
   const t=MODE_TXT[m];
   $('ovSub').innerHTML=nm(t.sub); $('brandSub').textContent=t.brand;
+  $('brandTitle').innerHTML = ENG_MODES.indexOf(m)>=0 ? 'English&nbsp;Run' : 'Gleichungs&nbsp;Run';
   $('answer').placeholder=t.ph; $('eqHint').textContent=t.hint;
   resetRound(); reloadScores();
+}
+function setSubject(s){
+  const eng=(s==='eng');
+  $('subjMath').classList.toggle('active',!eng);
+  $('subjEng').classList.toggle('active',eng);
+  $('modepickMath').style.display=eng?'none':'flex';
+  $('modepickEng').style.display=eng?'flex':'none';
+  setMode(eng?'vocab':'gleich');
 }
 function reloadScores(){
   if(CLOUD){
@@ -1626,6 +2098,11 @@ $('btnModeP').addEventListener('click',()=>setMode('prozent'));
 $('btnModeG').addEventListener('click',()=>setMode('groessen'));
 $('btnModeGeo').addEventListener('click',()=>setMode('geo'));
 $('btnModeMix').addEventListener('click',()=>setMode('mix'));
+$('btnModeVocab').addEventListener('click',()=>setMode('vocab'));
+$('btnModeGrammar').addEventListener('click',()=>setMode('grammar'));
+$('btnModeEngMix').addEventListener('click',()=>setMode('engmix'));
+$('subjMath').addEventListener('click',()=>setSubject('math'));
+$('subjEng').addEventListener('click',()=>setSubject('eng'));
 
 /* ---------- Spielername ---------- */
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
