@@ -208,8 +208,8 @@ Inhalt ist der Aufwandstreiber. Vorschlag in Stufen, jede für sich spielbar:
 - **Vokabel-Umfang** zum Start (Vorschlag ~400 Wörter, ausbaubar Richtung 1.850) und **Themen-Priorität** (Alltag vs. Beruf zuerst).
 
 ### Roadmap nach Entscheidungen (aktualisiert)
-- **Phase 1:** Fächer-Umschalter + Antwort-UI (MC/Text) + **Vokabeln** + **Grammatik (generiert: Zeitformen/Steigerung/Artikel)** — sofort spielbar inkl. Board.
-- **Phase 2:** Grammatik-Templates (if-clauses, passive, reported, relative, modals, question tags) + Satzbau-`order`.
+- **Phase 1 ✅:** Fächer-Umschalter + Antwort-UI (MC/Text) + **Vokabeln** (155) + **Grammatik (generiert: Zeitformen/Steigerung/Plural/Artikel)** — spielbar inkl. Board.
+- **Phase 2 ✅:** Grammatik-Templates (if-clauses I/II, passive, reported speech, relative clauses, modals, question tags) + **Satzbau** (Antworttyp `order`, Antipp-Bausteine).
 - **Phase 3:** **Leseverstehen** (Text-Bank) + **Englisch-Mix**.
 - **Phase 4:** **Sprachmittlung** (Faktfragen).
 - **Phase 5 (zuletzt):** **Hörverstehen** (TTS + Fallbacks).

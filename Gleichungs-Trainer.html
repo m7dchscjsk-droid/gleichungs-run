@@ -239,6 +239,19 @@
   .engrule{color:var(--muted);margin-bottom:5px;}
   .engsol-line{color:var(--gold);font-weight:800;}
   .dim{color:var(--dim);}
+
+  /* Englisch: Satzbau (order) */
+  .orderbox{margin-top:20px;}
+  .orderbuilt{min-height:52px;border:1px dashed var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel2);}
+  .orderbuilt:empty:before{content:"Tippe die Wörter der Reihe nach an …";color:var(--dim);font-family:var(--mono);font-size:13px;}
+  .ordertokens{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .tok{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:16px;font-weight:700;cursor:pointer;}
+  .tok:hover{border-color:var(--hi);}
+  .tok.used{opacity:.3;pointer-events:none;}
+  .btok{padding:10px 14px;border-radius:12px;border:1px solid var(--hi);background:var(--hi);color:#000;font-size:16px;font-weight:700;cursor:pointer;}
+  .orderactions{display:flex;gap:10px;margin-top:14px;}
+  .orderactions .btn-ghost{flex:0 0 auto;min-width:0;padding:12px 18px;}
+  .orderactions .btn-check{flex:1;}
 </style>
 </head>
 <body>
@@ -325,6 +338,11 @@
       <button class="btn-check" id="btnCheck">PRÜFEN</button>
     </div>
     <div class="choices" id="choices" style="display:none"></div>
+    <div class="orderbox" id="orderbox" style="display:none">
+      <div class="orderbuilt" id="orderBuilt"></div>
+      <div class="ordertokens" id="orderTokens"></div>
+      <div class="orderactions"><button class="btn-ghost" id="orderReset">↺ Zurück</button><button class="btn-check" id="orderCheck">PRÜFEN</button></div>
+    </div>
     <div class="feedback" id="feedback"></div>
     <div class="eqhint" id="eqHint">Bruch als 3/4 · Dezimal mit Komma 1,75 · negativ mit − oder -</div>
 
@@ -1543,17 +1561,140 @@ function genGrammarBoss(){ const v=pick(EN_VERBS);
   return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
     displayHTML:gTaskHTML('★ ENDGEGNER · Present Perfect','I have never ___ ('+v.inf+') such a thing! <i>(3. Form)</i>'),
     answer:v.pp,accept:[v.pp],explainHTML:gExplain('Present Perfect: have + past participle (3. Form).',v.pp)}); }
+/* ============ PHASE 2: Grammatik-Templates (kuratiert, korrekt) ============ */
+function vBy(inf){ for(let i=0;i<EN_VERBS.length;i++) if(EN_VERBS[i].inf===inf) return EN_VERBS[i]; return null; }
+
+/* --- if-clauses (Bedingungssätze Typ I & II) --- */
+function genIfClause(){
+  const t=Math.random()<0.5?1:2;
+  if(t===1){
+    if(Math.random()<0.5){ const v=pick(EN_VERBS); // Bedingung: Simple Present (he/she/it)
+      return engProb({difficulty:'schwer',kind:'text',
+        displayHTML:gTaskHTML('If-clause Typ I','If he ___ ('+v.inf+') hard, he will pass. <i>(Bedingung)</i>'),
+        answer:v.s3,accept:[v.s3],explainHTML:gExplain('Typ I: <i>If</i> + Simple Present, will + Grundform. He/she/it → -s.',v.s3)}); }
+    const v=pick(EN_VERBS); // Folge: will + Grundform
+    return engProb({difficulty:'schwer',kind:'text',
+      displayHTML:gTaskHTML('If-clause Typ I','If you practise, you ___ ('+v.inf+') better. <i>(use "will")</i>'),
+      answer:'will '+v.inf,accept:['will '+v.inf,"'ll "+v.inf],explainHTML:gExplain('Typ I: Folge mit will + Grundform.','will '+v.inf)});
+  }
+  if(Math.random()<0.5){ // Typ II Bedingung mit be → were
+    return engProb({difficulty:'sehr schwer',kind:'text',
+      displayHTML:gTaskHTML('If-clause Typ II','If I ___ (be) you, I would say sorry. <i>(Bedingung)</i>'),
+      answer:'were',accept:['were','was'],explainHTML:gExplain('Typ II: <i>If</i> + Simple Past (be → were), would + Grundform.','were')}); }
+  const v=pick(EN_VERBS); // Typ II Folge: would + Grundform
+  return engProb({difficulty:'sehr schwer',kind:'text',
+    displayHTML:gTaskHTML('If-clause Typ II','If I had more time, I ___ ('+v.inf+') you. <i>(use "would")</i>'),
+    answer:'would '+v.inf,accept:['would '+v.inf,"'d "+v.inf],explainHTML:gExplain('Typ II: Folge mit would + Grundform.','would '+v.inf)});
+}
+
+/* --- Passiv (Präsens & Vergangenheit) --- */
+const EN_PASSIVE=[
+  {subj:'The room',num:'sg',v:'clean'},{subj:'These houses',num:'pl',v:'build'},
+  {subj:'The car',num:'sg',v:'make'},{subj:'The books',num:'pl',v:'read'},
+  {subj:'The letter',num:'sg',v:'write'},{subj:'The song',num:'sg',v:'sing'},
+  {subj:'The game',num:'sg',v:'win'},{subj:'The bridge',num:'sg',v:'build'},
+  {subj:'The emails',num:'pl',v:'send'},{subj:'The money',num:'sg',v:'find'}
+];
+function genPassive(){ const it=pick(EN_PASSIVE); const v=vBy(it.v); const present=Math.random()<0.5;
+  const be = present ? (it.num==='pl'?'are':'is') : (it.num==='pl'?'were':'was');
+  const when = present ? 'every day' : 'last year';
+  const ans = be+' '+v.pp;
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:gTaskHTML('Passive Voice'+(present?' (Präsens)':' (Vergangenheit)'),it.subj+' ___ ('+it.v+') '+when+'.'),
+    answer:ans,accept:[ans],explainHTML:gExplain('Passiv: Form von <i>be</i> + 3. Form (past participle) von <b>'+it.v+'</b>.',ans)}); }
+
+/* --- Reported speech (indirekte Rede) --- */
+const EN_REPORTED=[
+  {direct:'"I work in Munich."',frame:'He said he ___ in Munich.',ans:'worked',note:'Simple Present → Simple Past'},
+  {direct:'"I am tired."',frame:'She said she ___ tired.',ans:'was',note:'am/is → was'},
+  {direct:'"We are ready."',frame:'They said they ___ ready.',ans:'were',note:'are → were'},
+  {direct:'"I have lost my key."',frame:'He said he ___ lost his key.',ans:'had',note:'have → had (Past Perfect)'},
+  {direct:'"I will help you."',frame:'She said she ___ help me.',ans:'would',note:'will → would'},
+  {direct:'"I can drive."',frame:'He said he ___ drive.',ans:'could',note:'can → could'},
+  {direct:'"I bought a car."',frame:'She said she ___ bought a car.',ans:'had',note:'Simple Past → Past Perfect (had + 3. Form)'},
+  {direct:'"I must go now."',frame:'He said he ___ go.',ans:'had to',note:'must → had to'}
+];
+function genReported(){ const r=pick(EN_REPORTED);
+  return engProb({difficulty:'sehr schwer',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">Grammatik · Reported Speech</span><div class="engsent"><span class="dim">'+r.direct+'</span><br>'+r.frame.replace('___','<span class="gap">_____</span>')+'</div><div class="enghint">Setze die richtige Form ein.</div></div>',
+    answer:r.ans,accept:[r.ans],explainHTML:gExplain('Indirekte Rede: '+r.note+'.',r.ans)}); }
+
+/* --- Relativsätze (who/which/that) --- */
+const EN_RELATIVE=[
+  {frame:'The woman ___ teaches us is nice.',type:'person'},
+  {frame:'I have a friend ___ speaks Spanish.',type:'person'},
+  {frame:'The man ___ called you is here.',type:'person'},
+  {frame:'The car ___ he bought is fast.',type:'thing'},
+  {frame:'This is the house ___ we saw.',type:'thing'},
+  {frame:'The film ___ we watched was boring.',type:'thing'}
+];
+function genRelative(){ const r=pick(EN_RELATIVE); const person=r.type==='person';
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">Grammatik · Relativsatz ('+(person?'Person':'Sache')+')</span><div class="engsent">'+r.frame.replace('___','<span class="gap">_____</span>')+'</div><div class="enghint">who / which / that?</div></div>',
+    answer:person?'who':'which',accept:person?['who','that']:['which','that'],explainHTML:gExplain('Person → <b>who</b>, Sache → <b>which</b> ("that" geht oft auch).',person?'who':'which')}); }
+
+/* --- Modalverben (Bedeutung → Modal) --- */
+const EN_MODAL=[
+  {q:'You ___ wear a seatbelt. It is the law.',opts:['must','might','need'],ans:0,note:'Pflicht → must'},
+  {q:"You ___ smoke here. It's forbidden.",opts:["mustn't","don't have to","shouldn't"],ans:0,note:'Verbot → mustn’t'},
+  {q:'When I was young, I ___ run very fast.',opts:['could','can','must'],ans:0,note:'Fähigkeit (Vergangenheit) → could'},
+  {q:'You look ill. You ___ see a doctor.',opts:['should','mustn’t','could'],ans:0,note:'Ratschlag → should'},
+  {q:"It's sunny — you ___ take an umbrella.",opts:["don't have to",'must','should'],ans:0,note:'keine Notwendigkeit → don’t have to'},
+  {q:'___ you help me, please?',opts:['Could','Must','Should'],ans:0,note:'höfliche Bitte → Could/Can'}
+];
+function genModal(){ const m=pick(EN_MODAL); const opts=m.opts.slice(); const correct=opts[m.ans]; const sh=shuffle(opts.slice()); const ai=sh.indexOf(correct);
+  return engProb({difficulty:'schwer',kind:'choice',
+    displayHTML:'<div class="engq"><span class="ptype">Grammatik · Modalverben</span><div class="engsent">'+m.q.replace('___','<span class="gap">_____</span>')+'</div></div>',
+    choices:sh,answerIndex:ai,explainHTML:gExplain(m.note,correct)}); }
+
+/* --- Question tags --- */
+const EN_TAG=[
+  {q:'She is your sister, ___?',ans:"isn't she"},{q:'You like pizza, ___?',ans:"don't you"},
+  {q:'He can drive, ___?',ans:"can't he"},{q:'They live here, ___?',ans:"don't they"},
+  {q:'We are late, ___?',ans:"aren't we"},{q:'Tom went home, ___?',ans:"didn't he"},
+  {q:'It is cold, ___?',ans:"isn't it"},{q:"You don't smoke, ___?",ans:"do you"},
+  {q:"She can't come, ___?",ans:"can she"},{q:'He has finished, ___?',ans:"hasn't he"}
+];
+function genTag(){ const t=pick(EN_TAG);
+  return engProb({difficulty:'sehr schwer',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">Grammatik · Question Tag</span><div class="engsent">'+t.q.replace('___','<span class="gap">______</span>')+'</div><div class="enghint">Setze das Frage-Anhängsel ein (z. B. isn’t it).</div></div>',
+    answer:t.ans,accept:[t.ans,t.ans.replace("n't"," not")],explainHTML:gExplain('Question Tag: positiver Satz → negatives Anhängsel (und umgekehrt), gleiches Hilfsverb.',t.ans)}); }
+
+/* --- Satzbau (Antworttyp 'order': Bausteine in Reihenfolge tippen) --- */
+const EN_ORDER=[
+  {de:'Ich gehe jeden Tag zur Schule.',s:['I','go','to','school','every','day']},
+  {de:'Sie hat gestern einen Brief geschrieben.',s:['She','wrote','a','letter','yesterday']},
+  {de:'Wir werden morgen Fußball spielen.',s:['We','will','play','football','tomorrow']},
+  {de:'Er kann sehr gut schwimmen.',s:['He','can','swim','very','well']},
+  {de:'Sie wohnen seit 2010 in London.',s:['They','have','lived','in','London','since','2010']},
+  {de:'Ich habe meine Hausaufgaben noch nicht gemacht.',s:['I','have','not','done','my','homework','yet']},
+  {de:'Magst du Schokolade?',s:['Do','you','like','chocolate']},
+  {de:'Das Buch wurde von vielen Leuten gelesen.',s:['The','book','was','read','by','many','people']},
+  {de:'Sie ist gestern nicht zur Arbeit gegangen.',s:['She','did','not','go','to','work','yesterday']},
+  {de:'Wir treffen unsere Freunde am Wochenende.',s:['We','meet','our','friends','at','the','weekend']}
+];
+function genOrder(){ const it=pick(EN_ORDER); const ans=it.s.join(' ');
+  let toks=it.s.slice(); for(let i=0;i<8;i++){ shuffle(toks); if(toks.join(' ')!==ans) break; }
+  return engProb({difficulty:'schwer',kind:'order',tokens:toks,order:it.s.slice(),
+    displayHTML:'<div class="engq"><span class="ptype">Satzbau · bring die Wörter in die richtige Reihenfolge</span><div class="engsent dim">'+it.de+'</div></div>',
+    answer:ans,accept:[ans],explainHTML:gExplain('Richtige Wortstellung:','✓ '+ans)}); }
+
 const GRAMMARGENS=[
-  {w:3,f:genTensePast},{w:2,f:genThirdPerson},{w:2,f:genTensePerfect},{w:1.5,f:genTensePerfectHas},
-  {w:1.5,f:genProgressive},{w:1,f:genProgressivePl},{w:1.5,f:genFutureWill},{w:1.2,f:genPastProgressive},
-  {w:1.5,f:genComparative},{w:1.2,f:genSuperlative},{w:1.5,f:genPlural},{w:1.2,f:genArticle}
+  {w:2.5,f:genTensePast},{w:1.8,f:genThirdPerson},{w:1.8,f:genTensePerfect},{w:1.2,f:genTensePerfectHas},
+  {w:1.2,f:genProgressive},{w:0.8,f:genProgressivePl},{w:1.2,f:genFutureWill},{w:1,f:genPastProgressive},
+  {w:1.2,f:genComparative},{w:1,f:genSuperlative},{w:1.2,f:genPlural},{w:1,f:genArticle},
+  /* Phase 2 */
+  {w:1.8,f:genIfClause},{w:1.5,f:genPassive},{w:1.5,f:genReported},{w:1.3,f:genRelative},
+  {w:1.5,f:genModal},{w:1.3,f:genTag},{w:1.5,f:genOrder}
 ];
 
 /* ---------- Englisch-Mix ---------- */
 const ENGMIXGENS=[
   {w:2,f:genVocEN2DE},{w:2,f:genVocDE2EN},{w:1.5,f:genVocMC},{w:1,f:genVocGap},
   {w:2,f:genTensePast},{w:1.5,f:genTensePerfect},{w:1.2,f:genThirdPerson},{w:1.2,f:genComparative},
-  {w:1.2,f:genFutureWill},{w:1,f:genPlural},{w:1,f:genProgressive},{w:0.8,f:genArticle}
+  {w:1.2,f:genFutureWill},{w:1,f:genPlural},{w:1,f:genProgressive},{w:0.8,f:genArticle},
+  {w:1.3,f:genIfClause},{w:1.1,f:genPassive},{w:1.1,f:genReported},{w:1,f:genRelative},
+  {w:1.1,f:genModal},{w:1,f:genTag},{w:1.2,f:genOrder}
 ];
 function genEngMixBoss(){ return Math.random()<0.5?genVocBoss():genGrammarBoss(); }
 
@@ -1769,18 +1910,19 @@ function loadProblem(){
   else { badge.textContent=current.difficulty; badge.className='badge b-'+current.difficulty.replace(' ','-'); $('bossBanner').className='bossbanner'; $('card').classList.remove('boss'); }
 
   if(state.mode==='mix'){ $('eqHint').textContent = current.isGeo ? 'Geometrie: Taschenrechner · π ≈ 3,14 · auf 2 Dezimalen runden' : 'Zahl, Bruch (3/4) oder Dezimal (1,75) · ohne Taschenrechner'; }
-  // --- Englisch: Antwort-UI (Multiple-Choice vs. Texteingabe) ---
+  // --- Englisch: Antwort-UI (Multiple-Choice / Satzbau / Texteingabe) ---
   const isChoice = current.eng && current.kind==='choice';
+  const isOrder  = current.eng && current.kind==='order';
   const chBox=$('choices');
+  $('answerbar').style.display=(isChoice||isOrder)?'none':'flex';
   if(isChoice){
-    $('answerbar').style.display='none';
     chBox.style.display='grid';
     chBox.innerHTML=current.choices.map((c,i)=>'<button class="choicebtn" data-i="'+i+'">'+c+'</button>').join('');
     chBox.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>checkChoice(+b.dataset.i,b)));
-  } else {
-    $('answerbar').style.display='flex'; chBox.style.display='none'; chBox.innerHTML='';
-  }
-  if(current.eng){ $('eqHint').textContent = isChoice ? 'Tippe auf die richtige Antwort.' : 'Tippe deine Antwort ein (Groß/Klein egal).'; }
+  } else { chBox.style.display='none'; chBox.innerHTML=''; }
+  if(isOrder){ $('orderbox').style.display='block'; orderSel=[]; renderOrder(); }
+  else { $('orderbox').style.display='none'; }
+  if(current.eng){ $('eqHint').textContent = isChoice ? 'Tippe auf die richtige Antwort.' : isOrder ? 'Tippe die Wörter der Reihe nach an, dann PRÜFEN.' : 'Tippe deine Antwort ein (Groß/Klein egal).'; }
   const sc=$('steps'); sc.innerHTML='';
   if(current.explainHTML){
     sc.innerHTML='<div class="engsol">'+current.explainHTML+'</div>';
@@ -1823,6 +1965,21 @@ function checkChoice(i,btn){
   if(solvedThis)return;
   if(i===current.answerIndex){ if(btn)btn.classList.add('rightpick'); onCorrect(); }
   else{ if(btn){btn.disabled=true; btn.classList.add('wrongpick');} wrongFeedback(); }
+}
+let orderSel=[];   // Reihenfolge der angetippten Token-Indizes (Satzbau)
+function renderOrder(){
+  const built=$('orderBuilt'), toks=$('orderTokens');
+  built.innerHTML=orderSel.map((ti,pos)=>'<button class="btok" data-pos="'+pos+'">'+current.tokens[ti]+'</button>').join('');
+  toks.innerHTML=current.tokens.map((t,i)=>'<button class="tok'+(orderSel.indexOf(i)>=0?' used':'')+'" data-i="'+i+'">'+t+'</button>').join('');
+  toks.querySelectorAll('.tok').forEach(b=>b.addEventListener('click',()=>{ if(solvedThis)return; const i=+b.dataset.i; if(orderSel.indexOf(i)<0){ orderSel.push(i); renderOrder(); } }));
+  built.querySelectorAll('.btok').forEach(b=>b.addEventListener('click',()=>{ if(solvedThis)return; orderSel.splice(+b.dataset.pos,1); renderOrder(); }));
+}
+function checkOrder(){
+  if(solvedThis)return;
+  if(orderSel.length<current.tokens.length){ wrongFeedback('✗ Nutze alle Wörter.'); return; }
+  const built=orderSel.map(i=>current.tokens[i]).join(' ');
+  if(normalizeEN(built)===normalizeEN(current.answer)) onCorrect();
+  else wrongFeedback();
 }
 function checkAnswer(){
   if(solvedThis)return;
@@ -1868,6 +2025,7 @@ function onCorrect(){
   $('feedback').textContent = (current.isBoss && pts>0) ? '✓ ENDGEGNER BESIEGT!' : ('✓ RICHTIG, '+PLAYER+'!');
   $('answer').disabled=true; $('btnCheck').disabled=true;
   $('choices').querySelectorAll('button').forEach(b=>b.disabled=true);
+  $('orderbox').querySelectorAll('button').forEach(b=>b.disabled=true);
   if(soundOn){ if(bk==='boss')playWin(); else if(pts>0)playRight(); }
   const neg=pts<0;
   const res=$('result'); res.className='show'+(neg?' neg':'');
@@ -1951,6 +2109,8 @@ function finishRound(viaBoss){
 }
 
 $('btnCheck').addEventListener('click',checkAnswer);
+$('orderCheck').addEventListener('click',checkOrder);
+$('orderReset').addEventListener('click',()=>{ if(solvedThis)return; orderSel=[]; renderOrder(); });
 $('answer').addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
 $('btnSolution').addEventListener('click',()=>{
   const s=$('solution'), show=s.className!=='show';
@@ -1980,6 +2140,7 @@ function showStart(){
   $('result').className=''; $('result').innerHTML='';
   $('solution').className=''; $('btnSolution').textContent='Lösung zeigen';
   $('equation').innerHTML=''; $('steps').innerHTML='';
+  $('choices').style.display='none'; $('orderbox').style.display='none'; $('answerbar').style.display='flex';
   $('bossBanner').className='bossbanner'; $('card').classList.remove('boss');
   $('track').classList.remove('over','paused'); $('timer').classList.remove('over');
   $('overlay').classList.remove('hidden');
