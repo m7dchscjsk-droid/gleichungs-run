@@ -424,6 +424,19 @@
   .btn-start{font-size:30px;padding:16px 50px;}
   .subjbtn{font-size:20px;padding:10px 24px;}
   .ov-sub{font-size:15px;}
+  /* Tabs-Reihe über dem Hero (wie Entwurf) */
+  .ov-start>.subjectpick{display:flex;gap:10px;justify-content:flex-start;margin:0 0 14px;}
+  /* kompakte Rarity-Karten mit Beschreibung, eine Reihe */
+  .heroR{align-items:stretch;}
+  .heroR .modepick{grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:10px;}
+  .modebtn{padding:11px 12px 10px;gap:2px;}
+  .modebtn .mc-no{font-size:11px;}
+  .modebtn .mc-nm{font-size:18px;}
+  .modebtn .mc-ds{font-size:11px;color:var(--muted);font-weight:600;line-height:1.2;}
+  .modebtn.active .mc-ds{color:#cfe0ff;}
+  /* kompakter Start-Button + Zeile */
+  .cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:4px;}
+  .cta .btn-start{align-self:flex-start;font-size:26px;padding:15px 44px;}
 </style>
 </head>
 <body>
@@ -452,6 +465,10 @@
   <main class="card" id="card">
     <div class="overlay" id="overlay">
       <div class="ov-start" id="ovStart">
+        <div class="subjectpick">
+          <button class="subjbtn active" id="subjMath">📐 Mathe</button>
+          <button class="subjbtn" id="subjEng">🇬🇧 Englisch</button>
+        </div>
         <div class="hero2">
           <div class="charcard">
             <div class="ov-dino" id="ovDino"></div>
@@ -461,25 +478,21 @@
           <div class="heroR">
             <div class="kicker" id="brandSub">Hauptschulabschluss Bayern · nach x auflösen · ohne Taschenrechner</div>
             <h1 class="herotitle" id="brandTitle">Gleichungs&nbsp;Run</h1>
-            <div class="subjectpick">
-              <button class="subjbtn active" id="subjMath">📐 Mathe</button>
-              <button class="subjbtn" id="subjEng">🇬🇧 Englisch</button>
-            </div>
+            <div class="ov-sub" id="ovSub">Knack die Gleichungen, halte deine <b>Serie</b> für AURA-Punkte und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück wartet der Endgegner. Bereit?</div>
             <div class="modepick" id="modepickMath">
-              <button class="modebtn rare active" id="btnModeEq"><span class="mc-no">01</span><span class="mc-nm">Gleichungen</span></button>
-              <button class="modebtn rare" id="btnModeP"><span class="mc-no">02</span><span class="mc-nm">Prozent</span></button>
-              <button class="modebtn epic" id="btnModeG"><span class="mc-no">03</span><span class="mc-nm">Größen</span></button>
-              <button class="modebtn epic" id="btnModeGeo"><span class="mc-no">04</span><span class="mc-nm">Geometrie</span></button>
-              <button class="modebtn legend" id="btnModeMix"><span class="mc-no">05</span><span class="mc-nm">Mix</span></button>
+              <button class="modebtn rare active" id="btnModeEq"><span class="mc-no">01</span><span class="mc-nm">Gleichungen</span><span class="mc-ds">nach x auflösen</span></button>
+              <button class="modebtn rare" id="btnModeP"><span class="mc-no">02</span><span class="mc-nm">Prozent</span><span class="mc-ds">Dreisatz &amp; Co.</span></button>
+              <button class="modebtn epic" id="btnModeG"><span class="mc-no">03</span><span class="mc-nm">Größen</span><span class="mc-ds">umrechnen</span></button>
+              <button class="modebtn epic" id="btnModeGeo"><span class="mc-no">04</span><span class="mc-nm">Geometrie</span><span class="mc-ds">mit Rechner</span></button>
+              <button class="modebtn legend" id="btnModeMix"><span class="mc-no">05</span><span class="mc-nm">Mix</span><span class="mc-ds">alles, sehr schwer</span></button>
             </div>
             <div class="modepick" id="modepickEng" style="display:none">
-              <button class="modebtn rare" id="btnModeVocab"><span class="mc-no">01</span><span class="mc-nm">Vokabeln</span></button>
-              <button class="modebtn epic" id="btnModeGrammar"><span class="mc-no">02</span><span class="mc-nm">Grammatik</span></button>
-              <button class="modebtn epic" id="btnModeReading"><span class="mc-no">03</span><span class="mc-nm">Lesen</span></button>
-              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">04</span><span class="mc-nm">Mix</span></button>
+              <button class="modebtn rare" id="btnModeVocab"><span class="mc-no">01</span><span class="mc-nm">Vokabeln</span><span class="mc-ds">EN ↔ DE</span></button>
+              <button class="modebtn epic" id="btnModeGrammar"><span class="mc-no">02</span><span class="mc-nm">Grammatik</span><span class="mc-ds">Teil B</span></button>
+              <button class="modebtn epic" id="btnModeReading"><span class="mc-no">03</span><span class="mc-nm">Lesen</span><span class="mc-ds">Texte + Fragen</span></button>
+              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">04</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
             </div>
-            <div class="ov-sub" id="ovSub">Knack die Gleichungen, halte deine <b>Serie</b> für AURA-Punkte und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen am Stück wartet der Endgegner. Bereit?</div>
-            <button class="btn-start" id="btnStart">▶ Start</button>
+            <div class="cta"><button class="btn-start" id="btnStart">▶ Start</button></div>
           </div>
         </div>
       </div>
