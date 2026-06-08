@@ -490,7 +490,8 @@
               <button class="modebtn rare" id="btnModeVocab"><span class="mc-no">01</span><span class="mc-nm">Vokabeln</span><span class="mc-ds">EN ↔ DE</span></button>
               <button class="modebtn epic" id="btnModeGrammar"><span class="mc-no">02</span><span class="mc-nm">Grammatik</span><span class="mc-ds">Teil B</span></button>
               <button class="modebtn epic" id="btnModeReading"><span class="mc-no">03</span><span class="mc-nm">Lesen</span><span class="mc-ds">Texte + Fragen</span></button>
-              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">04</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
+              <button class="modebtn epic" id="btnModeIrreg"><span class="mc-no">04</span><span class="mc-nm">Verbformen</span><span class="mc-ds">irregular + Plural</span></button>
+              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">05</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
             </div>
             <div class="cta"><button class="btn-start" id="btnStart">▶ Start</button></div>
           </div>
@@ -923,6 +924,7 @@ function makeBoss(){
   if(state.mode==='vocab'){ return genVocBoss(); }
   if(state.mode==='grammar'){ return genGrammarBoss(); }
   if(state.mode==='reading'){ return genReadingBoss(); }
+  if(state.mode==='irreg'){ return genIrrBoss(); }
   if(state.mode==='engmix'){ return genEngMixBoss(); }
   for(let i=0;i<1500;i++){const p=genBoss(); if(p)return p;} return makeProblem();
 }
@@ -941,9 +943,10 @@ const GENS=[
   {w:6,f:genMixedDecFrac},
 ];
 function makeProblem(){
-  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
   for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
   if(state.mode==='reading'){ return genReading(); }
+  if(state.mode==='irreg'){ return genIrrVerb(); }
   if(state.mode==='vocab'||state.mode==='grammar'||state.mode==='engmix'){ return genVocEN2DE(); }
   // Notfall-Fallback
   if(state.mode==='prozent') return genProzentwert();
@@ -2100,6 +2103,210 @@ const EN_ARTNOUNS=[
 {w:"book",art:"a"},{w:"phone",art:"a"},{w:"dog",art:"a"},{w:"teacher",art:"a"},{w:"European",art:"a"}
 ];
 
+/* ---------- Unregelmäßige Verben & unregelmäßige Plurale (eigene Sektion) ---------- */
+const IRR_V=[
+ {inf:"be",past:"was",pastAlt:["were"],pp:"been",de:"sein"},
+ {inf:"beat",past:"beat",pp:"beaten",de:"schlagen/besiegen"},
+ {inf:"become",past:"became",pp:"become",de:"werden"},
+ {inf:"begin",past:"began",pp:"begun",de:"beginnen"},
+ {inf:"bend",past:"bent",pp:"bent",de:"biegen"},
+ {inf:"bite",past:"bit",pp:"bitten",de:"beißen"},
+ {inf:"bleed",past:"bled",pp:"bled",de:"bluten"},
+ {inf:"blow",past:"blew",pp:"blown",de:"blasen/wehen"},
+ {inf:"break",past:"broke",pp:"broken",de:"brechen/kaputt machen"},
+ {inf:"bring",past:"brought",pp:"brought",de:"bringen"},
+ {inf:"build",past:"built",pp:"built",de:"bauen"},
+ {inf:"burn",past:"burnt",pastAlt:["burned"],pp:"burnt",ppAlt:["burned"],de:"brennen/verbrennen"},
+ {inf:"buy",past:"bought",pp:"bought",de:"kaufen"},
+ {inf:"catch",past:"caught",pp:"caught",de:"fangen/erwischen"},
+ {inf:"choose",past:"chose",pp:"chosen",de:"wählen/auswählen"},
+ {inf:"come",past:"came",pp:"come",de:"kommen"},
+ {inf:"cost",past:"cost",pp:"cost",de:"kosten"},
+ {inf:"creep",past:"crept",pp:"crept",de:"kriechen/schleichen"},
+ {inf:"cut",past:"cut",pp:"cut",de:"schneiden"},
+ {inf:"deal",past:"dealt",pp:"dealt",de:"handeln/austeilen"},
+ {inf:"dig",past:"dug",pp:"dug",de:"graben"},
+ {inf:"do",past:"did",pp:"done",de:"tun/machen"},
+ {inf:"draw",past:"drew",pp:"drawn",de:"zeichnen"},
+ {inf:"dream",past:"dreamt",pastAlt:["dreamed"],pp:"dreamt",ppAlt:["dreamed"],de:"träumen"},
+ {inf:"drink",past:"drank",pp:"drunk",de:"trinken"},
+ {inf:"drive",past:"drove",pp:"driven",de:"fahren"},
+ {inf:"eat",past:"ate",pp:"eaten",de:"essen"},
+ {inf:"fall",past:"fell",pp:"fallen",de:"fallen"},
+ {inf:"feed",past:"fed",pp:"fed",de:"füttern"},
+ {inf:"feel",past:"felt",pp:"felt",de:"fühlen"},
+ {inf:"fight",past:"fought",pp:"fought",de:"kämpfen"},
+ {inf:"find",past:"found",pp:"found",de:"finden"},
+ {inf:"fly",past:"flew",pp:"flown",de:"fliegen"},
+ {inf:"forget",past:"forgot",pp:"forgotten",de:"vergessen"},
+ {inf:"forgive",past:"forgave",pp:"forgiven",de:"vergeben/verzeihen"},
+ {inf:"freeze",past:"froze",pp:"frozen",de:"frieren/einfrieren"},
+ {inf:"get",past:"got",pp:"got",ppAlt:["gotten"],de:"bekommen/werden"},
+ {inf:"give",past:"gave",pp:"given",de:"geben"},
+ {inf:"go",past:"went",pp:"gone",de:"gehen"},
+ {inf:"grow",past:"grew",pp:"grown",de:"wachsen"},
+ {inf:"hang",past:"hung",pp:"hung",de:"hängen"},
+ {inf:"have",past:"had",pp:"had",de:"haben"},
+ {inf:"hear",past:"heard",pp:"heard",de:"hören"},
+ {inf:"hide",past:"hid",pp:"hidden",de:"verstecken"},
+ {inf:"hit",past:"hit",pp:"hit",de:"schlagen/treffen"},
+ {inf:"hold",past:"held",pp:"held",de:"halten"},
+ {inf:"hurt",past:"hurt",pp:"hurt",de:"verletzen/wehtun"},
+ {inf:"keep",past:"kept",pp:"kept",de:"behalten/aufbewahren"},
+ {inf:"kneel",past:"knelt",pastAlt:["kneeled"],pp:"knelt",ppAlt:["kneeled"],de:"knien"},
+ {inf:"know",past:"knew",pp:"known",de:"wissen/kennen"},
+ {inf:"lay",past:"laid",pp:"laid",de:"legen"},
+ {inf:"lead",past:"led",pp:"led",de:"führen/anführen"},
+ {inf:"learn",past:"learnt",pastAlt:["learned"],pp:"learnt",ppAlt:["learned"],de:"lernen"},
+ {inf:"leave",past:"left",pp:"left",de:"verlassen/weggehen"},
+ {inf:"lend",past:"lent",pp:"lent",de:"leihen/verleihen"},
+ {inf:"let",past:"let",pp:"let",de:"lassen"},
+ {inf:"light",past:"lit",pastAlt:["lighted"],pp:"lit",ppAlt:["lighted"],de:"anzünden"},
+ {inf:"lose",past:"lost",pp:"lost",de:"verlieren"},
+ {inf:"make",past:"made",pp:"made",de:"machen/herstellen"},
+ {inf:"mean",past:"meant",pp:"meant",de:"bedeuten/meinen"},
+ {inf:"meet",past:"met",pp:"met",de:"treffen/kennenlernen"},
+ {inf:"pay",past:"paid",pp:"paid",de:"bezahlen"},
+ {inf:"put",past:"put",pp:"put",de:"legen/stellen/setzen"},
+ {inf:"quit",past:"quit",pastAlt:["quitted"],pp:"quit",ppAlt:["quitted"],de:"aufhören/kündigen"},
+ {inf:"read",past:"read",pp:"read",de:"lesen"},
+ {inf:"ride",past:"rode",pp:"ridden",de:"reiten/fahren"},
+ {inf:"ring",past:"rang",pp:"rung",de:"klingeln/anrufen"},
+ {inf:"rise",past:"rose",pp:"risen",de:"aufgehen/steigen"},
+ {inf:"run",past:"ran",pp:"run",de:"rennen/laufen"},
+ {inf:"say",past:"said",pp:"said",de:"sagen"},
+ {inf:"see",past:"saw",pp:"seen",de:"sehen"},
+ {inf:"sell",past:"sold",pp:"sold",de:"verkaufen"},
+ {inf:"send",past:"sent",pp:"sent",de:"senden/schicken"},
+ {inf:"set",past:"set",pp:"set",de:"setzen/stellen"},
+ {inf:"shake",past:"shook",pp:"shaken",de:"schütteln"},
+ {inf:"shine",past:"shone",pp:"shone",de:"scheinen/leuchten"},
+ {inf:"shoot",past:"shot",pp:"shot",de:"schießen"},
+ {inf:"show",past:"showed",pp:"shown",ppAlt:["showed"],de:"zeigen"},
+ {inf:"shut",past:"shut",pp:"shut",de:"schließen/zumachen"},
+ {inf:"sing",past:"sang",pp:"sung",de:"singen"},
+ {inf:"sink",past:"sank",pp:"sunk",de:"sinken/untergehen"},
+ {inf:"sit",past:"sat",pp:"sat",de:"sitzen"},
+ {inf:"sleep",past:"slept",pp:"slept",de:"schlafen"},
+ {inf:"slide",past:"slid",pp:"slid",de:"rutschen/gleiten"},
+ {inf:"smell",past:"smelt",pastAlt:["smelled"],pp:"smelt",ppAlt:["smelled"],de:"riechen"},
+ {inf:"speak",past:"spoke",pp:"spoken",de:"sprechen"},
+ {inf:"spend",past:"spent",pp:"spent",de:"ausgeben/verbringen"},
+ {inf:"spell",past:"spelt",pastAlt:["spelled"],pp:"spelt",ppAlt:["spelled"],de:"buchstabieren"},
+ {inf:"spill",past:"spilt",pastAlt:["spilled"],pp:"spilt",ppAlt:["spilled"],de:"verschütten"},
+ {inf:"split",past:"split",pp:"split",de:"spalten/teilen"},
+ {inf:"spoil",past:"spoilt",pastAlt:["spoiled"],pp:"spoilt",ppAlt:["spoiled"],de:"verderben/verwöhnen"},
+ {inf:"spread",past:"spread",pp:"spread",de:"verteilen/ausbreiten"},
+ {inf:"spring",past:"sprang",pp:"sprung",de:"springen"},
+ {inf:"stand",past:"stood",pp:"stood",de:"stehen"},
+ {inf:"steal",past:"stole",pp:"stolen",de:"stehlen"},
+ {inf:"stick",past:"stuck",pp:"stuck",de:"kleben/stecken"},
+ {inf:"sting",past:"stung",pp:"stung",de:"stechen"},
+ {inf:"strike",past:"struck",pp:"struck",de:"schlagen/streiken"},
+ {inf:"swear",past:"swore",pp:"sworn",de:"schwören/fluchen"},
+ {inf:"sweep",past:"swept",pp:"swept",de:"fegen/kehren"},
+ {inf:"swim",past:"swam",pp:"swum",de:"schwimmen"},
+ {inf:"swing",past:"swung",pp:"swung",de:"schwingen/schaukeln"},
+ {inf:"take",past:"took",pp:"taken",de:"nehmen"},
+ {inf:"teach",past:"taught",pp:"taught",de:"unterrichten/beibringen"},
+ {inf:"tear",past:"tore",pp:"torn",de:"zerreißen"},
+ {inf:"tell",past:"told",pp:"told",de:"erzählen/sagen"},
+ {inf:"think",past:"thought",pp:"thought",de:"denken"},
+ {inf:"throw",past:"threw",pp:"thrown",de:"werfen"},
+ {inf:"understand",past:"understood",pp:"understood",de:"verstehen"},
+ {inf:"wake",past:"woke",pp:"woken",de:"aufwachen/wecken"},
+ {inf:"wear",past:"wore",pp:"worn",de:"tragen/anhaben"},
+ {inf:"weep",past:"wept",pp:"wept",de:"weinen"},
+ {inf:"win",past:"won",pp:"won",de:"gewinnen"},
+ {inf:"wind",past:"wound",pp:"wound",de:"aufziehen/winden"},
+ {inf:"write",past:"wrote",pp:"written",de:"schreiben"}
+];
+const IRR_PL=[
+ {sg:"man",pl:"men",de:"Mann"},
+ {sg:"woman",pl:"women",de:"Frau"},
+ {sg:"child",pl:"children",de:"Kind"},
+ {sg:"person",pl:"people",de:"Person"},
+ {sg:"foot",pl:"feet",de:"Fuß"},
+ {sg:"tooth",pl:"teeth",de:"Zahn"},
+ {sg:"goose",pl:"geese",de:"Gans"},
+ {sg:"mouse",pl:"mice",de:"Maus"},
+ {sg:"ox",pl:"oxen",de:"Ochse"},
+ {sg:"sheep",pl:"sheep",de:"Schaf"},
+ {sg:"fish",pl:"fish",plAlt:["fishes"],de:"Fisch"},
+ {sg:"deer",pl:"deer",de:"Reh/Hirsch"},
+ {sg:"aircraft",pl:"aircraft",de:"Flugzeug"},
+ {sg:"knife",pl:"knives",de:"Messer"},
+ {sg:"life",pl:"lives",de:"Leben"},
+ {sg:"wife",pl:"wives",de:"Ehefrau"},
+ {sg:"leaf",pl:"leaves",de:"Blatt"},
+ {sg:"wolf",pl:"wolves",de:"Wolf"},
+ {sg:"half",pl:"halves",de:"Hälfte"},
+ {sg:"shelf",pl:"shelves",de:"Regal"},
+ {sg:"thief",pl:"thieves",de:"Dieb"},
+ {sg:"loaf",pl:"loaves",de:"Laib (Brot)"},
+ {sg:"calf",pl:"calves",de:"Kalb"},
+ {sg:"scarf",pl:"scarves",plAlt:["scarfs"],de:"Schal"},
+ {sg:"city",pl:"cities",de:"Stadt"},
+ {sg:"baby",pl:"babies",de:"Baby"},
+ {sg:"country",pl:"countries",de:"Land"},
+ {sg:"story",pl:"stories",de:"Geschichte"},
+ {sg:"family",pl:"families",de:"Familie"},
+ {sg:"party",pl:"parties",de:"Party/Feier"},
+ {sg:"lady",pl:"ladies",de:"Dame"},
+ {sg:"hobby",pl:"hobbies",de:"Hobby"},
+ {sg:"lorry",pl:"lorries",de:"Lastwagen"},
+ {sg:"dictionary",pl:"dictionaries",de:"Wörterbuch"},
+ {sg:"tomato",pl:"tomatoes",de:"Tomate"},
+ {sg:"potato",pl:"potatoes",de:"Kartoffel"},
+ {sg:"hero",pl:"heroes",de:"Held"},
+ {sg:"box",pl:"boxes",de:"Schachtel"},
+ {sg:"bus",pl:"buses",de:"Bus"},
+ {sg:"watch",pl:"watches",de:"Uhr"},
+ {sg:"dish",pl:"dishes",de:"Schüssel/Gericht"},
+ {sg:"glass",pl:"glasses",de:"Glas"},
+ {sg:"brush",pl:"brushes",de:"Bürste"},
+ {sg:"church",pl:"churches",de:"Kirche"},
+ {sg:"sandwich",pl:"sandwiches",de:"Sandwich"},
+ {sg:"fox",pl:"foxes",de:"Fuchs"},
+ {sg:"beach",pl:"beaches",de:"Strand"},
+ {sg:"class",pl:"classes",de:"Klasse"},
+ {sg:"photo",pl:"photos",de:"Foto"},
+ {sg:"piano",pl:"pianos",de:"Klavier"}
+];
+function genIrrVerb(){
+  const v=pick(IRR_V); const askPP=Math.random()<0.5;
+  const form=askPP?v.pp:v.past; const alt=askPP?(v.ppAlt||[]):(v.pastAlt||[]);
+  const label=askPP?'3. Form · Past Participle':'2. Form · Simple Past';
+  const tag=askPP?'(have/has + 3. Form)':'(z. B. yesterday …)';
+  const ref={en:form,enAlt:alt,de:(askPP?'Past Participle (3. Form)':'Simple Past (2. Form)')+' von '+v.inf+' ('+v.de+')'};
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">Unregelmäßige Verben · '+label+'</span><div class="engword">'+v.inf+'</div><div class="enghint">'+v.de+' — wie heißt die '+(askPP?'3.':'2.')+' Form? <span class="dim">'+tag+'</span></div></div>',
+    answer:form,accept:[form].concat(alt),vocabRef:ref,
+    explainHTML:'<b>'+v.inf+'</b> – <b>'+v.past+'</b> – <b>'+v.pp+'</b> <span class="dim">· '+v.de+'</span>'}); }
+function genIrrPlural(){
+  const n=pick(IRR_PL); const alt=n.plAlt||[];
+  const ref={en:n.pl,enAlt:alt,de:'Plural von '+n.sg+' ('+n.de+')'};
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">Unregelmäßige Mehrzahl · Plural</span><div class="engword">one '+n.sg+'</div><div class="enghint">'+n.de+' — wie heißt die <b>Mehrzahl</b>? <span class="dim">two …</span></div></div>',
+    answer:n.pl,accept:[n.pl].concat(alt),vocabRef:ref,
+    explainHTML:'one <b>'+n.sg+'</b> → two <b>'+n.pl+'</b> <span class="dim">· '+n.de+'</span>'}); }
+function genIrrBoss(){
+  if(Math.random()<0.25){ const n=pick(IRR_PL); const alt=n.plAlt||[];
+    return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
+      displayHTML:'<div class="engq"><span class="ptype">★ ENDGEGNER · Plural</span><div class="engword">'+n.sg+'</div><div class="enghint">'+n.de+' — schreibe die <b>Mehrzahl</b>!</div></div>',
+      answer:n.pl,accept:[n.pl].concat(alt),vocabRef:{en:n.pl,enAlt:alt,de:'Plural von '+n.sg+' ('+n.de+')'},
+      explainHTML:'one <b>'+n.sg+'</b> → two <b>'+n.pl+'</b>'}); }
+  const v=pick(IRR_V);
+  const pasts=[v.past].concat(v.pastAlt||[]); const pps=[v.pp].concat(v.ppAlt||[]);
+  const seps=[' ',', ',' - ',' – ','/',' / ','–'];
+  const acc=[]; pasts.forEach(a=>pps.forEach(b=>seps.forEach(s=>acc.push(a+s+b))));
+  const canon=v.past+' '+v.pp;
+  return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">★ ENDGEGNER · 2. + 3. Form</span><div class="engword">'+v.inf+'</div><div class="enghint">'+v.de+' — nenne <b>Simple Past</b> und <b>Past Participle</b> <span class="dim">(z. B. „go → went gone")</span></div></div>',
+    answer:canon,accept:acc,vocabRef:{en:canon,enAlt:acc.slice(1),de:'2. + 3. Form von '+v.inf+' ('+v.de+')'},
+    explainHTML:'<b>'+v.inf+'</b> – <b>'+v.past+'</b> – <b>'+v.pp+'</b> <span class="dim">· '+v.de+'</span>'}); }
+const IRRGENS=[ {w:5,f:genIrrVerb},{w:1.8,f:genIrrPlural} ];
+
 /* ---------- Grammatik-Generatoren (Phase 1, generiert) ---------- */
 const EN_SUBJ_S=["He","She","My friend","The teacher","My brother","Anna","Tom","The man"];
 const EN_SUBJ_PL=["I","We","They","You","My friends"];
@@ -2350,49 +2557,70 @@ const EN_TEXTS=[
  qs:[
   {q:'When would Tom work?',choices:['At the weekend','Monday to Friday','Only on Friday','Every evening'],ai:1},
   {q:'Tom needs work experience for this job.',choices:TF,ai:1,ex:'Im Text: „You don’t need experience."'},
-  {q:'How much is the pay per hour? (nur die Zahl)',answer:'11',accept:['11','11 euros','€11','11€'],ex:'„11 euros per hour"'}
+  {q:'How much is the pay per hour? (nur die Zahl)',answer:'11',accept:['11','11 euros','€11','11€'],ex:'„11 euros per hour"'},
+  {q:"What does 'reliable' mean in the email?",choices:['lazy','someone you can trust','very fast','funny'],ai:1,ex:'reliable = zuverlässig.'},
+  {q:'Why did Mrs Brown write this email?',choices:['To say no to Tom','To offer Tom a summer job','To order coffee','To complain'],ai:1,ex:'Sie bietet Tom den Ferienjob an.'},
+  {q:'What must Tom do before Friday?',choices:['Send money','Call Mrs Brown','Come to the café','Write a test'],ai:1,ex:'„Please call me before Friday."'}
  ]},
 {title:'Aushang · Schwimmbad',level:'mittel',
  text:"CITY POOL — Opening hours: Monday to Friday 7 a.m.–8 p.m., Saturday 9 a.m.–6 p.m. Closed on Sundays. Tickets: adults £5, children £3. On Wednesdays, students pay only £2. Lockers cost £1.",
  qs:[
   {q:'When is the pool closed?',choices:['On Saturdays','On Sundays','On Mondays','Never'],ai:1},
   {q:'How much do children pay? (nur die Zahl)',answer:'3',accept:['3','£3','3 pounds'],ex:'„children £3"'},
-  {q:'Students pay less on Wednesdays.',choices:TF,ai:0,ex:'„students pay only £2"'}
+  {q:'Students pay less on Wednesdays.',choices:TF,ai:0,ex:'„students pay only £2"'},
+  {q:'How much does a locker cost? (nur die Zahl)',answer:'1',accept:['1','£1','one','1 pound'],ex:'„Lockers cost £1"'},
+  {q:'On Saturday the pool opens at...',choices:['7 a.m.','9 a.m.','6 p.m.','It is closed'],ai:1,ex:'„Saturday 9 a.m.–6 p.m."'},
+  {q:'The text says how warm the water in the pool is.',choices:TF,ai:2,ex:'Über die Wassertemperatur steht nichts.'}
  ]},
 {title:'Blog · School trip to York',level:'schwer',
  text:"Last week our class went to York by train. The trip took three hours. First, we visited an old castle. After lunch, we walked through the city and saw the famous cathedral. It started to rain in the afternoon, so we went to a museum. Everyone was tired but happy. I want to go back next year!",
  qs:[
   {q:'How did the class travel to York?',choices:['By bus','By train','By car','By plane'],ai:1},
   {q:'What did they do when it started to rain?',choices:['They went home','They went to a museum','They visited the castle','They had lunch'],ai:1},
-  {q:'The trip to York took two hours.',choices:TF,ai:1,ex:'„The trip took three hours."'}
+  {q:'The trip to York took two hours.',choices:TF,ai:1,ex:'„The trip took three hours."'},
+  {q:'What did the class do first in York?',choices:['Walked through the city','Visited an old castle','Went to a museum','Had lunch'],ai:1,ex:'„First, we visited an old castle."'},
+  {q:'How did everyone feel at the end of the trip?',choices:['Bored and angry','Tired but happy','Scared','Hungry'],ai:1,ex:'„Everyone was tired but happy."'},
+  {q:'Why did the class go to a museum?',choices:['It was free','It started to rain','The castle was closed','They were hungry'],ai:1,ex:'„It started to rain … so we went to a museum."'}
  ]},
 {title:'Text · Plastic and the sea',level:'schwer',
  text:"Every year, millions of tons of plastic end up in the sea. Many animals think the plastic is food and eat it. This makes them ill. We can help: use fewer plastic bags, recycle bottles, and take your rubbish home after a day at the beach. Small steps can make a big difference.",
  qs:[
   {q:'Why is plastic dangerous for sea animals?',choices:['It is too cold','They eat it and get ill','It is too loud','They like the colour'],ai:1},
   {q:'What should you do with your rubbish at the beach?',choices:['Leave it there','Take it home','Burn it','Give it to the animals'],ai:1},
-  {q:'Recycling bottles can help.',choices:TF,ai:0}
+  {q:'Recycling bottles can help.',choices:TF,ai:0},
+  {q:'What is the main message of the text?',choices:['Plastic is good for animals','Everyone can help to use less plastic','The sea is always clean','Animals like plastic'],ai:1,ex:'„Small steps can make a big difference."'},
+  {q:"What does 'rubbish' mean?",choices:['food','waste/litter','water','sand'],ai:1,ex:'rubbish = Müll/Abfall.'},
+  {q:'Why do the animals eat the plastic?',choices:['They are angry','They think it is food','They are not hungry','They want to play'],ai:1,ex:'„Many animals think the plastic is food"'}
  ]},
 {title:'Text · London',level:'mittel',
  text:"London is the capital of the United Kingdom. About nine million people live there. The river Thames flows through the city. Tourists love the Tower of London, Big Ben and the big wheel called the London Eye. You can travel by the famous red buses or by the underground, which people call 'the Tube'.",
  qs:[
   {q:'Which river flows through London?',choices:['The Rhine','The Thames','The Seine','The Danube'],ai:1},
   {q:'London is the capital of the USA.',choices:TF,ai:1},
-  {q:'What do people call the London underground?',answer:'the tube',accept:['the tube','tube'],ex:"„…the underground, which people call 'the Tube'."}
+  {q:'What do people call the London underground?',answer:'the tube',accept:['the tube','tube'],ex:"„…the underground, which people call 'the Tube'."},
+  {q:'About how many people live in London?',choices:['Nine million','One million','Ninety million','Nine hundred'],ai:0,ex:'„About nine million people live there."'},
+  {q:'What is the big wheel in London called?',choices:['Big Ben','The London Eye','The Tower','The Tube'],ai:1,ex:'„the big wheel called the London Eye"'},
+  {q:'The text says London is more beautiful than Paris.',choices:TF,ai:2,ex:'Paris wird im Text nicht erwähnt.'}
  ]},
 {title:"Text · Mia's day",level:'schwer',
  text:"Mia is fifteen and lives in Hamburg. On school days she gets up at half past six. She has breakfast with her brother and then cycles to school. After school she does her homework and plays volleyball twice a week. In the evening she likes watching series and chatting with friends online. At ten o'clock she goes to bed.",
  qs:[
   {q:'How does Mia get to school?',choices:['By bus','She cycles','She walks','By train'],ai:1},
   {q:'How often does she play volleyball?',answer:'twice a week',accept:['twice a week','two times a week','twice'],ex:'„plays volleyball twice a week"'},
-  {q:'Mia goes to bed at eleven o’clock.',choices:TF,ai:1,ex:"„At ten o'clock she goes to bed."}
+  {q:'Mia goes to bed at eleven o’clock.',choices:TF,ai:1,ex:"„At ten o'clock she goes to bed."},
+  {q:'Who does Mia have breakfast with?',choices:['Her mother','Her brother','Her friends','Nobody'],ai:1,ex:'„She has breakfast with her brother"'},
+  {q:'What does Mia do in the evening?',choices:['She plays volleyball','She watches series and chats online','She does homework','She cooks'],ai:1,ex:'„she likes watching series and chatting with friends online"'},
+  {q:'Mia has a part-time job after school.',choices:TF,ai:2,ex:'Über einen Job steht nichts im Text.'}
  ]},
 {title:'Text · Phones at school',level:'schwer',
  text:"At many schools, students are not allowed to use their phones during lessons. Teachers say phones can be a problem because students don't listen. But some people think phones can help: you can look up words or facts quickly. At our school, we can use phones only in the breaks. I think that is a fair rule.",
  qs:[
   {q:"When can students use phones at the writer's school?",choices:['During lessons','Only in the breaks','Never','All the time'],ai:1},
   {q:'The writer thinks the rule is fair.',choices:TF,ai:0},
-  {q:'Why do some people think phones can help?',choices:['They are fun','You can look up words or facts','They are cheap','They make noise'],ai:1}
+  {q:'Why do some people think phones can help?',choices:['They are fun','You can look up words or facts','They are cheap','They make noise'],ai:1},
+  {q:"What is the writer's opinion about the phone rule?",choices:['It is too strict','It is fair','It is stupid','Phones should never be used'],ai:1,ex:'„I think that is a fair rule."'},
+  {q:'Why do teachers say phones are a problem?',choices:['They are expensive','Students do not listen','They are too small','They are loud'],ai:1,ex:"„students don't listen"},
+  {q:'The writer says students may use phones during tests.',choices:TF,ai:2,ex:'Über Prüfungen/Tests steht nichts im Text.'}
  ]},
 {title:'E-Mail · Austauschschülerin',level:'schwer',topic:'school',
  text:"Hi Anna,<br>I have been in Brighton for two weeks now and I love it! I live with a host family. They have two kids and a funny old dog. School starts at 8.45 and finishes at 3.15, so the days are long. The food in the canteen is strange — beans for breakfast! At the weekend my host sister took me to the beach, but the water was much too cold for swimming. Next month we are going to London together. I miss you, but please don't worry about me.<br>See you soon, Lena",
@@ -2400,7 +2628,10 @@ const EN_TEXTS=[
   {q:'Who does Lena live with in Brighton?',choices:['Alone in a flat','With a host family','At the school','With Anna'],ai:1},
   {q:'Lena went swimming in the sea.',choices:TF,ai:1,ex:'„the water was much too cold for swimming" — sie ist nicht geschwommen.'},
   {q:'How long has Lena been in Brighton? (nur die Zahl)',answer:'two',accept:['two','2','two weeks','2 weeks'],ex:'„I have been in Brighton for two weeks"'},
-  {q:'Lena had to pay a lot of money for the school.',choices:TF,ai:2,ex:'Über Kosten oder Bezahlen steht nichts im Text.'}
+  {q:'Lena had to pay a lot of money for the school.',choices:TF,ai:2,ex:'Über Kosten oder Bezahlen steht nichts im Text.'},
+  {q:'How does Lena feel about her time in Brighton?',choices:['She hates it','She loves it','She is bored','She wants to go home'],ai:1,ex:'„I love it!"'},
+  {q:'What surprised Lena about the canteen food?',choices:['Beans for breakfast','There was no food','Only fish','Very sweet food'],ai:0,ex:'„beans for breakfast!"'},
+  {q:"Why does Lena write 'please don't worry about me'?",choices:['She is in danger','She wants Anna to relax','She is ill','She lost her money'],ai:1,ex:'Es geht ihr gut — Anna soll sich keine Sorgen machen.'}
  ]},
 {title:'Blog · Praktikum',level:'schwer',topic:'jobs',
  text:"This week I did my work experience at a car garage. On the first day I was really nervous. The mechanics showed me how to change a tyre and check the oil. I had to get up at six o'clock every morning, which was hard for me! My hands were dirty all the time, but I learned a lot. The boss said I was a good worker. I don't want to be a mechanic, but now I know how an engine works.",
@@ -2408,7 +2639,10 @@ const EN_TEXTS=[
   {q:'Where did the writer do the work experience?',choices:['At a school','At a car garage','At a shop','At a hospital'],ai:1},
   {q:'What did the mechanics teach the writer?',choices:['How to drive','How to change a tyre and check the oil','How to sell cars','How to cook'],ai:1},
   {q:'The writer wants to become a mechanic.',choices:TF,ai:1,ex:"„I don't want to be a mechanic"},
-  {q:'What time did the writer get up? (nur die Zahl)',answer:'six',accept:['six','6'],ex:"„I had to get up at six o'clock"}
+  {q:'What time did the writer get up? (nur die Zahl)',answer:'six',accept:['six','6'],ex:"„I had to get up at six o'clock"},
+  {q:'How did the writer feel on the first day?',choices:['Bored','Really nervous','Angry','Relaxed'],ai:1,ex:'„On the first day I was really nervous."'},
+  {q:'What did the writer learn from the work experience?',choices:['How to cook','How an engine works','How to drive a bus','Nothing at all'],ai:1,ex:'„now I know how an engine works."'},
+  {q:'What did the boss think of the writer?',choices:['He was lazy','He was a good worker','He was too slow','He was rude'],ai:1,ex:'„The boss said I was a good worker."'}
  ]},
 {title:'Artikel · Screen time',level:'schwer',topic:'tech',
  text:"Many teenagers spend more than five hours a day looking at a screen. They watch videos, play games and chat with friends. Experts say this can be a problem. Too much screen time at night makes it hard to sleep, and some young people do less sport than before. But screens are not only bad: you can learn new things, stay in touch with friends and find help for homework. The best idea is to take regular breaks and to put the phone away one hour before bed.",
@@ -2416,7 +2650,10 @@ const EN_TEXTS=[
   {q:'What can too much screen time at night cause?',choices:['Better sleep','Problems sleeping','More sport','Hunger'],ai:1},
   {q:'According to the text, screens are only bad for teenagers.',choices:TF,ai:1,ex:'„screens are not only bad" — der Text nennt auch Vorteile.'},
   {q:'What should you do one hour before bed?',choices:['Play more games','Put the phone away','Watch a film','Call a friend'],ai:1},
-  {q:'The text says how much a phone costs.',choices:TF,ai:2}
+  {q:'The text says how much a phone costs.',choices:TF,ai:2},
+  {q:'What is the best title for this text?',choices:['Phones are dangerous','Using screens in a healthy way','Buy a new phone','Sport is boring'],ai:1,ex:'Es geht um den gesunden Umgang mit Bildschirmzeit.'},
+  {q:'Which of these is a GOOD thing about screens, according to the text?',choices:['You sleep better','You can find help for homework','You do more sport','You get hungry'],ai:1,ex:'„find help for homework"'},
+  {q:'What does the text say is a good idea?',choices:['Use the phone all night','Take regular breaks','Never sleep','Do less homework'],ai:1,ex:'„take regular breaks"'}
  ]},
 {title:'Aushang · Volunteers',level:'mittel',topic:'freetime',
  text:"GREENFIELD SPORTS CLUB needs YOU! We are looking for young volunteers to help with our football and basketball teams. You don't have to be a great player — we just need friendly people who like sport. You would help with training on Tuesday and Thursday afternoons. Volunteers get a free club T-shirt and a snack after training. If you are 14 or older, come to the office on Monday or send us an email.",
@@ -2424,7 +2661,10 @@ const EN_TEXTS=[
   {q:'What does the club need?',choices:['New balls','Young volunteers','More money','A new field'],ai:1},
   {q:'You must be a very good player to help.',choices:TF,ai:1,ex:"„You don't have to be a great player"},
   {q:'On which days would volunteers help?',choices:['Monday and Friday','Tuesday and Thursday','At the weekend','Every day'],ai:1},
-  {q:'How old do you have to be? (nur die Zahl)',answer:'14',accept:['14','fourteen'],ex:'„If you are 14 or older"'}
+  {q:'How old do you have to be? (nur die Zahl)',answer:'14',accept:['14','fourteen'],ex:'„If you are 14 or older"'},
+  {q:'What do volunteers get?',choices:['Money','A free T-shirt and a snack','A new ball','Free tickets'],ai:1,ex:'„a free club T-shirt and a snack"'},
+  {q:'Why was this notice written?',choices:['To sell tickets','To find young helpers','To close the club','To start a party'],ai:1,ex:'Der Verein sucht junge Freiwillige.'},
+  {q:'Volunteers have to play in every match.',choices:TF,ai:2,ex:'Davon steht nichts — sie helfen beim Training.'}
  ]},
 {title:'Sachtext · Bees',level:'schwer',topic:'nature',
  text:"Bees are small, but they are very important for us. When they fly from flower to flower, they help plants to grow fruit and vegetables. Without bees, we would have much less food. Sadly, the number of bees is falling. One reason is that farmers use chemicals on their fields. You can help bees in your own garden: plant flowers, don't use chemicals, and put out a little water on hot days. Every garden can become a home for bees.",
@@ -2432,7 +2672,10 @@ const EN_TEXTS=[
   {q:'Why are bees important for us?',choices:['They make noise','They help plants grow fruit and vegetables','They are big','They eat chemicals'],ai:1},
   {q:'The number of bees is going up.',choices:TF,ai:1,ex:'„the number of bees is falling"'},
   {q:'How can you help bees in your garden?',choices:['Use more chemicals','Plant flowers and put out water','Cut down all flowers','Keep cats'],ai:1},
-  {q:'The text says how many bees live in Germany.',choices:TF,ai:2}
+  {q:'The text says how many bees live in Germany.',choices:TF,ai:2},
+  {q:'What is one reason the number of bees is falling?',choices:['Too much water','Farmers use chemicals','Too many flowers','Cold winters'],ai:1,ex:'„farmers use chemicals on their fields"'},
+  {q:'What would happen without bees?',choices:['We would have more food','We would have much less food','Nothing would change','More flowers would grow'],ai:1,ex:'„Without bees, we would have much less food."'},
+  {q:"In the text, 'chemicals' are something that...",choices:['help bees','can be bad for bees','are food for bees','are flowers'],ai:1,ex:'Chemikalien schaden den Bienen.'}
  ]},
 {title:'Blog · Weekend in Scotland',level:'schwer',topic:'travel',
  text:"Last weekend I went to Scotland with two friends. We stayed in a youth hostel near a big lake. On Saturday we went hiking in the hills. The weather changed all the time — sun, then rain, then sun again! In the evening we cooked pasta in the hostel kitchen and met young people from France and Spain. On Sunday we were too tired to walk, so we took the bus to a small town and visited a castle. It was a short but amazing trip.",
@@ -2440,7 +2683,10 @@ const EN_TEXTS=[
   {q:'Where did the writer and friends sleep?',choices:['In a hotel','In a youth hostel','In a tent','On the bus'],ai:1},
   {q:'How was the weather on Saturday?',choices:['Only sunny','It changed all the time','Only rainy','Cold and snowy'],ai:1},
   {q:'On Sunday they went hiking again.',choices:TF,ai:1,ex:'„we were too tired to walk, so we took the bus"'},
-  {q:'Who did they meet in the hostel?',choices:['Their teachers','Young people from France and Spain','Their families','Nobody'],ai:1}
+  {q:'Who did they meet in the hostel?',choices:['Their teachers','Young people from France and Spain','Their families','Nobody'],ai:1},
+  {q:'What did they do on Saturday?',choices:['Visited a castle','Went hiking in the hills','Took the bus','Cooked at home'],ai:1,ex:'„On Saturday we went hiking in the hills."'},
+  {q:'What did they cook in the hostel?',answer:'pasta',accept:['pasta'],ex:'„we cooked pasta in the hostel kitchen"'},
+  {q:'How did the writer find the trip?',choices:['Boring','Short but amazing','Too long','Terrible'],ai:1,ex:'„It was a short but amazing trip."'}
  ]},
 {title:'Sachtext · Breakfast',level:'mittel',topic:'food',
  text:"Many people say that breakfast is the most important meal of the day. After sleeping all night, your body needs energy. A good breakfast can help you to think better at school. Doctors say you should eat fruit, bread or cereal, and drink water or milk. Sweet things like chocolate give you energy for a short time only. But many teenagers have no breakfast because they get up too late. Try to get up ten minutes earlier — your body will thank you.",
@@ -2448,7 +2694,10 @@ const EN_TEXTS=[
   {q:'Why is breakfast important?',choices:['It is sweet','Your body needs energy after sleeping','It is cheap','It is fast'],ai:1},
   {q:'What do doctors say you should drink?',choices:['Cola or juice','Water or milk','Coffee','Energy drinks'],ai:1},
   {q:'Sweet things give you energy for a long time.',choices:TF,ai:1,ex:'„Sweet things … give you energy for a short time only"'},
-  {q:'Why do many teenagers have no breakfast?',choices:['They are not hungry','They get up too late','They hate food','They are ill'],ai:1}
+  {q:'Why do many teenagers have no breakfast?',choices:['They are not hungry','They get up too late','They hate food','They are ill'],ai:1},
+  {q:'How can a good breakfast help at school?',choices:['You can think better','You get more friends','You grow taller','You become richer'],ai:0,ex:'„can help you to think better at school"'},
+  {q:'What does the writer tell teenagers to do?',choices:['Eat more chocolate','Get up ten minutes earlier','Skip breakfast','Drink coffee'],ai:1,ex:'„Try to get up ten minutes earlier"'},
+  {q:'The text says you should eat eggs for breakfast.',choices:TF,ai:2,ex:'Eier werden nicht genannt.'}
  ]},
 {title:'Review · Film night',level:'mittel',topic:'freetime',
  text:"On Friday I watched the new film 'Lost in the City' with my brother. It is an action film about a boy who loses his dog in a big city and looks for it everywhere. The story is exciting and there are some funny moments too. The music is great, but the film is a bit too long — almost three hours! My little brother fell asleep at the end. I give the film four stars out of five. If you like dogs and adventure, you should watch it.",
@@ -2456,7 +2705,10 @@ const EN_TEXTS=[
   {q:'What kind of film is it?',choices:['A love film','An action film','A horror film','A cartoon for babies'],ai:1},
   {q:'What is the film about?',choices:['A boy who loses his dog','A football team','A school trip','A robot'],ai:1},
   {q:'The writer thinks the film is too short.',choices:TF,ai:1,ex:'„the film is a bit too long — almost three hours"'},
-  {q:'How many stars does the writer give? (nur die Zahl)',answer:'four',accept:['four','4'],ex:'„I give the film four stars"'}
+  {q:'How many stars does the writer give? (nur die Zahl)',answer:'four',accept:['four','4'],ex:'„I give the film four stars"'},
+  {q:'What did the writer NOT like about the film?',choices:['The story','The music','It was too long','The dog'],ai:2,ex:'„the film is a bit too long"'},
+  {q:'What happened to the little brother at the end?',choices:['He cried','He fell asleep','He left','He laughed'],ai:1,ex:'„My little brother fell asleep at the end."'},
+  {q:'Who should watch the film, according to the writer?',choices:['People who hate animals','People who like dogs and adventure','Only adults','Nobody'],ai:1,ex:'„If you like dogs and adventure, you should watch it."'}
  ]},
 {title:'Artikel · Pocket money',level:'schwer',topic:'jobs',
  text:"How much pocket money should young people get? In a new survey, most British teenagers between 13 and 15 said they get about ten pounds a week. Some get more if they help at home, for example by cleaning or walking the dog. Many teenagers save part of their money for clothes, games or a trip with friends. Experts say it is good for young people to learn how to use money early. 'If you can save as a teenager, you can save as an adult,' one expert said.",
@@ -2464,7 +2716,10 @@ const EN_TEXTS=[
   {q:'How much pocket money do most teenagers in the survey get?',choices:['About five pounds','About ten pounds a week','Twenty pounds a day','Nothing'],ai:1},
   {q:'How can some teenagers get more money?',choices:['By doing nothing','By helping at home','By selling their phone','By staying in bed'],ai:1},
   {q:'The text says teenagers should not save money.',choices:TF,ai:1,ex:'Der Experte sagt das Gegenteil: „If you can save as a teenager…"'},
-  {q:'The survey was done in the USA.',choices:TF,ai:2,ex:'Es geht um „British teenagers"; die USA werden nicht genannt.'}
+  {q:'The survey was done in the USA.',choices:TF,ai:2,ex:'Es geht um „British teenagers"; die USA werden nicht genannt.'},
+  {q:'What do many teenagers save money for?',choices:['Cars and houses','Clothes, games or a trip','School books','Food'],ai:1,ex:'„clothes, games or a trip with friends"'},
+  {q:'What do experts think about young people and money?',choices:['Money is bad for them','It is good to learn about money early','They should get no money','They spend too much'],ai:1,ex:'„it is good for young people to learn how to use money early"'},
+  {q:'How old were the teenagers in the survey?',choices:['Between 13 and 15','Between 5 and 8','Over 18','Exactly 10'],ai:0,ex:'„teenagers between 13 and 15"'}
  ]},
 {title:'Sachtext · New York',level:'schwer',topic:'travel',
  text:"New York is the biggest city in the USA. More than eight million people live there. The city has five parts, called boroughs. The most famous one is Manhattan, with its tall buildings. Many tourists visit the Statue of Liberty, which was a present from France in 1886. In the middle of the city there is a huge green park called Central Park, where people relax, run and ride bikes. New York is also famous for its yellow taxis and Broadway shows.",
@@ -2472,7 +2727,10 @@ const EN_TEXTS=[
   {q:'How many people live in New York?',choices:['About one million','More than eight million','Five hundred','Eighty million'],ai:1},
   {q:'Which country gave the Statue of Liberty to the USA?',answer:'france',accept:['france'],ex:'„a present from France in 1886"'},
   {q:'You can ride a bike in Central Park.',choices:TF,ai:0,ex:'„people relax, run and ride bikes"'},
-  {q:'What is Central Park?',choices:['A tall building','A big green park','A museum','A theatre'],ai:1}
+  {q:'What is Central Park?',choices:['A tall building','A big green park','A museum','A theatre'],ai:1},
+  {q:'How many parts (boroughs) does New York have? (nur die Zahl)',answer:'five',accept:['five','5'],ex:'„The city has five parts, called boroughs."'},
+  {q:'What is New York famous for?',choices:['Green buses','Yellow taxis and Broadway shows','Tall mountains','Big lakes'],ai:1,ex:'„famous for its yellow taxis and Broadway shows"'},
+  {q:'The text says how cold the winters in New York are.',choices:TF,ai:2,ex:'Über das Wetter steht nichts.'}
  ]},
 {title:'Story · A new town',level:'mittel',topic:'home',
  text:"When my parents told me we were moving to a new town, I was angry and sad. I didn't want to leave my friends and my old room. On the first day at my new school, I sat alone at lunch. But then a girl called Emma came to my table and started to talk to me. She showed me the school and we became friends. Now, six months later, I am happy here. Sometimes a change is scary at first, but it can also bring something good.",
@@ -2480,7 +2738,10 @@ const EN_TEXTS=[
   {q:'How did the writer feel about moving at first?',choices:['Happy and excited','Angry and sad','Bored','Nothing'],ai:1},
   {q:'Who helped the writer at the new school?',choices:['A teacher','A girl called Emma','A brother','Nobody'],ai:1},
   {q:'The writer is still unhappy in the new town.',choices:TF,ai:1,ex:'„Now, six months later, I am happy here."'},
-  {q:'The family moved because of a new job.',choices:TF,ai:2}
+  {q:'The family moved because of a new job.',choices:TF,ai:2},
+  {q:'What happened on the first day at the new school?',choices:['The writer made many friends','The writer sat alone at lunch','The writer stayed at home','The writer became a teacher'],ai:1,ex:'„I sat alone at lunch."'},
+  {q:'What does the writer learn in the end?',choices:['Moving is always bad','A change can also bring something good','You should never move','Friends are not important'],ai:1,ex:'„a change … can also bring something good."'},
+  {q:"What does 'scary' mean in the last sentence?",choices:['funny','frightening','easy','boring'],ai:1,ex:'scary = beängstigend.'}
  ]},
 {title:'Aushang · Shopping centre',level:'mittel',topic:'town',
  text:"GRAND OPENING! The new RIVERSIDE shopping centre opens on Saturday, 10 May. Come and see more than 80 shops, a cinema and a food court with food from all over the world. Opening times: Monday to Saturday, 9 a.m. to 9 p.m. On the first weekend, there is live music and free balloons for children. Parking is free for the first two hours. Take bus number 7 or 12 to 'Riverside' — it stops right in front of the entrance.",
@@ -2488,7 +2749,10 @@ const EN_TEXTS=[
   {q:'What is new in the text?',choices:['A school','A shopping centre','A hospital','A train station'],ai:1},
   {q:'The shopping centre is open on Sundays.',choices:TF,ai:1,ex:'„Monday to Saturday" — sonntags ist es geschlossen.'},
   {q:'How long is parking free?',choices:['One hour','The first two hours','All day','It is never free'],ai:1},
-  {q:'Which buses go to the shopping centre?',choices:['Number 1 or 2','Number 7 or 12','Only number 9','No buses'],ai:1}
+  {q:'Which buses go to the shopping centre?',choices:['Number 1 or 2','Number 7 or 12','Only number 9','No buses'],ai:1},
+  {q:'What is there on the first weekend?',choices:['A football match','Live music and free balloons','Free food for everyone','A fireworks show'],ai:1,ex:'„live music and free balloons for children"'},
+  {q:'How many shops does the centre have?',choices:['More than 80','Exactly 10','About 5','More than 800'],ai:0,ex:'„more than 80 shops"'},
+  {q:'Where would you find this text?',choices:['In a school book','On a poster or advert','In a private letter','In a diary'],ai:1,ex:'Es ist ein Werbe-Aushang.'}
  ]},
 {title:'Artikel · Animal shelter',level:'mittel',topic:'family',
  text:"Last month our family got a dog from the animal shelter. His name is Rocky and he is three years old. Before, he lived on the street and was very thin and shy. At first he was afraid of everything, even the TV. We gave him good food, a warm bed and a lot of love. Now Rocky is happy: he runs in the garden and sleeps next to my bed. If you want a pet, please think about a shelter animal. They need a home too.",
@@ -2496,7 +2760,10 @@ const EN_TEXTS=[
   {q:'Where did the family get Rocky?',choices:['From a shop','From the animal shelter','From a friend','From a farm'],ai:1},
   {q:'How old is Rocky? (nur die Zahl)',answer:'three',accept:['three','3'],ex:'„he is three years old"'},
   {q:'When Rocky came, he was shy and afraid.',choices:TF,ai:0,ex:'„he was very thin and shy … afraid of everything"'},
-  {q:'The family also bought a cat.',choices:TF,ai:2}
+  {q:'The family also bought a cat.',choices:TF,ai:2},
+  {q:'What was Rocky like before?',choices:['Fat and happy','Thin and shy','Big and loud','Old and ill'],ai:1,ex:'„he was very thin and shy"'},
+  {q:'Why does the writer tell us about Rocky?',choices:['To sell the dog','To say people should think about shelter animals','To buy a new pet','To complain'],ai:1,ex:'„please think about a shelter animal. They need a home too."'},
+  {q:'Where does Rocky sleep now?',choices:['On the street','Next to the bed','In the garden','In a shop'],ai:1,ex:'„sleeps next to my bed"'}
  ]},
 {title:'Sachtext · Australia',level:'schwer',topic:'nature',
  text:"Australia is a country and a continent at the same time. It is very big, but only about 26 million people live there — most of them near the coast. The middle of the country is hot, dry desert. Australia is famous for its special animals, like kangaroos and koalas, which you cannot find in the wild anywhere else. When it is winter in Europe, it is summer in Australia, because the country is on the other side of the world. Many young people travel there to work and see the country.",
@@ -2504,7 +2771,10 @@ const EN_TEXTS=[
   {q:'Where do most people in Australia live?',choices:['In the desert','Near the coast','In the mountains','On small islands'],ai:1},
   {q:'What is the middle of Australia like?',choices:['Cold and wet','Hot, dry desert','Full of cities','Covered in snow'],ai:1},
   {q:'When it is winter in Europe, it is also winter in Australia.',choices:TF,ai:1,ex:'„When it is winter in Europe, it is summer in Australia"'},
-  {q:'Australia is the biggest country in the world.',choices:TF,ai:2}
+  {q:'Australia is the biggest country in the world.',choices:TF,ai:2},
+  {q:'Which animals is Australia famous for?',choices:['Lions and tigers','Kangaroos and koalas','Bears and wolves','Camels and horses'],ai:1,ex:'„like kangaroos and koalas"'},
+  {q:'Why is it summer in Australia when it is winter in Europe?',choices:['It is always hot there','It is on the other side of the world','It has no winter','It is a small country'],ai:1,ex:'„because the country is on the other side of the world"'},
+  {q:'About how many people live in Australia?',choices:['About 26 million','About 8 million','Over 100 million','About 2 thousand'],ai:0,ex:'„only about 26 million people live there"'}
  ]},
 {title:'Tipps · Saving energy',level:'schwer',topic:'home',
  text:"Energy is expensive, and using less of it is also good for our planet. There are many easy things you can do at home. Turn off the lights when you leave a room. Don't leave the TV or computer on standby — switch it off. When you are cold, put on a jumper before you turn up the heating. A short shower uses less water and energy than a long bath. If everyone in the family helps, you can save money and protect the environment at the same time.",
@@ -2512,7 +2782,10 @@ const EN_TEXTS=[
   {q:'What should you do when you leave a room?',choices:['Turn up the heating','Turn off the lights','Open the window','Turn on the TV'],ai:1},
   {q:'A long bath uses less energy than a short shower.',choices:TF,ai:1,ex:'„A short shower uses less water and energy than a long bath"'},
   {q:'What should you do before turning up the heating?',choices:['Open a window','Put on a jumper','Have a bath','Go outside'],ai:1},
-  {q:'Saving energy is good for the planet.',choices:TF,ai:0,ex:'„using less of it is also good for our planet"'}
+  {q:'Saving energy is good for the planet.',choices:TF,ai:0,ex:'„using less of it is also good for our planet"'},
+  {q:'What should you do with the TV when you do not use it?',choices:['Leave it on standby','Switch it off','Turn it up','Sell it'],ai:1,ex:'„switch it off"'},
+  {q:'What is the writer trying to do with this text?',choices:['Sell new TVs','Give tips to save energy','Tell a story','Describe a holiday'],ai:1,ex:'Es sind Tipps zum Energiesparen.'},
+  {q:'According to the text, saving energy helps you to...',choices:['get more homework','save money and protect the environment','sleep more','buy a new house'],ai:1,ex:'„save money and protect the environment at the same time"'}
  ]}
 ];
 function readingEst(t){ const w=t.text.replace(/<[^>]+>/g,' ').split(/\s+/).length; return Math.min(150,Math.max(50,Math.round(w*0.8)+20)); }
@@ -2702,7 +2975,7 @@ async function cloudPush(entry){
 }
 
 let scores=[];
-function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
 function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
 function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
 async function initScores(){
@@ -3128,6 +3401,12 @@ const MODE_TXT={
     ph:'kurze Antwort eingeben',
     hint:'Erst den Text lesen, dann die Frage beantworten'
   },
+  irreg:{
+    brand:'Quali Bayern · Englisch · Unregelmäßige Verben & Plurale',
+    sub:'Pauke die <b>unregelmäßigen Verben</b> (2. + 3. Form) und die <b>unregelmäßigen Plurale</b> – über 250 wichtige Formen. Was du falsch hast, landet am Rundenende auf der <b>💩 SHITLIST</b>, bis es sitzt. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Ready, LOOIS?',
+    ph:'englische Form eingeben',
+    hint:'Nur die gefragte Form eintippen · Groß-/Kleinschreibung egal'
+  },
   engmix:{
     brand:'Quali Bayern · Englisch · Alles gemischt',
     sub:'Der <b>Englisch-Mix</b> aus Wortschatz und Grammatik, jedes Mal neu. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt ein zufälliger Endgegner. Ready, LOOIS?',
@@ -3135,7 +3414,7 @@ const MODE_TXT={
     hint:'Mal Vokabel, mal Grammatik – lies die Aufgabe genau'
   }
 };
-const ENG_MODES=['vocab','grammar','reading','engmix'];
+const ENG_MODES=['vocab','grammar','reading','irreg','engmix'];
 function setMode(m){
   state.mode=m;
   $('btnModeEq').classList.toggle('active',m==='gleich');
@@ -3146,6 +3425,7 @@ function setMode(m){
   $('btnModeVocab').classList.toggle('active',m==='vocab');
   $('btnModeGrammar').classList.toggle('active',m==='grammar');
   $('btnModeReading').classList.toggle('active',m==='reading');
+  $('btnModeIrreg').classList.toggle('active',m==='irreg');
   $('btnModeEngMix').classList.toggle('active',m==='engmix');
   const t=MODE_TXT[m];
   $('ovSub').innerHTML=nm(t.sub); $('brandSub').textContent=t.brand;
@@ -3175,6 +3455,7 @@ $('btnModeMix').addEventListener('click',()=>setMode('mix'));
 $('btnModeVocab').addEventListener('click',()=>setMode('vocab'));
 $('btnModeGrammar').addEventListener('click',()=>setMode('grammar'));
 $('btnModeReading').addEventListener('click',()=>setMode('reading'));
+$('btnModeIrreg').addEventListener('click',()=>setMode('irreg'));
 $('btnModeEngMix').addEventListener('click',()=>setMode('engmix'));
 $('subjMath').addEventListener('click',()=>setSubject('math'));
 $('subjEng').addEventListener('click',()=>setSubject('eng'));
@@ -3201,7 +3482,7 @@ $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); }
 
 /* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
 let boardView='own', classMetric='tasks', classFilter='all';
-const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['engmix','Eng-Mix']];
+const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['engmix','Eng-Mix']];
 function filterLabel(f){ const e=BOARD_FILTERS.find(x=>x[0]===f); return e?e[1]:'Alle'; }
 function renderClassFilters(){
   $('classFilters').innerHTML=BOARD_FILTERS.map(p=>'<button class="board-tab'+(p[0]===classFilter?' active':'')+'" data-f="'+p[0]+'">'+p[1]+'</button>').join('');
