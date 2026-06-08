@@ -1,166 +1,112 @@
-# Gleichungs-Run — Projekt-Handover
+# Gleichungs-Run / „Quali Run" — Projekt-Handover (aktueller Stand)
 
-Single-Page Mathe-Trainer für **LOOIS** (Hauptschulabschluss Bayern, ohne Taschenrechner – außer Geometrie). Monochromer Look mit goldenem Akzent. Komplett in **einer** HTML-Datei (`Gleichungs-Trainer.html`, ~1550 Zeilen, HTML + CSS + JS inline, keine Dependencies).
+Single-Page-Lern-Trainer für den **Quali / qualifizierenden Hauptschulabschluss Bayern**, gebaut für **LOOIS** (und weitere Kinder online). **Eine** HTML-Datei, alles inline (HTML+CSS+JS), **keine Build-Tools**, **offline lauffähig** (Schriften eingebettet). Inzwischen **zwei Fächer** (Mathe + Englisch), **Fortnite-Look**, **Online-Klassen-Board** (Supabase).
 
-Das Spiel hat inzwischen **fünf Modi**, die alle auf derselben Spiellogik laufen: Start „Gleichungs Run" mit **Modus-Auswahl**, dann pro Aufgabe Countdown → Aufgabe → Antwort prüfen → Ergebnis-Overlay → weiter, bis **1000 Punkte** erreicht sind (= eine Runde). Punkte, Tempo-Multiplikator, AURA-Serie, Pixel-Dino, Endgegner (Serie 10) und Scoreboard sind in allen Modi gleich.
+- **App:** `Gleichungs-Trainer.html` (~270 KB inkl. eingebetteter Fonts)
+- **Live-Link (für die Kinder):** https://m7dchscjsk-droid.github.io/gleichungs-run/
+- **Repo:** https://github.com/m7dchscjsk-droid/gleichungs-run (public) · GitHub-Login `m7dchscjsk-droid`
 
 ---
 
-## Datei-Struktur
+## ⚠️ WICHTIGSTE REGEL: Punktestände nie verlieren
+Die Punktestände der Kinder liegen **NICHT im Code**, sondern in der **Supabase-Cloud** (Tabelle `scores`). Ein `git push` deployt nur die HTML und fasst die DB nicht an. **Bei JEDEM Push beachten:**
+1. `const SUPABASE_URL` / `const SUPABASE_KEY` **niemals ändern** (sonst zeigt die App auf eine leere DB).
+2. **Kein destruktives SQL** (`delete`/`drop`) ohne ausdrückliche Ansage.
+3. Ablauf: Keys-Diff prüfen → Scores zählen (vorher) → push → Scores zählen (nachher) → muss gleich sein.
 
+Zähl-Befehl:
+```bash
+URL="https://xmihfeelhmrqaddmohqr.supabase.co"; KEY="sb_publishable_FaZMAa5l-cgKNULOmN6JSQ_goOaEql7"
+curl -s -I "$URL/rest/v1/scores?select=id" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Prefer: count=exact" -H "Range: 0-0" | grep -i content-range
 ```
-Gleichungs-Run/
-├── Gleichungs-Trainer.html       ← die ganze App (alles inline)
-├── HANDOVER.md                   ← dieses Dokument
-└── .claude/
-    ├── launch.json               ← Preview-Config (Claude Code preview_start "static")
-    └── serve.js                  ← Mini-Static-Server (Node, port 8123, rootet auf den Projektordner)
-```
-
-Lokales Öffnen: Doppelklick auf `Gleichungs-Trainer.html` (file://). Sauberer über den Preview-Server (`preview_start("static")` → http://localhost:8123).
-
-> **Hinweis für Claude Code:** Liegt das Session-Verzeichnis nicht im Projektordner, findet `preview_start` die `.claude/launch.json` nicht. Workaround: temporär eine `launch.json` im Session-`.claude` anlegen, deren `runtimeArgs` mit **absolutem Pfad** auf `…/Gleichungs-Run/.claude/serve.js` zeigt (ROOT in serve.js wird relativ zur serve.js aufgelöst, serviert also immer den Projektordner). Nach dem Test wieder löschen.
 
 ---
 
-## Die fünf Modi (Startseite: Modus-Buttons)
+## Hosting & Update-Workflow (GitHub Pages)
+- Statisches Hosting über GitHub Pages (Branch `main`, root). `index.html` ist eine Meta-Refresh-Weiterleitung auf `Gleichungs-Trainer.html`.
+- Git-Auth läuft über `gh` (credential helper). Update = Datei ändern → `git commit` → `git push origin main` → ~1 Min Build → gleicher Link.
+- `.gitignore` schließt `.claude/` (Preview-Tooling) aus.
+- Nach Updates: User soll **hart neu laden** (Cmd+Shift+R), sonst Browser-Cache.
 
-| Modus | `state.mode` | localStorage-Key | Rechner? | Inhalt |
-|---|---|---|---|---|
-| **Gleichungen** | `gleich` | `gleichungsrun_scores` | nein | Lineare Gleichungen nach x auflösen (Brüche, Dezimal, Hauptnenner) |
-| **Prozent** | `prozent` | `prozentrun_scores` | nein | Prozentwert/Grundwert/Prozentsatz + Textaufgaben (MwSt, Rabatt, Veränderung, Verhältnis) |
-| **Größen** | `groessen` | `groessenrun_scores` | nein | Einheiten umrechnen (Länge/Masse/Fläche/Volumen/Zeit/Daten) + zusammengesetzte Einheiten |
-| **Geometrie** | `geo` | `georun_scores` | **ja** (π≈3,14) | Pythagoras, Flächen, Kreis, Volumen & Oberfläche — **Toleranz-Prüfung** |
-| **Mix** | `mix` | `mixrun_scores` | gemischt | Alles gemischt, **überwiegend sehr schwer**, jedes Mal neu zufällig |
-
-- Modus-Auswahl auf der Startseite (`#ovStart`), Umschalten über `setMode(m)`. **Header-Button „↩ Auswahl"** (`#btnMenu` → `showStart()`) bringt jederzeit zurück zur Auswahl (laufende Runde wird verworfen).
-- Jeder Modus hat **eigenes Scoreboard** (eigener localStorage-Key via `scoreKey()`); beim Moduswechsel wird neu geladen.
-- Mode-abhängige Texte (Brand-Subtitle, Intro, Placeholder, Hinweis) stehen in `MODE_TXT`.
+## Cloud / Multiplayer (Supabase, AKTIV)
+- Im Script-Kopf: `SUPABASE_URL` + `SUPABASE_KEY` (**publishable**/öffentlich, beginnt mit `sb_publishable_`). Der geheime `sb_secret_`-Key gehört **niemals** ins File.
+- Tabelle `scores` mit Spalten u. a. `player, mode, round, tasks, time, aura, peak, pts, boss, ts`. **RLS:** anon darf nur `select` + `insert` (kein `delete`/`update`) → Aufräumen/Reset nur über den **Supabase SQL-Editor** (`delete from scores;`).
+- Name pro Gerät in `localStorage['gleichungsrun_player']` (Default LOOIS), beim 1. Start `#nameModal`, änderbar über Header-Namens-Chip. `nm(str)` ersetzt Platzhalter „LOOIS" in Sprüchen durch echten Namen.
 
 ---
+
+## Fächer & Modi
+Fach-Umschalter auf der Startseite (`setSubject('math'|'eng')`). `ENG_MODES=['vocab','grammar','reading','engmix']` (steuert u. a. Brand „English Run").
+
+| Fach | `state.mode` | Inhalt |
+|---|---|---|
+| Mathe | `gleich` | Lineare Gleichungen |
+| | `prozent` | Prozentrechnung |
+| | `groessen` | Größen umrechnen |
+| | `geo` | Geometrie (Taschenrechner, Toleranz) |
+| | `mix` | alles gemischt, überwiegend sehr schwer |
+| Englisch | `vocab` | Vokabeln (EN↔DE, MC, Lücken) |
+| | `grammar` | Sprachgebrauch/Grammatik (Teil B) + **Satzbau** |
+| | `reading` | Leseverstehen (Teil C) — Text + Fragen |
+| | `engmix` | Vokabeln + Grammatik gemischt |
+
+`scoreKey()` → eigener localStorage-Key + Cloud-`mode` pro Modus (`engvocab_scores`, `enggrammar_scores`, `engreading_scores`, `engmix_scores`, …).
 
 ## Spiellogik (für alle Modi gleich)
+- **Aufgabe = `prob`-Objekt.** Mathe: `{difficulty, displayHTML, steps, answer(F), estSeconds, …}` (Geo: `av`+`tol`+`isGeo`). Englisch (`engProb`): `{eng:true, kind:'text'|'choice'|'order', displayHTML, answer/accept[] | choices[]+answerIndex | tokens[]+order[], explainHTML, estSeconds, vocabRef?}`.
+- **Antwort-Prüfung:** Mathe exakt (Bruch) bzw. Toleranz (Geo). Englisch: `normalizeEN()` + Vergleich gegen `accept` (Text), Index (Choice), Reihenfolge (Order).
+- Punkte base (leicht 10/mittel 20/schwer 35/sehr schwer 50, Boss 80) × Tempo-Multiplikator; AURA ab 3er-Serie; Endgegner bei Serie 10; Runde = 1000 Punkte.
+- **Countdown:** voller `3·2·1` nur am **Rundenstart**; zwischen Aufgaben kurzes „LOS!" (`runCountdown(then, short)`).
+- **Return/Enter** löst **immer Prüfen** aus (globaler keydown-Handler; deckt Text, Satzbau und SHITLIST ab; MC ignoriert Enter; springt nie „weiter").
 
-- **Aufgabe = `prob`-Objekt**: `{difficulty, displayHTML, steps, answer, estSeconds, …}`. Der gesamte Flow hängt nur an dieser Form — neue Aufgabentypen müssen nur ein `prob` liefern.
-  - `answer` ist ein Bruch `F{n,d}` (exakter Vergleich). **Geometrie** trägt zusätzlich `av` (exakter Float-Wert) + `tol` (Toleranz) und `isGeo:true` → `checkAnswer` prüft `|Eingabe − av| ≤ tol` statt exakt.
-  - `isBoss:true` markiert den Endgegner (Express-Rundenende bei Sieg).
-- **Punkte** pro Aufgabe: `base × Tempo-Multiplikator`. Base nach Schwierigkeit: leicht 10 / mittel 20 / schwer 35 / sehr schwer 50, Endgegner 80. Multiplikator: Blitz (≤50 % Soll) ×2, schnell (≤80 %) ×1.5, normal ×1.2.
-- **Über SOLL** → Minuspunkte (wachsend), **Serie reset**.
-- **AURA-Punkte** ab 3er-Serie, linear wachsend: `(streak−2)·5`. Goldener AURA-Chip + goldener Dino ab Serie ≥3.
-- **Spickzettel-Strafe**: „Lösung zeigen" vor dem Lösen → 0 Punkte, Serie weg. Nach dem Lösen frei.
-- **Endgegner bei Serie 10** (`nextIsBoss`): super lange Aufgabe; **in SOLL besiegt → Runde endet sofort** (+100 Master-Bonus, Express-Ende); **über SOLL → Minus + Serie weg, Runde läuft weiter**.
-- **Runde = bis 1000 Punkte** (`GOAL=1000`) **oder** Endgegner besiegt. Goal-Bar mit goldenem AURA-Anteil. Danach Win-Overlay + Scoreboard-Eintrag.
-- **Scoreboard** (`renderBoard`): Mini-Balkendiagramm (Balken = Aufgaben pro Runde, kürzer = besser) + Liste der letzten Runden. Persistenz in localStorage pro Modus **und** in Supabase (Cloud **aktiv** — geräteübergreifendes Klassen-Board, siehe unten).
-- **Sounds** (WebAudio, offline): Trillern (30-s-Warnung), Wah-Wahh (falsch), Ding (richtig), Sieges-Jingle (Boss/Rundenende), Countdown-Beeps. Toggle ♪/✕ im Header.
-- **Sprüche** (`MSG`-Buckets): blitz (enthält „GOOD BOY"), gut (enthält „DU MUSST AUCH MAL NON CHALANT BLEIBEN."), drueber, peek, falsch, boss. Werden über alle Modi geteilt.
+## Englisch-Inhalte & Generatoren
+- **`EN_VOCAB`** (~**509** Einträge) über alle Quali-Themen (school, jobs, home, food, clothes, body, family, feelings, freetime, travel, nature, tech, town, time, verbs, adjectives, phrases). Felder `en, de, topic, level, enAlt?, deAlt?, sentence?`. **Keine Dubletten innerhalb eines Themas** (wichtig für MC) — per Verifier geprüft.
+- **`EN_VERBS`** (40, mit `past/pp/ing/s3`), `EN_ADJ` (comp/sup), `EN_NOUNS` (Plural), `EN_ARTNOUNS` (a/an).
+- **Grammatik-Generatoren** (`GRAMMARGENS`): Zeiten (Simple Past/Present, 3rd person, Present Perfect, Past/Present Progressive, will- & going-to-Future, **since/for**, **used to**, Verneinungen), Steigerung, Plural, a/an, **if-clauses**, **Passiv**, **reported speech**, **Relativsätze**, **Modalverben**, **question tags**, **Satzbau** (`genOrder`, Bank `EN_ORDER` = 22 Sätze; Gewicht bewusst hoch, damit Satzbau oft kommt).
+- **Vokabel-Generatoren** (`VOCABGENS`): `genVocEN2DE/DE2EN/MC/Gap` + Boss. Alle setzen `vocabRef` (für SHITLIST).
+- **Leseverstehen** (`READINGGENS`): `EN_TEXTS` = **7** kurze A2+-Texte (E-Mail, Aushang, Blog, Sachtext, London, Tagesablauf, Handys) mit Fragen (MC, Richtig/Falsch/Nicht-im-Text, Detail-Tippantwort). `genReading` + `genReadingBoss`. Längere SOLL-Zeit je Textlänge.
+- **`ENGMIXGENS`** mischt Vokabeln + Grammatik.
 
----
+## SHITLIST (Vokabel-Wiederholung)
+- Falsch beantwortete **Vokabeln** werden während der Runde gesammelt (`addShit`, dedupe per `en`, nur wo `vocabRef` gesetzt).
+- Am **Rundenende** (in `finishRound`, vor der Sieg-Anzeige) erscheint `#ovShit` („💩 SHITLIST — Prüfen wir, ob du es dir gemerkt hast!") und fragt jedes Wort DE→EN ab; falsch → ans Ende der Schlange (Korrektur ~2,8 s sichtbar), richtig → raus; Schleife bis alle sitzen → dann `showWinOverlay()`. `shitLock` verhindert Doppel-Enter. Liste wird in `resetRound`/`showStart`/`finishShit` geleert.
 
-## Aufgaben-Generatoren je Modus
-
-Jeder Generator gibt ein `prob` zurück (oder `null` bei Reject → Retry-Loop in `makeProblem`). Dispatch über `state.mode` in `makeProblem()` / `makeBoss()`.
-
-### Gleichungen — `GENS` (Z. ~616)
-`genVarBoth`, `genBracketConst`, `genBracketBoth`, `genMinusBracket`, `genFracSimple`, `genFracDen`, `genFracCross`, `genFracBoth`, `genHardFrac` (dominant, Hauptnenner), `genDecimal`, `genMixedDecFrac`. Endgegner `genBoss` (3 Brüche + Dezimal). Niceness-Garantie: Lösungs-Nenner ∈ {1..6}, |Zähler| ≤ 30, Konstanten ≤ 200. Hauptnenner via `lcdOk()` entzerrt (12 gecappt).
-
-### Prozent — `PGENS` (Z. ~825)
-Abstrakte Grundtypen (Aufwärmer): `genProzentwert`, `genProzentsatz`, `genGrundwert` — Dreisatz mit 1-%-Anker. Textaufgaben: `genRabatt` (verminderter/vermehrter Grundwert), `genMwSt` (rein/raus, 19 %/7 %), `genVeraenderung` (prozentuale Änderung, zeigt absolut + in %), `genVerhaeltnis` (Verhältnis → Prozent, ISB-Nüsse-Stil). Endgegner `genProzentBoss` (Grundwert → davon Prozentwert). Alle Antworten glatt (Nenner 1 oder 2).
-
-### Größen — `GGENS` (Z. ~931)
-`genConvert(catKey)` — einfache Umrechnung A→B per Umrechnungszahl/Komma-Schieben, abstrakt oder als Spaß-Textaufgabe. `genMixedUnit` — zusammengesetzte Einheit („2 h 30 min = ? min"). Endgegner `genGroessenBoss` — dreifach gemischt. Kategorien-Faktoren in `G_CATS`; nur ganzzahlige Verhältnisse, Werte bleiben kopfrechenbar. Einheiten beim Eingeben optional (Parser strippt „kg", „m²" …).
-
-### Geometrie — `GEOGENS` (Z. ~1080)  *(Teil B: Taschenrechner + Formelsammlung)*
-`genRechteck` (Fläche/Umfang), `genDreieck`, `genParallelogramm`, `genTrapez`, `genPythagoras` (Hypotenuse/Kathete), `genKreisflaeche`, `genKreisumfang`, `genKreisring`, `genQuaderV`, `genQuaderO`, `genWuerfel`, `genZylinderV`, `genZylinderO`, `genPyramideV`, `genKegelV`. Endgegner `genGeoBoss` (zusammengesetzte „Fensterfläche" = Rechteck + Halbkreis).
-- **π = 3,14** (Konstante `PI`). Ergebnisse auf 2 Dezimalen gerundet, **Toleranz** `tol = max(0.05, 0.015·av)` akzeptiert sowohl 3,14- als auch Taschenrechner-π-Antworten.
-- **Schematische SVG-Figuren** pro Form (`figRect`, `figRTri`, `figTri`, `figPara`, `figTrap`, `figCirc`, `figRing`, `figCuboid`, `figCyl`, `figPyr`, `figCone`, `figWindow`), monochrom, nicht maßstäblich.
-- Lösungsweg-Schema: Formel → einsetzen → Ergebnis.
-
-### Mix — `MIXGENS` (Z. ~1088)
-Gewichteter Pool aus den Generatoren **aller** Sektionen, **Übergewicht sehr schwer** (~50 % sehr schwer, ~41 % schwer, ~8 % mittel). Endgegner = zufälliger Sektions-Boss (`genBoss` / `genProzentBoss` / `genGroessenBoss` / `genGeoBoss`). Der Hinweistext schaltet **pro Aufgabe** um (Geometrie: „mit Taschenrechner", sonst „ohne"). **Keine** Boss-Generatoren im regulären Pool (sonst versehentliches Express-Ende).
+## Scoreboard / Klassen-Board
+- Pro Modus eigenes lokales Board (`renderBoard`, Mini-Balken). Cloud: `cloudPush`/`cloudFetch`(eigene Runden, mode+player) / `cloudFetchAll(modeOrAll)`.
+- **Klassen-Board auf der Startseite sichtbar** (Default `setBoardView('class')`), mit **Themen-Filtern** (`BOARD_FILTERS`, inkl. „Alle"). **Aufgeteilt** in zwei Spalten: **🏆 Meiste Übungen** (Summe `totalTasks`) und **⏱ Beste Zeiten** (min `bestTime`). Aggregation: `aggregateClass` (pro Spieler `rounds/totalTasks/bestTasks/bestTime`), Render: `classSplitHTML`. Eigener Eintrag hervorgehoben (`.me`), Platz 1 in Gold (`.top1`).
 
 ---
 
-## Code-Struktur (innerhalb `<script>`)
+## Design / Look (LIVE = Fortnite-Style)
+- **Theme:** dunkles Navy + Akzente Blau/Lila/Gold, primärer Action-Akzent **Grün** (`--hi`), AURA/Boss **Gold**. Palette in `:root` (`--bg,--panel,--panel2,--line,--ink,--muted,--dim,--hi,--gold,--blue,--purple,--green`).
+- **Schriften eingebettet (offline, base64 @font-face):** **Anton** (`--disp`, Display/Titel/Buttons) + **Rubik** (Fließtext, `body`). Mathe-Brüche bleiben Serif (`#equation` Georgia).
+- **Aufbau:** `.wrap` max 1080px. **Top-Bar** (`.topbar`): Level-Badge (= Runde, `#stRound`), Namens-Chip, **XP-Leiste** (`#xpFill` = Fortschritt zum Ziel, in `updateStats` gesetzt), **Coins** (CASH=`#stPoints`, AURA=`#stAura`), Icon-Buttons (↩ `#btnMenu`, ♪ `#btnSound`). **Hero** (`.hero2`, zwei Spalten): links `.charcard` (Sahur-Figur `#ovDino` + `#ovTitle` + Rang), rechts `.heroR` (kicker `#brandSub`, Titel `#brandTitle`, `#ovSub`, **Rarity-Modi-Karten** `.modebtn .mc-no/.mc-nm/.mc-ds` mit Klassen `rare/epic/legend`, `.cta` mit `#btnStart`). Fach-Tabs (`.subjectpick`) als eigene Reihe **über** dem Hero.
+- **Lobby passt sich an:** `fitLobby()` setzt `#card` min-height auf Hero-Höhe (bei `showStart`/`setMode`/Init/Resize); `loadProblem` setzt min-height zurück. Overlay `overflow:auto; align-items:safe center`.
+- Chunky 3D-Buttons (grüner START/PRÜFEN mit Hover-Glanz), runde Karten, Hover-Effekte.
+- **Pixel-Figur** = „Tung Tung Tung Sahur" (Holzmann mit Knüppel, `SAHUR`+`KNUEPPEL` → `buildDino()`; Knüppel schwingt per CSS `@keyframes swing`; Gold bei Serie ≥3). Funktions-/ID-Namen `buildDino/dino/updateDino` aus Kompatibilität beibehalten.
 
-1. **Rationalzahlen**: `gcd`, `lcm`, `class F`, `decimalSuffix`, `numDE` (deutsche Dezimaldarstellung).
-2. **Render-Helfer**: `fracHTML`, `xc`, `withSign`, `polyHTML`, `iHTML`, `renderTerms`, `row`, `eqRow`, … Mathematisches Minus `−` (U+2212) überall, nie ASCII `-`.
-3. **Gleichungen**: `standardSolve`, Term-Bausteine, `solveFractionEquation`, alle `gen*`-Gleichungs-Generatoren, `GENS`, `makeProblem`, `makeBoss`.
-4. **Prozent-Block**: Helfer (`ptype`), Generatoren, `PGENS`.
-5. **Größen-Block**: `G_CATS`, `G_V`, `G_CTX`, `toF`, `niceVal`, Generatoren, `GGENS`.
-6. **Geometrie-Block**: `PI`, `gnum`, `geoProb`, `gT`, `fin`, `fig*`-SVGs, Generatoren, `GEOGENS`.
-7. **Mix-Block**: `MIXGENS`.
-8. **`MSG`** (Sprüche), **Pixel-Figur** (`SAHUR`-Körperraster + `KNUEPPEL`-Knüppel → `buildDino()`; der Läufer ist „Tung Tung Tung Sahur", ein Holzmann mit Knüppel, der per CSS-`@keyframes swing` auf und ab schwingt — Funktions-/ID-Namen `buildDino`/`dino`/`updateDino` aus Kompatibilität beibehalten), **WebAudio**.
-9. **State + Konstanten**: `state` (inkl. `mode`), `GOAL=1000`, `PLAYER='LOOIS'`, Supabase-Block.
-10. **Persistenz**: `scoreKey`, `loadScoresLocal`, `saveScoresLocal`, `cloudFetch`, `cloudPush`, `initScores`.
-11. **UI/Flow**: `parseAnswer` (strippt %, €, Einheiten), `loadProblem` (inkl. Mix-Hint-Logik), `startTimer`, `tick`, `checkAnswer` (exakt **oder** Toleranz bei `current.tol`), `onCorrect`, `updateStats`, `updateDino`, `renderBoard`, `finishRound`.
-12. **Overlay/Flow**: `runCountdown`, `startGame`, `goNext`, `showStart` (zurück zur Auswahl), `showTaskResult`.
-13. **Modus-Umschalter**: `MODE_TXT`, `setMode(m)`, Button-Handler (`btnModeEq/P/G/Geo/Mix`).
-14. **Init**: Event-Handler + `initScores()` + Dino-Render. Startseite initial sichtbar.
+### Entwürfe (lokal, NICHT deployt, untracked)
+- `entwurf-fortnite.html` — der gewählte Stil (Referenz/Vergleich).
+- `entwurf-gaming.html` — Vice-City-Variante (Magenta/Pink), nicht gewählt.
+> Diese zwei Dateien sind reine Design-Referenzen im Projektordner; sie sind nicht im Repo und nicht online.
 
 ---
 
-## Verifikations-Stand (jeweils der echte Code in Node, mit DOM-Stub, kein Browser nötig)
+## Code-Struktur (innerhalb `<script>`, Funktionsnamen statt Zeilen — Datei wächst)
+Rationalzahlen (`F`, `gcd`, `numDE`) · Render-Helfer (`fracHTML`, math `−` U+2212) · Mathe-Generatoren (`GENS`,`PGENS`,`GGENS`,`GEOGENS`,`MIXGENS`, `makeProblem`/`makeBoss`-Dispatch) · **Englisch**: `engProb/normalizeEN/shuffle/esc`, `EN_VOCAB`, `VOCABGENS`, `EN_VERBS/ADJ/NOUNS`, `GRAMMARGENS` (+ Phase-2-/Zeiten-Generatoren), `EN_ORDER`/`genOrder`, `EN_TEXTS`/`READINGGENS`, `ENGMIXGENS` · `MSG` (Sprüche) · Pixel-Figur · WebAudio · State + Supabase-Block + `scoreKey/loadScoresLocal/cloudFetch(All)/cloudPush/initScores` · UI/Flow (`parseAnswer`, `loadProblem`, `checkAnswer/checkChoice/checkOrder`, `onCorrect/wrongFeedback`, `updateStats/updateDino/renderBoard`, SHITLIST `addShit/startShitlist/shitNext/checkShit/finishShit/showWinOverlay`, `finishRound`) · Overlay/Flow (`runCountdown/startGame/goNext/showStart/showTaskResult/fitLobby`) · Board-Umschalter (`setBoardView/setClassFilter/aggregateClass/classSplitHTML/renderSharedBoard`) · Modus/Fach (`MODE_TXT/setMode/setSubject` + Handler) · Namens-System · Init.
 
-- **Gleichungen**: 33.000+ Bruch-Checks (unabhängiger Rationalzahlen-Rechner) → 0 Fehler; 250/250 Auto-Solve im Browser.
-- **Prozent**: 16.000 Aufgaben → 0 Fehler (Antwort eingebbar, unabhängig nachgerechnet, Lösungsweg-Endwert == Antwort, Parser-Round-Trip).
-- **Größen**: 22.000 Aufgaben → 0 Fehler; Umrechnungen gegen die **physikalische Invariante** geprüft (Antwort × Zieleinheit == Quelle × Quelleinheit).
-- **Geometrie**: 19.000 Aufgaben → 0 Fehler; jede Formel unabhängig nachgerechnet, Toleranz akzeptiert 3,14- **und** Taschenrechner-π, weist ×2-Fehler ab.
-- **Mix**: 24.000 Aufgaben → sehr schwer 50,3 % (Mehrheit), alle 4 Sektionen vertreten, 0 Boss-Aufgaben im regulären Pool.
-- **Browser** (Preview): Modus-Wechsel, echte Eingaben (auch mit Einheit/€/% bzw. gerundet), Lösungswege, Figuren und Endgegner gerendert; „↩ Auswahl"-Button getestet.
-
-> **Verifikations-Pattern:** Den `<script>`-Block aus der HTML extrahieren und mit `vm.runInContext` in Node laufen lassen, dabei `document`/`localStorage` als Proxy stubben. So lassen sich Generatoren/Parser massenhaft prüfen, ohne Browser. (Wegwerf-Skripte; nicht eingecheckt.)
+## Verifikation (Node, ohne Browser)
+`<script>`-Block extrahieren und mit `vm.runInContext` laufen lassen; **stubben:** `document`, `localStorage`, `fetch` (resolved `{ok,json:[]}`), **`window.addEventListener`**, `requestAnimationFrame`. Tests (Wegwerf-Skript `/tmp/verify_gr.js`): Script lädt fehlerfrei; EN_VOCAB sauber + **keine Dubletten (topic+en / topic+de)**; alle Generatoren liefern konsistente Antworten (Text-Antwort ∈ accept, Choice-Index gültig, Order: tokens==order & answer==order.join); `aggregateClass` (totalTasks/bestTime); alle 9 Modi liefern Aufgaben. Für visuelle Checks: temporäre `launch.json` mit absolutem Pfad auf `…/Gleichungs-Run/.claude/serve.js`, Preview `preview_start("static")`, danach löschen.
 
 ---
-
-## Design-Konventionen
-
-- **Monochrom** (Schwarz/Weiß/Grau), einzige Akzentfarbe `--gold: #ffcf4a` (AURA, Boss, Gold-Dino, Geometrie-Figuren-Labels neutral grau).
-- **Mathematisches Minus** `−` (U+2212) überall.
-- **Brüche** rein in CSS (`.frac`). Kein MathJax.
-- **Spieler** = **LOOIS** (Single-Player; Sprüche personalisiert). Cloud-Schema hat `player`-Spalte für Multiplayer.
-- **Lösungsweg** einheitlich: `.srow` mit `lhs = rhs` + Operations-Notiz rechts; Wort-Operationen kursiv-grau, Rechen-Operationen mono. Finale Zeile weiß; deren Operations-Notiz dunkel (`.srow.final .sop`).
-- **Caption** pro Aufgabe: `.ptype` (kleine Großbuchstaben, grau). Textaufgaben in `.wp` (lesbarer Fließtext). Geometrie-Figuren in `.geofig`.
-
----
-
-## Cloud / Multiplayer — AKTIV (Supabase)
-
-Im Script-Kopf stehen jetzt echte Werte:
-```js
-const SUPABASE_URL = 'https://xmihfeelhmrqaddmohqr.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_…';   // ÖFFENTLICHER (publishable) Key – NIE den sb_secret_-Key hier eintragen!
-```
-- **Name pro Gerät:** `PLAYER` wird aus `localStorage['gleichungsrun_player']` geladen (Default `LOOIS`). Beim ersten Start öffnet sich `#nameModal` („Wer spielt?"); Name jederzeit über den Header-Chip (`#playerChip`) änderbar. `nm(str)` ersetzt den Platzhalter `LOOIS` in allen Sprüchen/Texten durch den echten Namen.
-- **Tabelle `scores`** hat eine zusätzliche **`mode`-Spalte** (5 Modi). `cloudPush` schreibt `mode`; persönliches `cloudFetch` filtert `player=eq.PLAYER & mode=eq.state.mode`; `cloudFetchAll(mode)` holt **alle** Spieler eines Modus.
-- **Klassen-Board:** Board-Sektion hat Tabs **Eigenes / Klassen-Board** (`#tabOwn`/`#tabClass`) und im Klassen-Board einen Metrik-Umschalter **Beste Runde / AURA** (`#metricTasks`/`#metricAura`). `aggregateClass()` verdichtet pro Spieler (min tasks, Tie→min time, bzw. max aura) und `renderSharedBoard()` rendert die Rangliste (Top 1 in Gold, eigener Eintrag umrandet). Ohne Cloud-Keys zeigt das Board einen Hinweis.
-- **RLS-Policies:** anon darf nur `select` + `insert` auf `scores` (kein delete/update). Aufräumen/Reset daher per SQL-Editor: `delete from scores;` bzw. `delete from scores where player='…';`.
-- Verifiziert: Node-vm (Namensersetzung, Aggregation beide Metriken, esc, alle 5 Generatoren) + Live gegen Supabase (read 200, insert 201, Board-Ranking tasks & aura korrekt, Browser-Screenshot).
-
-**Optional / Ausbau:** Echtzeit-Duell (Supabase Realtime + Räume) wäre möglich, aber deutlich aufwändiger. Aktuell async „Klassen-Board".
-
----
-
-## Hosting — ERLEDIGT (GitHub Pages)
-
-- **Live-Link für die Kinder:** https://m7dchscjsk-droid.github.io/gleichungs-run/
-- Repo: https://github.com/m7dchscjsk-droid/gleichungs-run (public). GitHub-Account-Login: `m7dchscjsk-droid` (Anzeigename „sigmaligma").
-- `index.html` ist eine **Meta-Refresh-Weiterleitung** auf `Gleichungs-Trainer.html` (damit die Root-URL direkt das Spiel öffnet). Single source of truth bleibt `Gleichungs-Trainer.html`.
-- `.gitignore` schließt `.claude/` (Preview-Tooling) aus dem Repo aus.
-- **Update-Workflow:** Datei ändern → `git commit` → `git push` (origin/main). Pages baut automatisch (~1 Min), gleicher Link. Git-Auth läuft über `gh` (credential helper via `gh auth setup-git`).
 
 ## Offene Punkte / Ideen für den nächsten Chat
+1. **Phase 4 — Sprachmittlung** (Teil D): aus EN-Text deutsche Faktfragen (MC/Detail).
+2. **Phase 5 — Hörverstehen** (Teil A) via Browser-TTS (`speechSynthesis`) + Fallback.
+3. **Mehr Inhalte:** Vokabeln Richtung 1.850, mehr Lesetexte (aktuell 7), mehr `EN_ORDER`-Sätze.
+4. **Look-Feinschliff:** Rarity-Farben auch im Gameplay, Mobil-Abstände, optionaler Hintergrund-Grid/Animationen; ggf. echtes Charakterbild statt Sahur in der Charakter-Karte.
+5. **HUD:** Top-Bar-Text „Level/XP" evtl. echtes Level-System; SERIE/OK ggf. zusätzlich anzeigen.
+6. Optional: eigene Sprüche-Buckets pro Modus; Mix-Schwierigkeits-Schieberegler.
 
-1. (Optional) Geometrie: mehr zusammengesetzte Figuren / Sachkontexte, Maßstabs-/Diagonalaufgaben.
-2. (Optional) Größen: l↔dm³ / ml↔cm³ Äquivalenzen als eigener Mini-Typ; Tonnen/Hektar-Sachaufgaben.
-3. (Optional) Prozent: Zinsrechnung (Teil B), gestaffelte Rabatte.
-4. (Optional) Mix: Schwierigkeits-Schieberegler (wie stark „sehr schwer" überwiegt).
-5. (Optional) Eigene Sprüche-Buckets pro Modus statt geteiltem `MSG`.
-6. (Optional) Echtzeit-Duell zwischen zwei Kindern (Supabase Realtime + Räume).
-
----
-
-## Quick-Start für einen neuen Chat
-
-> „Wir machen am Gleichungs-Run weiter. Briefing in `HANDOVER.md`, App in `Gleichungs-Trainer.html`. Lies erst die HANDOVER.md, dann starten wir bei Punkt X."
-
-Der neue Chat sollte die HANDOVER.md zuerst lesen, dann gezielt am offenen Punkt arbeiten, den der User angibt. Für Verifikation den Node-vm-Ansatz nutzen; für visuelle Checks den Preview-Server (ggf. temporäre `launch.json` mit absolutem serve.js-Pfad).
+## Quick-Start für den neuen Chat
+> „Wir machen am Quali-Run weiter. Lies `HANDOVER.md` (aktueller Stand). App = `Gleichungs-Trainer.html`, live auf GitHub Pages, Klassen-Board in Supabase. **Wichtig: bei jedem Push die Punktestände schützen** (Keys nie ändern, vorher/nachher zählen). Dann starten wir bei Punkt X."
