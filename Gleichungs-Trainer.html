@@ -2393,6 +2393,126 @@ const EN_TEXTS=[
   {q:"When can students use phones at the writer's school?",choices:['During lessons','Only in the breaks','Never','All the time'],ai:1},
   {q:'The writer thinks the rule is fair.',choices:TF,ai:0},
   {q:'Why do some people think phones can help?',choices:['They are fun','You can look up words or facts','They are cheap','They make noise'],ai:1}
+ ]},
+{title:'E-Mail · Austauschschülerin',level:'schwer',topic:'school',
+ text:"Hi Anna,<br>I have been in Brighton for two weeks now and I love it! I live with a host family. They have two kids and a funny old dog. School starts at 8.45 and finishes at 3.15, so the days are long. The food in the canteen is strange — beans for breakfast! At the weekend my host sister took me to the beach, but the water was much too cold for swimming. Next month we are going to London together. I miss you, but please don't worry about me.<br>See you soon, Lena",
+ qs:[
+  {q:'Who does Lena live with in Brighton?',choices:['Alone in a flat','With a host family','At the school','With Anna'],ai:1},
+  {q:'Lena went swimming in the sea.',choices:TF,ai:1,ex:'„the water was much too cold for swimming" — sie ist nicht geschwommen.'},
+  {q:'How long has Lena been in Brighton? (nur die Zahl)',answer:'two',accept:['two','2','two weeks','2 weeks'],ex:'„I have been in Brighton for two weeks"'},
+  {q:'Lena had to pay a lot of money for the school.',choices:TF,ai:2,ex:'Über Kosten oder Bezahlen steht nichts im Text.'}
+ ]},
+{title:'Blog · Praktikum',level:'schwer',topic:'jobs',
+ text:"This week I did my work experience at a car garage. On the first day I was really nervous. The mechanics showed me how to change a tyre and check the oil. I had to get up at six o'clock every morning, which was hard for me! My hands were dirty all the time, but I learned a lot. The boss said I was a good worker. I don't want to be a mechanic, but now I know how an engine works.",
+ qs:[
+  {q:'Where did the writer do the work experience?',choices:['At a school','At a car garage','At a shop','At a hospital'],ai:1},
+  {q:'What did the mechanics teach the writer?',choices:['How to drive','How to change a tyre and check the oil','How to sell cars','How to cook'],ai:1},
+  {q:'The writer wants to become a mechanic.',choices:TF,ai:1,ex:"„I don't want to be a mechanic"},
+  {q:'What time did the writer get up? (nur die Zahl)',answer:'six',accept:['six','6'],ex:"„I had to get up at six o'clock"}
+ ]},
+{title:'Artikel · Screen time',level:'schwer',topic:'tech',
+ text:"Many teenagers spend more than five hours a day looking at a screen. They watch videos, play games and chat with friends. Experts say this can be a problem. Too much screen time at night makes it hard to sleep, and some young people do less sport than before. But screens are not only bad: you can learn new things, stay in touch with friends and find help for homework. The best idea is to take regular breaks and to put the phone away one hour before bed.",
+ qs:[
+  {q:'What can too much screen time at night cause?',choices:['Better sleep','Problems sleeping','More sport','Hunger'],ai:1},
+  {q:'According to the text, screens are only bad for teenagers.',choices:TF,ai:1,ex:'„screens are not only bad" — der Text nennt auch Vorteile.'},
+  {q:'What should you do one hour before bed?',choices:['Play more games','Put the phone away','Watch a film','Call a friend'],ai:1},
+  {q:'The text says how much a phone costs.',choices:TF,ai:2}
+ ]},
+{title:'Aushang · Volunteers',level:'mittel',topic:'freetime',
+ text:"GREENFIELD SPORTS CLUB needs YOU! We are looking for young volunteers to help with our football and basketball teams. You don't have to be a great player — we just need friendly people who like sport. You would help with training on Tuesday and Thursday afternoons. Volunteers get a free club T-shirt and a snack after training. If you are 14 or older, come to the office on Monday or send us an email.",
+ qs:[
+  {q:'What does the club need?',choices:['New balls','Young volunteers','More money','A new field'],ai:1},
+  {q:'You must be a very good player to help.',choices:TF,ai:1,ex:"„You don't have to be a great player"},
+  {q:'On which days would volunteers help?',choices:['Monday and Friday','Tuesday and Thursday','At the weekend','Every day'],ai:1},
+  {q:'How old do you have to be? (nur die Zahl)',answer:'14',accept:['14','fourteen'],ex:'„If you are 14 or older"'}
+ ]},
+{title:'Sachtext · Bees',level:'schwer',topic:'nature',
+ text:"Bees are small, but they are very important for us. When they fly from flower to flower, they help plants to grow fruit and vegetables. Without bees, we would have much less food. Sadly, the number of bees is falling. One reason is that farmers use chemicals on their fields. You can help bees in your own garden: plant flowers, don't use chemicals, and put out a little water on hot days. Every garden can become a home for bees.",
+ qs:[
+  {q:'Why are bees important for us?',choices:['They make noise','They help plants grow fruit and vegetables','They are big','They eat chemicals'],ai:1},
+  {q:'The number of bees is going up.',choices:TF,ai:1,ex:'„the number of bees is falling"'},
+  {q:'How can you help bees in your garden?',choices:['Use more chemicals','Plant flowers and put out water','Cut down all flowers','Keep cats'],ai:1},
+  {q:'The text says how many bees live in Germany.',choices:TF,ai:2}
+ ]},
+{title:'Blog · Weekend in Scotland',level:'schwer',topic:'travel',
+ text:"Last weekend I went to Scotland with two friends. We stayed in a youth hostel near a big lake. On Saturday we went hiking in the hills. The weather changed all the time — sun, then rain, then sun again! In the evening we cooked pasta in the hostel kitchen and met young people from France and Spain. On Sunday we were too tired to walk, so we took the bus to a small town and visited a castle. It was a short but amazing trip.",
+ qs:[
+  {q:'Where did the writer and friends sleep?',choices:['In a hotel','In a youth hostel','In a tent','On the bus'],ai:1},
+  {q:'How was the weather on Saturday?',choices:['Only sunny','It changed all the time','Only rainy','Cold and snowy'],ai:1},
+  {q:'On Sunday they went hiking again.',choices:TF,ai:1,ex:'„we were too tired to walk, so we took the bus"'},
+  {q:'Who did they meet in the hostel?',choices:['Their teachers','Young people from France and Spain','Their families','Nobody'],ai:1}
+ ]},
+{title:'Sachtext · Breakfast',level:'mittel',topic:'food',
+ text:"Many people say that breakfast is the most important meal of the day. After sleeping all night, your body needs energy. A good breakfast can help you to think better at school. Doctors say you should eat fruit, bread or cereal, and drink water or milk. Sweet things like chocolate give you energy for a short time only. But many teenagers have no breakfast because they get up too late. Try to get up ten minutes earlier — your body will thank you.",
+ qs:[
+  {q:'Why is breakfast important?',choices:['It is sweet','Your body needs energy after sleeping','It is cheap','It is fast'],ai:1},
+  {q:'What do doctors say you should drink?',choices:['Cola or juice','Water or milk','Coffee','Energy drinks'],ai:1},
+  {q:'Sweet things give you energy for a long time.',choices:TF,ai:1,ex:'„Sweet things … give you energy for a short time only"'},
+  {q:'Why do many teenagers have no breakfast?',choices:['They are not hungry','They get up too late','They hate food','They are ill'],ai:1}
+ ]},
+{title:'Review · Film night',level:'mittel',topic:'freetime',
+ text:"On Friday I watched the new film 'Lost in the City' with my brother. It is an action film about a boy who loses his dog in a big city and looks for it everywhere. The story is exciting and there are some funny moments too. The music is great, but the film is a bit too long — almost three hours! My little brother fell asleep at the end. I give the film four stars out of five. If you like dogs and adventure, you should watch it.",
+ qs:[
+  {q:'What kind of film is it?',choices:['A love film','An action film','A horror film','A cartoon for babies'],ai:1},
+  {q:'What is the film about?',choices:['A boy who loses his dog','A football team','A school trip','A robot'],ai:1},
+  {q:'The writer thinks the film is too short.',choices:TF,ai:1,ex:'„the film is a bit too long — almost three hours"'},
+  {q:'How many stars does the writer give? (nur die Zahl)',answer:'four',accept:['four','4'],ex:'„I give the film four stars"'}
+ ]},
+{title:'Artikel · Pocket money',level:'schwer',topic:'jobs',
+ text:"How much pocket money should young people get? In a new survey, most British teenagers between 13 and 15 said they get about ten pounds a week. Some get more if they help at home, for example by cleaning or walking the dog. Many teenagers save part of their money for clothes, games or a trip with friends. Experts say it is good for young people to learn how to use money early. 'If you can save as a teenager, you can save as an adult,' one expert said.",
+ qs:[
+  {q:'How much pocket money do most teenagers in the survey get?',choices:['About five pounds','About ten pounds a week','Twenty pounds a day','Nothing'],ai:1},
+  {q:'How can some teenagers get more money?',choices:['By doing nothing','By helping at home','By selling their phone','By staying in bed'],ai:1},
+  {q:'The text says teenagers should not save money.',choices:TF,ai:1,ex:'Der Experte sagt das Gegenteil: „If you can save as a teenager…"'},
+  {q:'The survey was done in the USA.',choices:TF,ai:2,ex:'Es geht um „British teenagers"; die USA werden nicht genannt.'}
+ ]},
+{title:'Sachtext · New York',level:'schwer',topic:'travel',
+ text:"New York is the biggest city in the USA. More than eight million people live there. The city has five parts, called boroughs. The most famous one is Manhattan, with its tall buildings. Many tourists visit the Statue of Liberty, which was a present from France in 1886. In the middle of the city there is a huge green park called Central Park, where people relax, run and ride bikes. New York is also famous for its yellow taxis and Broadway shows.",
+ qs:[
+  {q:'How many people live in New York?',choices:['About one million','More than eight million','Five hundred','Eighty million'],ai:1},
+  {q:'Which country gave the Statue of Liberty to the USA?',answer:'france',accept:['france'],ex:'„a present from France in 1886"'},
+  {q:'You can ride a bike in Central Park.',choices:TF,ai:0,ex:'„people relax, run and ride bikes"'},
+  {q:'What is Central Park?',choices:['A tall building','A big green park','A museum','A theatre'],ai:1}
+ ]},
+{title:'Story · A new town',level:'mittel',topic:'home',
+ text:"When my parents told me we were moving to a new town, I was angry and sad. I didn't want to leave my friends and my old room. On the first day at my new school, I sat alone at lunch. But then a girl called Emma came to my table and started to talk to me. She showed me the school and we became friends. Now, six months later, I am happy here. Sometimes a change is scary at first, but it can also bring something good.",
+ qs:[
+  {q:'How did the writer feel about moving at first?',choices:['Happy and excited','Angry and sad','Bored','Nothing'],ai:1},
+  {q:'Who helped the writer at the new school?',choices:['A teacher','A girl called Emma','A brother','Nobody'],ai:1},
+  {q:'The writer is still unhappy in the new town.',choices:TF,ai:1,ex:'„Now, six months later, I am happy here."'},
+  {q:'The family moved because of a new job.',choices:TF,ai:2}
+ ]},
+{title:'Aushang · Shopping centre',level:'mittel',topic:'town',
+ text:"GRAND OPENING! The new RIVERSIDE shopping centre opens on Saturday, 10 May. Come and see more than 80 shops, a cinema and a food court with food from all over the world. Opening times: Monday to Saturday, 9 a.m. to 9 p.m. On the first weekend, there is live music and free balloons for children. Parking is free for the first two hours. Take bus number 7 or 12 to 'Riverside' — it stops right in front of the entrance.",
+ qs:[
+  {q:'What is new in the text?',choices:['A school','A shopping centre','A hospital','A train station'],ai:1},
+  {q:'The shopping centre is open on Sundays.',choices:TF,ai:1,ex:'„Monday to Saturday" — sonntags ist es geschlossen.'},
+  {q:'How long is parking free?',choices:['One hour','The first two hours','All day','It is never free'],ai:1},
+  {q:'Which buses go to the shopping centre?',choices:['Number 1 or 2','Number 7 or 12','Only number 9','No buses'],ai:1}
+ ]},
+{title:'Artikel · Animal shelter',level:'mittel',topic:'family',
+ text:"Last month our family got a dog from the animal shelter. His name is Rocky and he is three years old. Before, he lived on the street and was very thin and shy. At first he was afraid of everything, even the TV. We gave him good food, a warm bed and a lot of love. Now Rocky is happy: he runs in the garden and sleeps next to my bed. If you want a pet, please think about a shelter animal. They need a home too.",
+ qs:[
+  {q:'Where did the family get Rocky?',choices:['From a shop','From the animal shelter','From a friend','From a farm'],ai:1},
+  {q:'How old is Rocky? (nur die Zahl)',answer:'three',accept:['three','3'],ex:'„he is three years old"'},
+  {q:'When Rocky came, he was shy and afraid.',choices:TF,ai:0,ex:'„he was very thin and shy … afraid of everything"'},
+  {q:'The family also bought a cat.',choices:TF,ai:2}
+ ]},
+{title:'Sachtext · Australia',level:'schwer',topic:'nature',
+ text:"Australia is a country and a continent at the same time. It is very big, but only about 26 million people live there — most of them near the coast. The middle of the country is hot, dry desert. Australia is famous for its special animals, like kangaroos and koalas, which you cannot find in the wild anywhere else. When it is winter in Europe, it is summer in Australia, because the country is on the other side of the world. Many young people travel there to work and see the country.",
+ qs:[
+  {q:'Where do most people in Australia live?',choices:['In the desert','Near the coast','In the mountains','On small islands'],ai:1},
+  {q:'What is the middle of Australia like?',choices:['Cold and wet','Hot, dry desert','Full of cities','Covered in snow'],ai:1},
+  {q:'When it is winter in Europe, it is also winter in Australia.',choices:TF,ai:1,ex:'„When it is winter in Europe, it is summer in Australia"'},
+  {q:'Australia is the biggest country in the world.',choices:TF,ai:2}
+ ]},
+{title:'Tipps · Saving energy',level:'schwer',topic:'home',
+ text:"Energy is expensive, and using less of it is also good for our planet. There are many easy things you can do at home. Turn off the lights when you leave a room. Don't leave the TV or computer on standby — switch it off. When you are cold, put on a jumper before you turn up the heating. A short shower uses less water and energy than a long bath. If everyone in the family helps, you can save money and protect the environment at the same time.",
+ qs:[
+  {q:'What should you do when you leave a room?',choices:['Turn up the heating','Turn off the lights','Open the window','Turn on the TV'],ai:1},
+  {q:'A long bath uses less energy than a short shower.',choices:TF,ai:1,ex:'„A short shower uses less water and energy than a long bath"'},
+  {q:'What should you do before turning up the heating?',choices:['Open a window','Put on a jumper','Have a bath','Go outside'],ai:1},
+  {q:'Saving energy is good for the planet.',choices:TF,ai:0,ex:'„using less of it is also good for our planet"'}
  ]}
 ];
 function readingEst(t){ const w=t.text.replace(/<[^>]+>/g,' ').split(/\s+/).length; return Math.min(150,Math.max(50,Math.round(w*0.8)+20)); }
@@ -2402,8 +2522,16 @@ function qToProb(t,q,boss){
   if(q.choices) return engProb(Object.assign(base,{kind:'choice',displayHTML:readingPanel(t,q.q),choices:q.choices,answerIndex:q.ai,explainHTML:q.ex||('Richtig: <b>'+q.choices[q.ai]+'</b>')}));
   return engProb(Object.assign(base,{kind:'text',displayHTML:readingPanel(t,q.q),answer:q.answer,accept:q.accept||[q.answer],explainHTML:q.ex||('Antwort: <b>'+q.answer+'</b>')}));
 }
-function genReading(){ const t=pick(EN_TEXTS); return qToProb(t,pick(t.qs),false); }
-function genReadingBoss(){ const t=EN_TEXTS.slice().sort((a,b)=>b.text.length-a.text.length)[0]; return qToProb(t,pick(t.qs),true); }
+let _lastReadIdx=-1,_lastReadQ='';
+function genReading(){
+  let i=0; if(EN_TEXTS.length>1){ do{ i=Math.floor(Math.random()*EN_TEXTS.length); }while(i===_lastReadIdx); }
+  _lastReadIdx=i; const t=EN_TEXTS[i];
+  let q=t.qs[0]; if(t.qs.length>1){ do{ q=pick(t.qs); }while(q.q===_lastReadQ); }
+  _lastReadQ=q.q; return qToProb(t,q,false);
+}
+function genReadingBoss(){
+  const hard=EN_TEXTS.filter(t=>(t.level==='schwer'||t.level==='sehr schwer')&&t.text.replace(/<[^>]+>/g,'').length>=380);
+  const t=pick(hard.length?hard:EN_TEXTS); return qToProb(t,pick(t.qs),true); }
 const READINGGENS=[{w:1,f:genReading}];
 
 /* ---------- Kesse Sprüche ---------- */
