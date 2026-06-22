@@ -491,7 +491,8 @@
               <button class="modebtn epic" id="btnModeGrammar"><span class="mc-no">02</span><span class="mc-nm">Grammatik</span><span class="mc-ds">Teil B</span></button>
               <button class="modebtn epic" id="btnModeReading"><span class="mc-no">03</span><span class="mc-nm">Lesen</span><span class="mc-ds">Texte + Fragen</span></button>
               <button class="modebtn epic" id="btnModeIrreg"><span class="mc-no">04</span><span class="mc-nm">Verbformen</span><span class="mc-ds">irregular + Plural</span></button>
-              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">05</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
+              <button class="modebtn epic" id="btnModeSignals"><span class="mc-no">05</span><span class="mc-nm">Signalwörter</span><span class="mc-ds">Zeit erkennen</span></button>
+              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">06</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
             </div>
             <div class="cta"><button class="btn-start" id="btnStart">▶ Start</button></div>
           </div>
@@ -925,6 +926,7 @@ function makeBoss(){
   if(state.mode==='grammar'){ return genGrammarBoss(); }
   if(state.mode==='reading'){ return genReadingBoss(); }
   if(state.mode==='irreg'){ return genIrrBoss(); }
+  if(state.mode==='signals'){ return genSignalBoss(); }
   if(state.mode==='engmix'){ return genEngMixBoss(); }
   for(let i=0;i<1500;i++){const p=genBoss(); if(p)return p;} return makeProblem();
 }
@@ -943,10 +945,11 @@ const GENS=[
   {w:6,f:genMixedDecFrac},
 ];
 function makeProblem(){
-  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='signals' ? SIGNALGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
   for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
   if(state.mode==='reading'){ return genReading(); }
   if(state.mode==='irreg'){ return genIrrVerb(); }
+  if(state.mode==='signals'){ return genSignalTense(); }
   if(state.mode==='vocab'||state.mode==='grammar'||state.mode==='engmix'){ return genVocEN2DE(); }
   // Notfall-Fallback
   if(state.mode==='prozent') return genProzentwert();
@@ -2389,6 +2392,104 @@ function genIrrBoss(){
     explainHTML:'<b>'+v.inf+'</b> – <b>'+v.past+'</b> – <b>'+v.pp+'</b> <span class="dim">· '+v.de+'</span>'}); }
 const IRRGENS=[ {w:5,f:genIrrVerb},{w:1.8,f:genIrrPlural} ];
 
+/* ---------- Signalwörter → richtige Zeitform (eigene Sektion) ---------- */
+const SIG_SUBJ=["I","You","We","They","He","She","Tom","Anna","My brother","My friends","The children"];
+function sigIsS(subj){ return ["He","She","Tom","Anna","My brother","My sister","The teacher"].indexOf(subj)>=0; }
+const SIG_V=[
+ {inf:"play",s3:"plays",past:"played",pp:"played",ing:"playing",obj:"football"},
+ {inf:"watch",s3:"watches",past:"watched",pp:"watched",ing:"watching",obj:"TV"},
+ {inf:"go",s3:"goes",past:"went",pp:"gone",ing:"going",obj:"to school"},
+ {inf:"eat",s3:"eats",past:"ate",pp:"eaten",ing:"eating",obj:"breakfast"},
+ {inf:"write",s3:"writes",past:"wrote",pp:"written",ing:"writing",obj:"an email"},
+ {inf:"read",s3:"reads",past:"read",pp:"read",ing:"reading",obj:"a book"},
+ {inf:"clean",s3:"cleans",past:"cleaned",pp:"cleaned",ing:"cleaning",obj:"the kitchen"},
+ {inf:"buy",s3:"buys",past:"bought",pp:"bought",ing:"buying",obj:"new shoes"},
+ {inf:"drink",s3:"drinks",past:"drank",pp:"drunk",ing:"drinking",obj:"tea"},
+ {inf:"wash",s3:"washes",past:"washed",pp:"washed",ing:"washing",obj:"the car"},
+ {inf:"cook",s3:"cooks",past:"cooked",pp:"cooked",ing:"cooking",obj:"dinner"},
+ {inf:"do",s3:"does",past:"did",pp:"done",ing:"doing",obj:"the homework"},
+ {inf:"visit",s3:"visits",past:"visited",pp:"visited",ing:"visiting",obj:"the museum"},
+ {inf:"paint",s3:"paints",past:"painted",pp:"painted",ing:"painting",obj:"a picture"},
+ {inf:"learn",s3:"learns",past:"learned",pp:"learned",ing:"learning",obj:"English"},
+ {inf:"help",s3:"helps",past:"helped",pp:"helped",ing:"helping",obj:"in the garden"}
+];
+const SIG_T=[
+ {key:"present",name:"Simple Present",de:"Gegenwart · Gewohnheit",
+   mid:["usually","always","often","sometimes","normally"],
+   end:["every day","every week","every morning","every weekend","on Mondays","twice a week"]},
+ {key:"past",name:"Simple Past",de:"Vergangenheit · abgeschlossen",
+   end:["yesterday","last week","last year","last night","two days ago","an hour ago","in 2010","a long time ago"]},
+ {key:"perfect",name:"Present Perfect",de:"vollendete Gegenwart · bis jetzt",
+   mid:["already","just"],
+   end:["so far","up to now"]},
+ {key:"progressive",name:"Present Progressive",de:"Verlaufsform · jetzt gerade",
+   front:["Look!","Listen!"],
+   end:["now","right now","at the moment","at present"]},
+ {key:"will",name:"will-Future",de:"Zukunft · Vorhersage",
+   end:["tomorrow","next week","next month","next year","soon","in two days","in the future"]}
+];
+function sigAlts(key){ return {
+ present:["simple present","present","present simple","simple present tense"],
+ past:["simple past","past","past simple","past tense","simple past tense"],
+ perfect:["present perfect","perfect","present perfect tense"],
+ progressive:["present progressive","progressive","present continuous","continuous","present progressive tense"],
+ will:["will-future","will future","will","future","will-future tense"]
+}[key]||[]; }
+function sigForm(key,v,subj){ const s=sigIsS(subj);
+  if(key==="present") return s?v.s3:v.inf;
+  if(key==="past") return v.past;
+  if(key==="perfect") return (s?"has ":"have ")+v.pp;
+  if(key==="progressive") return (subj==="I"?"am ":(s?"is ":"are "))+v.ing;
+  return "will "+v.inf; }
+function sigSentence(T,v,subj){ const s=sigIsS(subj);
+  const pools=[]; if(T.mid)pools.push(["mid",T.mid]); if(T.end)pools.push(["end",T.end]); if(T.front)pools.push(["front",T.front]);
+  const chosen=pick(pools); const place=chosen[0]; const sig=pick(chosen[1]); const U='<u>'+sig+'</u>'; let txt;
+  if(T.key==="present"){ const f=s?v.s3:v.inf;
+    txt = place==="mid" ? subj+' '+U+' '+f+' '+v.obj+'.' : subj+' '+f+' '+v.obj+' '+U+'.';
+  } else if(T.key==="past"){ txt = subj+' '+v.past+' '+v.obj+' '+U+'.';
+  } else if(T.key==="perfect"){ const aux=s?"has":"have";
+    txt = place==="mid" ? subj+' '+aux+' '+U+' '+v.pp+' '+v.obj+'.' : subj+' '+aux+' '+v.pp+' '+v.obj+' '+U+'.';
+  } else if(T.key==="progressive"){ const be=subj==="I"?"am":(s?"is":"are");
+    txt = place==="front" ? U+' '+subj+' '+be+' '+v.ing+' '+v.obj+'!' : subj+' '+be+' '+v.ing+' '+v.obj+' '+U+'.';
+  } else { txt = subj+' will '+v.inf+' '+v.obj+' '+U+'.'; }
+  return {html:txt,sig:sig}; }
+function genSignalTense(){
+  const T=pick(SIG_T), v=pick(SIG_V), subj=pick(SIG_SUBJ);
+  const sObj=sigSentence(T,v,subj);
+  const others=shuffle(SIG_T.filter(x=>x.key!==T.key)).slice(0,3).map(x=>x.name);
+  const choices=shuffle([T.name].concat(others)); const ai=choices.indexOf(T.name);
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:'<div class="engq"><span class="ptype">Signalwörter · welche Zeit?</span><div class="engsent">'+sObj.html+'</div><div class="enghint">Achte auf das <u>Signalwort</u> — in welcher Zeit steht der Satz?</div></div>',
+    choices:choices,answerIndex:ai,
+    vocabRef:{en:T.name,enAlt:sigAlts(T.key),de:'Signalwort „'+sObj.sig+'" → welche Zeit?'},
+    explainHTML:'Signalwort <b>'+sObj.sig+'</b> → <b>'+T.name+'</b> <span class="dim">· '+T.de+'</span>'}); }
+function genSignalForm(boss){
+  const T=pick(SIG_T), v=pick(SIG_V), subj=pick(SIG_SUBJ), s=sigIsS(subj);
+  const sig=pick(T.end||T.mid||T.front);
+  const correct=sigForm(T.key,v,subj);
+  const forms={present:s?v.s3:v.inf,past:v.past,perfect:(s?"has ":"have ")+v.pp,progressive:(subj==="I"?"am ":(s?"is ":"are "))+v.ing,will:"will "+v.inf};
+  const distract=[]; shuffle(["present","past","perfect","progressive","will"]).forEach(k=>{ if(distract.length<3&&forms[k]!==correct&&distract.indexOf(forms[k])<0)distract.push(forms[k]); });
+  const choices=shuffle([correct].concat(distract)); const ai=choices.indexOf(correct);
+  const sentGap=subj+' <span class="gap">_____</span> '+v.obj+' <u>'+sig+'</u>.';
+  return engProb({isBoss:!!boss,difficulty:boss?'sehr schwer':'mittel',kind:'choice',
+    displayHTML:'<div class="engq"><span class="ptype">'+(boss?'★ ENDGEGNER · ':'')+'Signalwort → richtige Form</span><div class="engsent">'+sentGap+'</div><div class="enghint">Welche Form passt zum Signalwort <b>'+sig+'</b>?</div></div>',
+    choices:choices,answerIndex:ai,
+    vocabRef:{en:correct,enAlt:[],de:'„'+sig+'" + '+v.inf+' → richtige Form'},
+    explainHTML:'<b>'+sig+'</b> → '+T.name+': <b>'+correct+'</b>'}); }
+function genSignalFormMC(){ return genSignalForm(false); }
+function genSignalText(){
+  const T=pick(SIG_T), v=pick(SIG_V), subj=pick(SIG_SUBJ);
+  const sig=pick(T.end||T.mid||T.front);
+  const correct=sigForm(T.key,v,subj);
+  const sentGap=subj+' <span class="gap">_____</span> ('+v.inf+') '+v.obj+' <u>'+sig+'</u>.';
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">Signalwort → Form einsetzen</span><div class="engsent">'+sentGap+'</div><div class="enghint">Setze <b>'+v.inf+'</b> in der richtigen Zeit ein <span class="dim">(Signalwort: '+sig+')</span></div></div>',
+    answer:correct,accept:[correct],
+    vocabRef:{en:correct,enAlt:[],de:'„'+sig+'" + '+v.inf+' ('+subj+') → richtige Form'},
+    explainHTML:'<b>'+sig+'</b> → '+T.name+': <b>'+correct+'</b> <span class="dim">· '+T.de+'</span>'}); }
+function genSignalBoss(){ return genSignalForm(true); }
+const SIGNALGENS=[ {w:3,f:genSignalTense},{w:2,f:genSignalFormMC},{w:1.2,f:genSignalText} ];
+
 /* ---------- Grammatik-Generatoren (Phase 1, generiert) ---------- */
 const EN_SUBJ_S=["He","She","My friend","The teacher","My brother","Anna","Tom","The man"];
 const EN_SUBJ_PL=["I","We","They","You","My friends"];
@@ -3057,7 +3158,7 @@ async function cloudPush(entry){
 }
 
 let scores=[];
-function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
 function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
 function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
 async function initScores(){
@@ -3489,6 +3590,12 @@ const MODE_TXT={
     ph:'englische Form eingeben',
     hint:'Nur die gefragte Form eintippen · Groß-/Kleinschreibung egal'
   },
+  signals:{
+    brand:'Quali Bayern · Englisch · Signalwörter & Zeiten',
+    sub:'Verbinde <b>Signalwörter</b> mit der richtigen <b>Zeitform</b>: <i>yesterday</i> → Simple Past, <i>every day</i> → Simple Present, <i>already/just</i> → Present Perfect, <i>now/Look!</i> → Present Progressive, <i>tomorrow</i> → will-Future. Erst die Zeit erkennen, dann die richtige Form. Falsches landet auf der <b>💩 SHITLIST</b>. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Ready, LOOIS?',
+    ph:'Antwort eingeben',
+    hint:'Achte auf das Signalwort · bei Lücken die richtige Verbform eintippen'
+  },
   engmix:{
     brand:'Quali Bayern · Englisch · Alles gemischt',
     sub:'Der <b>Englisch-Mix</b> aus Wortschatz und Grammatik, jedes Mal neu. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt ein zufälliger Endgegner. Ready, LOOIS?',
@@ -3496,7 +3603,7 @@ const MODE_TXT={
     hint:'Mal Vokabel, mal Grammatik – lies die Aufgabe genau'
   }
 };
-const ENG_MODES=['vocab','grammar','reading','irreg','engmix'];
+const ENG_MODES=['vocab','grammar','reading','irreg','signals','engmix'];
 function setMode(m){
   state.mode=m;
   $('btnModeEq').classList.toggle('active',m==='gleich');
@@ -3508,6 +3615,7 @@ function setMode(m){
   $('btnModeGrammar').classList.toggle('active',m==='grammar');
   $('btnModeReading').classList.toggle('active',m==='reading');
   $('btnModeIrreg').classList.toggle('active',m==='irreg');
+  $('btnModeSignals').classList.toggle('active',m==='signals');
   $('btnModeEngMix').classList.toggle('active',m==='engmix');
   const t=MODE_TXT[m];
   $('ovSub').innerHTML=nm(t.sub); $('brandSub').textContent=t.brand;
@@ -3538,6 +3646,7 @@ $('btnModeVocab').addEventListener('click',()=>setMode('vocab'));
 $('btnModeGrammar').addEventListener('click',()=>setMode('grammar'));
 $('btnModeReading').addEventListener('click',()=>setMode('reading'));
 $('btnModeIrreg').addEventListener('click',()=>setMode('irreg'));
+$('btnModeSignals').addEventListener('click',()=>setMode('signals'));
 $('btnModeEngMix').addEventListener('click',()=>setMode('engmix'));
 $('subjMath').addEventListener('click',()=>setSubject('math'));
 $('subjEng').addEventListener('click',()=>setSubject('eng'));
@@ -3564,7 +3673,7 @@ $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); }
 
 /* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
 let boardView='own', classMetric='tasks', classFilter='all';
-const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['engmix','Eng-Mix']];
+const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['signals','Signalwörter'],['engmix','Eng-Mix']];
 function filterLabel(f){ const e=BOARD_FILTERS.find(x=>x[0]===f); return e?e[1]:'Alle'; }
 function renderClassFilters(){
   $('classFilters').innerHTML=BOARD_FILTERS.map(p=>'<button class="board-tab'+(p[0]===classFilter?' active':'')+'" data-f="'+p[0]+'">'+p[1]+'</button>').join('');
