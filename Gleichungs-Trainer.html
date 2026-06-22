@@ -437,6 +437,39 @@
   /* kompakter Start-Button + Zeile */
   .cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:4px;}
   .cta .btn-start{align-self:flex-start;font-size:26px;padding:15px 44px;}
+  /* ---------- Spickzettel ---------- */
+  .spickpanel{text-align:left;width:100%;}
+  .spick-head{font-family:var(--disp);font-weight:400;font-size:30px;line-height:1.05;color:var(--ink);margin:4px 0 4px;}
+  .spick-intro{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:16px;}
+  .spick-intro b{color:var(--gold);}
+  .spick-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  @media(max-width:760px){.spick-grid{grid-template-columns:1fr;}}
+  .spick-card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:15px 15px 13px;}
+  .spick-card h3{font-family:var(--disp);font-weight:400;font-size:21px;margin:0;color:var(--ink);}
+  .spick-card .sde{color:var(--gold);font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:1px 0 9px;}
+  .spick-row{font-size:13.5px;line-height:1.55;margin:5px 0;color:var(--ink);}
+  .spick-row .k{color:var(--blue);font-weight:800;}
+  .spick-row code{font-family:var(--mono);background:var(--track);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px;color:#cfe0ff;}
+  .sig-chips{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 2px;}
+  .sig-chip{background:rgba(39,182,255,.13);border:1px solid var(--line);color:#cfe6ff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;}
+  .spick-ex{background:var(--panel);border-left:3px solid var(--hi);border-radius:9px;padding:8px 11px;margin-top:9px;font-size:13.5px;}
+  .spick-ex .en{color:#fff;font-weight:600;}
+  .spick-ex .en b{color:var(--hi);}
+  .spick-ex .de{color:var(--muted);display:block;font-size:12.5px;margin-top:2px;}
+  .spick-note{background:rgba(255,176,46,.10);border:1px solid rgba(255,176,46,.32);border-radius:10px;padding:8px 11px;font-size:12.8px;line-height:1.5;color:#ffe4b0;margin-top:10px;}
+  .spick-note b{color:#ffd277;}
+  .spick-cmp{grid-column:1/-1;background:linear-gradient(180deg,rgba(177,92,255,.14),rgba(177,92,255,.04));border:1px solid var(--line);border-radius:16px;padding:15px;}
+  .spick-cmp h3{font-family:var(--disp);font-weight:400;font-size:21px;margin:0 0 9px;color:var(--ink);}
+  .cmp-2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+  @media(max-width:620px){.cmp-2{grid-template-columns:1fr;}}
+  .cmp-col{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px;}
+  .cmp-col .ct{font-weight:800;color:var(--blue);font-size:13.5px;margin-bottom:4px;}
+  .cmp-col .cx{font-size:13px;color:var(--ink);line-height:1.5;}
+  .cmp-col .cx b{color:var(--hi);}
+  .spick-switch{display:flex;gap:8px;margin:2px 0 14px;flex-wrap:wrap;}
+  .spick-tab{font-weight:800;font-size:13px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;}
+  .spick-tab.active{background:var(--gold);color:#000;border-color:var(--gold);}
+  .kk{color:#04121f;font-weight:900;background:var(--hi);border-radius:4px;padding:0 4px;margin:0 1px;}
 </style>
 </head>
 <body>
@@ -468,8 +501,10 @@
         <div class="subjectpick">
           <button class="subjbtn active" id="subjMath">📐 Mathe</button>
           <button class="subjbtn" id="subjEng">🇬🇧 Englisch</button>
+          <button class="subjbtn" id="subjDe">🇩🇪 Deutsch</button>
+          <button class="subjbtn" id="subjSpick">📋 Spickzettel</button>
         </div>
-        <div class="hero2">
+        <div class="hero2" id="hero2">
           <div class="charcard">
             <div class="ov-dino" id="ovDino"></div>
             <div class="ctag" id="ovTitle">Servus, LOOIS!</div>
@@ -494,7 +529,162 @@
               <button class="modebtn epic" id="btnModeSignals"><span class="mc-no">05</span><span class="mc-nm">Signalwörter</span><span class="mc-ds">Zeit erkennen</span></button>
               <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">06</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
             </div>
+            <div class="modepick" id="modepickDe" style="display:none">
+              <button class="modebtn rare active" id="btnModeKomma"><span class="mc-no">01</span><span class="mc-nm">Kommasetzung</span><span class="mc-ds">wo &amp; warum</span></button>
+            </div>
             <div class="cta"><button class="btn-start" id="btnStart">▶ Start</button></div>
+          </div>
+        </div>
+        <div class="spickpanel" id="spickPanel" style="display:none">
+          <div class="spick-switch">
+            <button class="spick-tab active" id="spickTabDe">✏️ Komma-Regeln (Deutsch)</button>
+            <button class="spick-tab" id="spickTabEng">🇬🇧 Englische Zeiten</button>
+          </div>
+          <div id="spickDe">
+            <div class="spick-head">📋 Spickzettel · Kommasetzung</div>
+            <div class="spick-intro"><b>Faustregel:</b> Sobald ein neuer Teilsatz mit eigenem Verb beginnt (weil, dass, der, aber, um … zu …) oder du etwas <b>aufzählst</b>, steht ein Komma.</div>
+            <div class="spick-grid">
+              <div class="spick-card"><h3>Aufzählung</h3><div class="sde">mehrere Dinge / Eigenschaften</div>
+                <div class="spick-row"><span class="k">Wann?</span> Zwischen gleichrangigen Teilen einer Aufzählung. <b>Vor „und"/„oder" KEIN Komma.</b></div>
+                <div class="spick-row"><span class="k">Erkennen:</span> Du könntest „und" dazwischen einfügen.</div>
+                <div class="spick-ex"><span class="en">Ich kaufe Brot<span class="kk">,</span> Butter<span class="kk">,</span> Käse und Milch.</span></div>
+              </div>
+              <div class="spick-card"><h3>Haupt- &amp; Nebensatz</h3><div class="sde">Nebensatz mit Bindewort</div>
+                <div class="spick-row"><span class="k">Wann?</span> Der Nebensatz wird vom Hauptsatz mit Komma getrennt.</div>
+                <div class="spick-row"><span class="k">Erkennen:</span> <i>weil, dass, wenn, als, obwohl, damit, ob, da, bevor, während</i> – das Verb rutscht ans Satzende.</div>
+                <div class="spick-ex"><span class="en">Ich bleibe daheim<span class="kk">,</span> weil ich krank bin.</span></div>
+              </div>
+              <div class="spick-card"><h3>Relativsatz</h3><div class="sde">Zusatz zu einem Nomen</div>
+                <div class="spick-row"><span class="k">Wann?</span> Der Relativsatz wird mit Komma abgetrennt – steht er mittendrin: <b>zwei</b> Kommas.</div>
+                <div class="spick-row"><span class="k">Erkennen:</span> beginnt mit <i>der, die, das, welcher, wo, was</i> und beschreibt ein Nomen.</div>
+                <div class="spick-ex"><span class="en">Das Haus<span class="kk">,</span> das dort steht<span class="kk">,</span> ist alt.</span></div>
+              </div>
+              <div class="spick-card"><h3>aber · sondern · denn</h3><div class="sde">zwei Aussagen / Gegensatz</div>
+                <div class="spick-row"><span class="k">Wann?</span> Vor <i>aber, sondern, denn, doch</i> steht ein Komma.</div>
+                <div class="spick-row"><span class="k">Erkennen:</span> Es folgt ein zweiter vollständiger Satz oder ein Gegensatz.</div>
+                <div class="spick-ex"><span class="en">Ich wollte kommen<span class="kk">,</span> aber ich hatte keine Zeit.</span></div>
+              </div>
+              <div class="spick-card"><h3>Infinitivgruppe</h3><div class="sde">um … zu / ohne … zu</div>
+                <div class="spick-row"><span class="k">Wann?</span> Vor erweiterten „zu"-Gruppen: <i>um … zu, ohne … zu, statt … zu</i>.</div>
+                <div class="spick-row"><span class="k">Erkennen:</span> „zu" + Verb am Ende, mit weiteren Wörtern davor.</div>
+                <div class="spick-ex"><span class="en">Er übt viel<span class="kk">,</span> um besser zu werden.</span></div>
+              </div>
+              <div class="spick-card"><h3>Anrede &amp; Ausruf</h3><div class="sde">jemanden ansprechen</div>
+                <div class="spick-row"><span class="k">Wann?</span> Nach direkter Anrede oder Ausruf/Ja-Nein am Satzanfang.</div>
+                <div class="spick-row"><span class="k">Erkennen:</span> ein Name oder <i>Ja, Nein, Hallo, oh</i> am Anfang.</div>
+                <div class="spick-ex"><span class="en">Anna<span class="kk">,</span> komm bitte her! · Ja<span class="kk">,</span> das stimmt.</span></div>
+              </div>
+              <div class="spick-card"><h3>Wörtliche Rede</h3><div class="sde">jemand sagt etwas</div>
+                <div class="spick-row"><span class="k">Wann?</span> Ein Komma trennt das Gesagte vom Begleitsatz.</div>
+                <div class="spick-row"><span class="k">Erkennen:</span> Anführungszeichen „ … " + wer es sagt (sagte, rief, fragte).</div>
+                <div class="spick-ex"><span class="en">„Ich komme gleich"<span class="kk">,</span> sagte er.</span></div>
+              </div>
+              <div class="spick-card"><h3>Einschub / Zusatz</h3><div class="sde">extra Info mittendrin</div>
+                <div class="spick-row"><span class="k">Wann?</span> Eine eingeschobene Zusatzinfo wird in <b>zwei</b> Kommas eingeschlossen.</div>
+                <div class="spick-row"><span class="k">Erkennen:</span> Du könntest den Teil weglassen, der Satz bleibt ganz.</div>
+                <div class="spick-ex"><span class="en">Mein Bruder<span class="kk">,</span> ein guter Koch<span class="kk">,</span> kocht heute.</span></div>
+              </div>
+              <div class="spick-cmp"><h3>🧭 Schnell-Check: Kommt hier ein Komma?</h3>
+                <div class="cmp-2">
+                  <div class="cmp-col"><div class="ct">✅ JA, Komma!</div><div class="cx">• Aufzählung (Brot, Butter …)<br>• neuer Teilsatz mit <b>weil / dass / wenn / der / die / das</b><br>• vor <b>aber / sondern / denn</b><br>• <b>um … zu</b>, ohne … zu<br>• nach Anrede (<b>Anna, …</b>)</div></div>
+                  <div class="cmp-col"><div class="ct">⛔ NEIN, kein Komma</div><div class="cx">• vor <b>und</b> / <b>oder</b> in einer Aufzählung<br>• zwischen Subjekt und Verb<br>• einfacher Hauptsatz ohne Zusatz<br><br><i>Kein zweites Verb, keine Aufzählung → meist kein Komma.</i></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="spickEng" style="display:none">
+          <div class="spick-head">📋 Spickzettel · Englische Zeiten</div>
+          <div class="spick-intro">Welche Zeit nehme ich? <b>Erst auf das Signalwort schauen</b> – es verrät dir fast immer die richtige Zeitform. Hier alle wichtigen Zeiten für den Quali mit Bauplan & Beispiel.</div>
+          <div class="spick-grid">
+
+            <div class="spick-card">
+              <h3>Simple Present</h3>
+              <div class="sde">Gegenwart · Gewohnheit</div>
+              <div class="spick-row"><span class="k">Wann?</span> Was <b>immer/regelmäßig</b> passiert, Gewohnheiten und Tatsachen.</div>
+              <div class="spick-row"><span class="k">Bauplan:</span> I/you/we/they + <code>Grundform</code> · he/she/it + <code>Verb+s</code></div>
+              <div class="sig-chips"><span class="sig-chip">every day</span><span class="sig-chip">usually</span><span class="sig-chip">always</span><span class="sig-chip">often</span><span class="sig-chip">sometimes</span><span class="sig-chip">on Mondays</span></div>
+              <div class="spick-ex"><span class="en">She <b>plays</b> football every day.</span><span class="de">Sie spielt jeden Tag Fußball.</span></div>
+              <div class="spick-note">Achtung he/she/it: <b>+s</b> nicht vergessen! go→go<b>es</b>, watch→watch<b>es</b>, study→stud<b>ies</b>.</div>
+            </div>
+
+            <div class="spick-card">
+              <h3>Present Progressive</h3>
+              <div class="sde">Verlaufsform · jetzt gerade</div>
+              <div class="spick-row"><span class="k">Wann?</span> Was <b>genau jetzt</b> gerade passiert.</div>
+              <div class="spick-row"><span class="k">Bauplan:</span> am/is/are + <code>Verb+ing</code></div>
+              <div class="sig-chips"><span class="sig-chip">now</span><span class="sig-chip">right now</span><span class="sig-chip">at the moment</span><span class="sig-chip">Look!</span><span class="sig-chip">Listen!</span></div>
+              <div class="spick-ex"><span class="en">Look! He <b>is playing</b> football.</span><span class="de">Schau! Er spielt (gerade) Fußball.</span></div>
+              <div class="spick-note">I → <b>am</b>, he/she/it → <b>is</b>, you/we/they → <b>are</b>.</div>
+            </div>
+
+            <div class="spick-card">
+              <h3>Simple Past</h3>
+              <div class="sde">Vergangenheit · abgeschlossen</div>
+              <div class="spick-row"><span class="k">Wann?</span> Was in der Vergangenheit passiert ist und <b>vorbei</b> ist (oft mit Zeitpunkt).</div>
+              <div class="spick-row"><span class="k">Bauplan:</span> <code>Verb+ed</code> · unregelmäßig: <code>2. Form</code> (go→went)</div>
+              <div class="sig-chips"><span class="sig-chip">yesterday</span><span class="sig-chip">last week</span><span class="sig-chip">two days ago</span><span class="sig-chip">in 2010</span><span class="sig-chip">last night</span></div>
+              <div class="spick-ex"><span class="en">We <b>went</b> to London last week.</span><span class="de">Wir sind letzte Woche nach London gefahren.</span></div>
+              <div class="spick-note">Verneinung/Frage mit <b>did</b> → danach wieder Grundform: <i>Did you <b>go</b>…? · I <b>didn't go</b>.</i></div>
+            </div>
+
+            <div class="spick-card">
+              <h3>Past Progressive</h3>
+              <div class="sde">Verlaufsform · Vergangenheit</div>
+              <div class="spick-row"><span class="k">Wann?</span> Was in der Vergangenheit <b>gerade im Gange</b> war – oft unterbrochen von etwas.</div>
+              <div class="spick-row"><span class="k">Bauplan:</span> was/were + <code>Verb+ing</code></div>
+              <div class="sig-chips"><span class="sig-chip">while</span><span class="sig-chip">as</span><span class="sig-chip">when … was/were</span></div>
+              <div class="spick-ex"><span class="en">I <b>was watching</b> TV when she called.</span><span class="de">Ich sah gerade fern, als sie anrief.</span></div>
+              <div class="spick-note">Der <b>längere</b> Vorgang steht im Progressive, die kurze Unterbrechung im Simple Past.</div>
+            </div>
+
+            <div class="spick-card">
+              <h3>Present Perfect</h3>
+              <div class="sde">vollendete Gegenwart · bis jetzt</div>
+              <div class="spick-row"><span class="k">Wann?</span> Vergangenes mit <b>Bezug zu jetzt</b>; Zeitpunkt egal/unbekannt; gerade eben.</div>
+              <div class="spick-row"><span class="k">Bauplan:</span> have/has + <code>3. Form</code> (past participle)</div>
+              <div class="sig-chips"><span class="sig-chip">already</span><span class="sig-chip">just</span><span class="sig-chip">ever</span><span class="sig-chip">never</span><span class="sig-chip">yet</span><span class="sig-chip">so far</span><span class="sig-chip">since</span><span class="sig-chip">for</span></div>
+              <div class="spick-ex"><span class="en">I <b>have</b> already <b>seen</b> the film.</span><span class="de">Ich habe den Film schon gesehen.</span></div>
+              <div class="spick-note"><b>since</b> = ab einem Zeitpunkt (since 2019) · <b>for</b> = über eine Dauer (for two years).</div>
+            </div>
+
+            <div class="spick-card">
+              <h3>will-Future</h3>
+              <div class="sde">Zukunft · Vorhersage / spontan</div>
+              <div class="spick-row"><span class="k">Wann?</span> <b>Vorhersagen</b>, spontane Entscheidungen, Versprechen, Vermutungen.</div>
+              <div class="spick-row"><span class="k">Bauplan:</span> will + <code>Grundform</code></div>
+              <div class="sig-chips"><span class="sig-chip">tomorrow</span><span class="sig-chip">next week</span><span class="sig-chip">soon</span><span class="sig-chip">in the future</span><span class="sig-chip">probably</span><span class="sig-chip">I think …</span></div>
+              <div class="spick-ex"><span class="en">It <b>will rain</b> tomorrow.</span><span class="de">Morgen wird es regnen.</span></div>
+              <div class="spick-note">Kurzform: I<b>'ll</b>, he<b>'ll</b> … · Verneinung: <b>won't</b> (= will not).</div>
+            </div>
+
+            <div class="spick-card">
+              <h3>going-to-Future</h3>
+              <div class="sde">Zukunft · fester Plan</div>
+              <div class="spick-row"><span class="k">Wann?</span> Was schon <b>geplant</b> ist (Absicht) oder sich klar <b>ankündigt</b>.</div>
+              <div class="spick-row"><span class="k">Bauplan:</span> am/is/are + <code>going to</code> + Grundform</div>
+              <div class="sig-chips"><span class="sig-chip">a plan</span><span class="sig-chip">an intention</span><span class="sig-chip">Look at the clouds!</span></div>
+              <div class="spick-ex"><span class="en">I<b>'m going to</b> visit my aunt next week.</span><span class="de">Ich werde nächste Woche meine Tante besuchen (ist geplant).</span></div>
+              <div class="spick-note"><b>will</b> = spontan/Vorhersage · <b>going to</b> = schon vorher geplant.</div>
+            </div>
+
+            <div class="spick-card">
+              <h3>Imperative</h3>
+              <div class="sde">Befehl · Aufforderung</div>
+              <div class="spick-row"><span class="k">Wann?</span> Wenn du jemandem etwas <b>sagst/befiehlst</b> (Anweisung, Bitte).</div>
+              <div class="spick-row"><span class="k">Bauplan:</span> <code>Grundform</code> (kein Subjekt) · verneint: <code>Don't</code> + Grundform</div>
+              <div class="sig-chips"><span class="sig-chip">Please …</span><span class="sig-chip">Don't …</span></div>
+              <div class="spick-ex"><span class="en"><b>Open</b> the window, please. · <b>Don't be</b> late!</span><span class="de">Mach bitte das Fenster auf. · Komm nicht zu spät!</span></div>
+            </div>
+
+            <div class="spick-cmp">
+              <h3>⚠️ Klassische Falle: Simple Past oder Present Perfect?</h3>
+              <div class="cmp-2">
+                <div class="cmp-col"><div class="ct">Simple Past – WANN genau?</div><div class="cx">Es gibt einen <b>festen Zeitpunkt</b> in der Vergangenheit (yesterday, last week, in 2010). Vorbei und abgeschlossen.<br><br>I <b>saw</b> him <i>yesterday</i>.</div></div>
+                <div class="cmp-col"><div class="ct">Present Perfect – Zeitpunkt egal</div><div class="cx">Wann ist <b>unwichtig/unbekannt</b>, es zählt der <b>Bezug zu jetzt</b> oder das Ergebnis (already, just, ever, never, yet).<br><br>I <b>have seen</b> this film. <i>(irgendwann – ich kenne es)</i></div></div>
+              </div>
+            </div>
+
+          </div>
           </div>
         </div>
       </div>
@@ -927,6 +1117,7 @@ function makeBoss(){
   if(state.mode==='reading'){ return genReadingBoss(); }
   if(state.mode==='irreg'){ return genIrrBoss(); }
   if(state.mode==='signals'){ return genSignalBoss(); }
+  if(state.mode==='komma'){ return genKommaBoss(); }
   if(state.mode==='engmix'){ return genEngMixBoss(); }
   for(let i=0;i<1500;i++){const p=genBoss(); if(p)return p;} return makeProblem();
 }
@@ -945,11 +1136,12 @@ const GENS=[
   {w:6,f:genMixedDecFrac},
 ];
 function makeProblem(){
-  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='signals' ? SIGNALGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='signals' ? SIGNALGENS : state.mode==='komma' ? KOMMAGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
   for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
   if(state.mode==='reading'){ return genReading(); }
   if(state.mode==='irreg'){ return genIrrVerb(); }
   if(state.mode==='signals'){ return genSignalTense(); }
+  if(state.mode==='komma'){ return genKommaWarum(); }
   if(state.mode==='vocab'||state.mode==='grammar'||state.mode==='engmix'){ return genVocEN2DE(); }
   // Notfall-Fallback
   if(state.mode==='prozent') return genProzentwert();
@@ -2490,6 +2682,82 @@ function genSignalText(){
 function genSignalBoss(){ return genSignalForm(true); }
 const SIGNALGENS=[ {w:3,f:genSignalTense},{w:2,f:genSignalFormMC},{w:1.2,f:genSignalText} ];
 
+/* ---------- Deutsch · Kommasetzung (eigenes Hauptfeld) ---------- */
+const KRULES={
+ auf:{name:'Aufzählung',why:'Gleichrangige Teile einer Aufzählung werden durch Komma getrennt – aber vor „und"/„oder" steht keins.'},
+ neb:{name:'Haupt- und Nebensatz',why:'Der Nebensatz (mit weil, dass, wenn, als, obwohl …) wird mit Komma vom Hauptsatz abgetrennt.'},
+ rel:{name:'Relativsatz',why:'Der Relativsatz (der, die, das, welcher …) gibt Zusatzinfo zu einem Nomen und wird mit Komma abgetrennt.'},
+ hs:{name:'aber · sondern · denn',why:'Vor „aber", „sondern", „denn" (und „doch") steht ein Komma – sie verbinden zwei Aussagen.'},
+ inf:{name:'Infinitivgruppe (um … zu)',why:'Erweiterte „zu"-Gruppen wie „um … zu", „ohne … zu", „statt … zu" werden mit Komma abgetrennt.'},
+ anr:{name:'Anrede / Ausruf',why:'Nach einer direkten Anrede oder einem Ausruf/Ja-Nein am Satzanfang steht ein Komma.'},
+ rede:{name:'wörtliche Rede',why:'Ein Komma trennt die wörtliche Rede vom Begleitsatz (sagte, rief, fragte).'},
+ ein:{name:'Einschub / Zusatz',why:'Ein eingeschobener Zusatz (Apposition) wird in zwei Kommas eingeschlossen.'}
+};
+const KOMMA=[
+ {s:"Im Korb liegen Äpfel, Birnen und Trauben.",rule:'auf'},
+ {s:"Sie ist klug, freundlich und hilfsbereit.",rule:'auf'},
+ {s:"Ich mag Pizza, Nudeln und Salat.",rule:'auf'},
+ {s:"Wir kauften Brot, Käse, Wurst und Milch.",rule:'auf'},
+ {s:"Er rannte schnell, sprang hoch und landete sicher.",rule:'auf'},
+ {s:"Ich bleibe heute zu Hause, weil ich krank bin.",rule:'neb'},
+ {s:"Wir gehen raus, wenn es aufhört zu regnen.",rule:'neb'},
+ {s:"Er sagte, dass er später kommt.",rule:'neb'},
+ {s:"Sie freute sich, obwohl sie verloren hatte.",rule:'neb'},
+ {s:"Ich weiß nicht, ob er heute kommt.",rule:'neb'},
+ {s:"Als der Film begann, wurde es still.",rule:'neb'},
+ {s:"Ich kenne die Frau, die nebenan wohnt.",rule:'rel'},
+ {s:"Das ist das Buch, das ich meine.",rule:'rel'},
+ {s:"Der Mann, der dort wohnt, ist Lehrer.",rule:'rel'},
+ {s:"Das Auto, das vor dem Haus steht, gehört uns.",rule:'rel'},
+ {s:"Ich wollte kommen, aber ich hatte keine Zeit.",rule:'hs'},
+ {s:"Er ist nicht müde, sondern faul.",rule:'hs'},
+ {s:"Wir blieben drinnen, denn es regnete stark.",rule:'hs'},
+ {s:"Sie lernte viel, doch sie bestand nicht.",rule:'hs'},
+ {s:"Er ging in die Stadt, um Kleidung zu kaufen.",rule:'inf'},
+ {s:"Sie übte täglich, um besser zu werden.",rule:'inf'},
+ {s:"Ich rief an, ohne lange zu überlegen.",rule:'inf'},
+ {s:"Wir kamen früher, um gute Plätze zu bekommen.",rule:'inf'},
+ {s:"Anna, komm bitte her!",rule:'anr'},
+ {s:"Hallo, schön dich zu sehen!",rule:'anr'},
+ {s:"Kinder, hört mir gut zu!",rule:'anr'},
+ {s:"Ja, das ist richtig.",rule:'anr'},
+ {s:'„Ich komme gleich“, sagte er.',rule:'rede'},
+ {s:'„Pass auf“, rief sie laut.',rule:'rede'},
+ {s:"Mein Bruder, ein guter Koch, macht heute Abendessen.",rule:'ein'},
+ {s:"Berlin, die Hauptstadt Deutschlands, ist sehr groß.",rule:'ein'},
+ {s:"Herr Müller, unser Lehrer, ist heute krank.",rule:'ein'}
+];
+function genKommaWarum(boss){
+  let k; if(boss){ const multi=KOMMA.filter(x=>(x.s.match(/,/g)||[]).length>1); k=pick(multi.length?multi:KOMMA); } else k=pick(KOMMA);
+  const r=KRULES[k.rule];
+  const others=shuffle(Object.keys(KRULES).filter(x=>x!==k.rule)).slice(0,3).map(x=>KRULES[x].name);
+  const choices=shuffle([r.name].concat(others)); const ai=choices.indexOf(r.name);
+  const shown=k.s.replace(/,/g,'<span class="kk">,</span>');
+  return engProb({isBoss:!!boss,difficulty:boss?'sehr schwer':'mittel',kind:'choice',
+    displayHTML:'<div class="engq"><span class="ptype">'+(boss?'★ ENDGEGNER · ':'')+'Kommasetzung · warum?</span><div class="engsent">'+shown+'</div><div class="enghint">Warum steht in diesem Satz ein Komma?</div></div>',
+    choices:choices,answerIndex:ai,
+    explainHTML:'<b>'+r.name+'</b> — '+r.why}); }
+function genKommaWo(){
+  let k=null; for(let i=0;i<80;i++){ const c=pick(KOMMA); if((c.s.match(/,/g)||[]).length===1 && c.rule!=='rede'){ k=c; break; } } if(!k)k=KOMMA[2];
+  const i=k.s.indexOf(','); const pre=k.s.slice(0,i).trim().split(/\s+/); const anchor=pre[pre.length-1].replace(/[„“”"]/g,'');
+  const noC=k.s.replace(/,/g,'');
+  const words=[]; noC.replace(/[.!?…]/g,'').split(/\s+/).forEach(w=>{ const ww=w.replace(/[„“”"]/g,''); if(ww.length>=2&&ww!==anchor&&words.indexOf(ww)<0)words.push(ww); });
+  const choices=shuffle([anchor].concat(shuffle(words).slice(0,3))); const ai=choices.indexOf(anchor);
+  const r=KRULES[k.rule];
+  return engProb({difficulty:'schwer',kind:'choice',
+    displayHTML:'<div class="engq"><span class="ptype">Kommasetzung · wo?</span><div class="engsent">'+noC+'</div><div class="enghint">An welcher Stelle fehlt das Komma? Nach welchem Wort?</div></div>',
+    choices:choices,answerIndex:ai,
+    explainHTML:'Komma nach „<b>'+anchor+'</b>": '+k.s.replace(/,/g,'<span class="kk">,</span>')+' <span class="dim">· '+r.name+'</span>'}); }
+function genKommaRF(){
+  const k=pick(KOMMA), r=KRULES[k.rule], correct=Math.random()<0.5;
+  const shown=correct? k.s.replace(/,/g,'<span class="kk">,</span>') : k.s.replace(/,/g,'');
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:'<div class="engq"><span class="ptype">Kommasetzung · richtig oder falsch?</span><div class="engsent">'+shown+'</div><div class="enghint">Ist die Kommasetzung hier korrekt?</div></div>',
+    choices:['Richtig','Falsch'],answerIndex:correct?0:1,
+    explainHTML: correct ? ('<b>Richtig.</b> '+r.why) : ('<b>Falsch – hier fehlt ein Komma:</b> '+k.s.replace(/,/g,'<span class="kk">,</span>')+' <span class="dim">· '+r.name+'</span>') }); }
+function genKommaBoss(){ return genKommaWarum(true); }
+const KOMMAGENS=[ {w:3,f:genKommaWarum},{w:3,f:genKommaWo},{w:2,f:genKommaRF} ];
+
 /* ---------- Grammatik-Generatoren (Phase 1, generiert) ---------- */
 const EN_SUBJ_S=["He","She","My friend","The teacher","My brother","Anna","Tom","The man"];
 const EN_SUBJ_PL=["I","We","They","You","My friends"];
@@ -3158,7 +3426,7 @@ async function cloudPush(entry){
 }
 
 let scores=[];
-function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='komma' ? 'dekomma_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
 function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
 function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
 async function initScores(){
@@ -3596,6 +3864,12 @@ const MODE_TXT={
     ph:'Antwort eingeben',
     hint:'Achte auf das Signalwort · bei Lücken die richtige Verbform eintippen'
   },
+  komma:{
+    brand:'Quali Bayern · Deutsch · Zeichensetzung (Kommas)',
+    sub:'Übe die <b>Kommasetzung</b>: Wo gehört das Komma hin – und <b>warum</b>? Aufzählung, Haupt- &amp; Nebensatz, Relativsatz, „aber/denn", „um … zu", Anrede u. v. m. Im <b>📋 Spickzettel</b> findest du alle Regeln. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Bereit, LOOIS?',
+    ph:'Antwort wählen',
+    hint:'Lies den Satz genau · achte auf Bindewörter (weil, dass, der, aber, um … zu)'
+  },
   engmix:{
     brand:'Quali Bayern · Englisch · Alles gemischt',
     sub:'Der <b>Englisch-Mix</b> aus Wortschatz und Grammatik, jedes Mal neu. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt ein zufälliger Endgegner. Ready, LOOIS?',
@@ -3604,6 +3878,8 @@ const MODE_TXT={
   }
 };
 const ENG_MODES=['vocab','grammar','reading','irreg','signals','engmix'];
+const DE_MODES=['komma'];
+let curSubject='math';
 function setMode(m){
   state.mode=m;
   $('btnModeEq').classList.toggle('active',m==='gleich');
@@ -3616,20 +3892,43 @@ function setMode(m){
   $('btnModeReading').classList.toggle('active',m==='reading');
   $('btnModeIrreg').classList.toggle('active',m==='irreg');
   $('btnModeSignals').classList.toggle('active',m==='signals');
+  $('btnModeKomma').classList.toggle('active',m==='komma');
   $('btnModeEngMix').classList.toggle('active',m==='engmix');
   const t=MODE_TXT[m];
   $('ovSub').innerHTML=nm(t.sub); $('brandSub').textContent=t.brand;
-  $('brandTitle').innerHTML = ENG_MODES.indexOf(m)>=0 ? 'English&nbsp;Run' : 'Gleichungs&nbsp;Run';
+  $('brandTitle').innerHTML = DE_MODES.indexOf(m)>=0 ? 'Deutsch&nbsp;Run' : ENG_MODES.indexOf(m)>=0 ? 'English&nbsp;Run' : 'Gleichungs&nbsp;Run';
   $('answer').placeholder=t.ph; $('eqHint').textContent=t.hint;
   resetRound(); reloadScores(); fitLobby();
 }
 function setSubject(s){
-  const eng=(s==='eng');
-  $('subjMath').classList.toggle('active',!eng);
+  curSubject=s;
+  const math=(s==='math'), eng=(s==='eng'), de=(s==='de');
+  $('subjSpick').classList.remove('active');
+  $('spickPanel').style.display='none';
+  $('hero2').style.display='';
+  $('subjMath').classList.toggle('active',math);
   $('subjEng').classList.toggle('active',eng);
-  $('modepickMath').style.display=eng?'none':'';
+  $('subjDe').classList.toggle('active',de);
+  $('modepickMath').style.display=math?'':'none';
   $('modepickEng').style.display=eng?'':'none';
-  setMode(eng?'vocab':'gleich');
+  $('modepickDe').style.display=de?'':'none';
+  setMode(eng?'vocab':de?'komma':'gleich');
+}
+function spickView(which){
+  const de=(which==='de');
+  $('spickDe').style.display=de?'':'none';
+  $('spickEng').style.display=de?'none':'';
+  $('spickTabDe').classList.toggle('active',de);
+  $('spickTabEng').classList.toggle('active',!de);
+}
+function openSpick(){
+  $('subjMath').classList.remove('active');
+  $('subjEng').classList.remove('active');
+  $('subjDe').classList.remove('active');
+  $('subjSpick').classList.add('active');
+  $('hero2').style.display='none';
+  $('spickPanel').style.display='';
+  spickView(curSubject==='de'?'de':'eng');
 }
 function reloadScores(){
   if(CLOUD){
@@ -3647,9 +3946,14 @@ $('btnModeGrammar').addEventListener('click',()=>setMode('grammar'));
 $('btnModeReading').addEventListener('click',()=>setMode('reading'));
 $('btnModeIrreg').addEventListener('click',()=>setMode('irreg'));
 $('btnModeSignals').addEventListener('click',()=>setMode('signals'));
+$('btnModeKomma').addEventListener('click',()=>setMode('komma'));
 $('btnModeEngMix').addEventListener('click',()=>setMode('engmix'));
 $('subjMath').addEventListener('click',()=>setSubject('math'));
 $('subjEng').addEventListener('click',()=>setSubject('eng'));
+$('subjDe').addEventListener('click',()=>setSubject('de'));
+$('subjSpick').addEventListener('click',openSpick);
+$('spickTabDe').addEventListener('click',()=>spickView('de'));
+$('spickTabEng').addEventListener('click',()=>spickView('eng'));
 
 /* ---------- Spielername ---------- */
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -3673,7 +3977,7 @@ $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); }
 
 /* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
 let boardView='own', classMetric='tasks', classFilter='all';
-const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['signals','Signalwörter'],['engmix','Eng-Mix']];
+const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['signals','Signalwörter'],['komma','Komma (DE)'],['engmix','Eng-Mix']];
 function filterLabel(f){ const e=BOARD_FILTERS.find(x=>x[0]===f); return e?e[1]:'Alle'; }
 function renderClassFilters(){
   $('classFilters').innerHTML=BOARD_FILTERS.map(p=>'<button class="board-tab'+(p[0]===classFilter?' active':'')+'" data-f="'+p[0]+'">'+p[1]+'</button>').join('');
