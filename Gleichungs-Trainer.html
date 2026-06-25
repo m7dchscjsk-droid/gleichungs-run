@@ -470,6 +470,14 @@
   .spick-tab{font-weight:800;font-size:13px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;}
   .spick-tab.active{background:var(--gold);color:#000;border-color:var(--gold);}
   .kk{color:#04121f;font-weight:900;background:var(--hi);border-radius:4px;padding:0 4px;margin:0 1px;}
+  .vtier{font-family:var(--disp);font-weight:400;font-size:18px;color:var(--gold);margin:16px 0 6px;letter-spacing:.02em;}
+  .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  @media(max-width:760px){.vgrid{grid-template-columns:1fr;}}
+  .vrow{display:flex;gap:7px;align-items:baseline;font-size:13px;padding:4px 2px;border-bottom:1px solid rgba(42,61,134,.4);}
+  .vrow .vn{color:var(--dim);min-width:26px;font-size:11px;font-family:var(--mono);text-align:right;}
+  .vrow .vf{color:var(--ink);font-weight:600;}
+  .vrow .vf b{color:var(--hi);font-weight:800;}
+  .vrow .vde{color:var(--muted);margin-left:auto;font-size:12px;text-align:right;padding-left:8px;}
 </style>
 </head>
 <body>
@@ -526,8 +534,9 @@
               <button class="modebtn epic" id="btnModeGrammar"><span class="mc-no">02</span><span class="mc-nm">Grammatik</span><span class="mc-ds">Teil B</span></button>
               <button class="modebtn epic" id="btnModeReading"><span class="mc-no">03</span><span class="mc-nm">Lesen</span><span class="mc-ds">Texte + Fragen</span></button>
               <button class="modebtn epic" id="btnModeIrreg"><span class="mc-no">04</span><span class="mc-nm">Verbformen</span><span class="mc-ds">irregular + Plural</span></button>
-              <button class="modebtn epic" id="btnModeSignals"><span class="mc-no">05</span><span class="mc-nm">Signalwörter</span><span class="mc-ds">Zeit erkennen</span></button>
-              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">06</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
+              <button class="modebtn epic" id="btnModeTop100"><span class="mc-no">05</span><span class="mc-nm">Top 100</span><span class="mc-ds">häufigste Verben</span></button>
+              <button class="modebtn epic" id="btnModeSignals"><span class="mc-no">06</span><span class="mc-nm">Signalwörter</span><span class="mc-ds">Zeit erkennen</span></button>
+              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">07</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
             </div>
             <div class="modepick" id="modepickDe" style="display:none">
               <button class="modebtn rare active" id="btnModeKomma"><span class="mc-no">01</span><span class="mc-nm">Kommasetzung</span><span class="mc-ds">wo &amp; warum</span></button>
@@ -537,8 +546,9 @@
         </div>
         <div class="spickpanel" id="spickPanel" style="display:none">
           <div class="spick-switch">
-            <button class="spick-tab active" id="spickTabDe">✏️ Komma-Regeln (Deutsch)</button>
+            <button class="spick-tab active" id="spickTabDe">✏️ Komma-Regeln (DE)</button>
             <button class="spick-tab" id="spickTabEng">🇬🇧 Englische Zeiten</button>
+            <button class="spick-tab" id="spickTabVerbs">🔤 Irregular Verbs (200)</button>
           </div>
           <div id="spickDe">
             <div class="spick-head">📋 Spickzettel · Kommasetzung</div>
@@ -686,6 +696,7 @@
 
           </div>
           </div>
+          <div id="spickVerbs" style="display:none"></div>
         </div>
       </div>
       <div class="ov-count" id="ovCount" style="display:none"><span id="ovNum">3</span></div>
@@ -1116,6 +1127,7 @@ function makeBoss(){
   if(state.mode==='grammar'){ return genGrammarBoss(); }
   if(state.mode==='reading'){ return genReadingBoss(); }
   if(state.mode==='irreg'){ return genIrrBoss(); }
+  if(state.mode==='top100'){ return genTop100Boss(); }
   if(state.mode==='signals'){ return genSignalBoss(); }
   if(state.mode==='komma'){ return genKommaBoss(); }
   if(state.mode==='engmix'){ return genEngMixBoss(); }
@@ -1136,10 +1148,11 @@ const GENS=[
   {w:6,f:genMixedDecFrac},
 ];
 function makeProblem(){
-  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='signals' ? SIGNALGENS : state.mode==='komma' ? KOMMAGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='top100' ? TOP100GENS : state.mode==='signals' ? SIGNALGENS : state.mode==='komma' ? KOMMAGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
   for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
   if(state.mode==='reading'){ return genReading(); }
   if(state.mode==='irreg'){ return genIrrVerb(); }
+  if(state.mode==='top100'){ return genTop100Verb(); }
   if(state.mode==='signals'){ return genSignalTense(); }
   if(state.mode==='komma'){ return genKommaWarum(); }
   if(state.mode==='vocab'||state.mode==='grammar'||state.mode==='engmix'){ return genVocEN2DE(); }
@@ -2584,6 +2597,108 @@ function genIrrBoss(){
     explainHTML:'<b>'+v.inf+'</b> – <b>'+v.past+'</b> – <b>'+v.pp+'</b> <span class="dim">· '+v.de+'</span>'}); }
 const IRRGENS=[ {w:5,f:genIrrVerb},{w:1.8,f:genIrrPlural} ];
 
+/* ---------- Spickzettel: Top-200 unregelmäßige Verben (nach Häufigkeit sortiert) ---------- */
+const IRR200=[
+ {n:"be",p:"was/were",pp:"been",de:"sein"},{n:"have",p:"had",pp:"had",de:"haben"},{n:"do",p:"did",pp:"done",de:"tun, machen"},
+ {n:"say",p:"said",pp:"said",de:"sagen"},{n:"get",p:"got",pp:"got",de:"bekommen, werden"},{n:"make",p:"made",pp:"made",de:"machen"},
+ {n:"go",p:"went",pp:"gone",de:"gehen"},{n:"know",p:"knew",pp:"known",de:"wissen, kennen"},{n:"take",p:"took",pp:"taken",de:"nehmen"},
+ {n:"see",p:"saw",pp:"seen",de:"sehen"},{n:"come",p:"came",pp:"come",de:"kommen"},{n:"think",p:"thought",pp:"thought",de:"denken"},
+ {n:"give",p:"gave",pp:"given",de:"geben"},{n:"find",p:"found",pp:"found",de:"finden"},{n:"tell",p:"told",pp:"told",de:"erzählen"},
+ {n:"become",p:"became",pp:"become",de:"werden"},{n:"leave",p:"left",pp:"left",de:"verlassen"},{n:"feel",p:"felt",pp:"felt",de:"fühlen"},
+ {n:"bring",p:"brought",pp:"brought",de:"bringen"},{n:"begin",p:"began",pp:"begun",de:"beginnen"},{n:"keep",p:"kept",pp:"kept",de:"behalten"},
+ {n:"hold",p:"held",pp:"held",de:"halten"},{n:"write",p:"wrote",pp:"written",de:"schreiben"},{n:"stand",p:"stood",pp:"stood",de:"stehen"},
+ {n:"hear",p:"heard",pp:"heard",de:"hören"},{n:"let",p:"let",pp:"let",de:"lassen"},{n:"mean",p:"meant",pp:"meant",de:"bedeuten, meinen"},
+ {n:"set",p:"set",pp:"set",de:"setzen, stellen"},{n:"meet",p:"met",pp:"met",de:"treffen"},{n:"run",p:"ran",pp:"run",de:"rennen, laufen"},
+ {n:"pay",p:"paid",pp:"paid",de:"bezahlen"},{n:"sit",p:"sat",pp:"sat",de:"sitzen"},{n:"speak",p:"spoke",pp:"spoken",de:"sprechen"},
+ {n:"lead",p:"led",pp:"led",de:"führen"},{n:"read",p:"read",pp:"read",de:"lesen"},{n:"grow",p:"grew",pp:"grown",de:"wachsen"},
+ {n:"lose",p:"lost",pp:"lost",de:"verlieren"},{n:"fall",p:"fell",pp:"fallen",de:"fallen"},{n:"send",p:"sent",pp:"sent",de:"senden"},
+ {n:"build",p:"built",pp:"built",de:"bauen"},{n:"understand",p:"understood",pp:"understood",de:"verstehen"},{n:"draw",p:"drew",pp:"drawn",de:"zeichnen"},
+ {n:"break",p:"broke",pp:"broken",de:"brechen"},{n:"spend",p:"spent",pp:"spent",de:"ausgeben, verbringen"},{n:"cut",p:"cut",pp:"cut",de:"schneiden"},
+ {n:"rise",p:"rose",pp:"risen",de:"aufgehen, steigen"},{n:"drive",p:"drove",pp:"driven",de:"fahren"},{n:"buy",p:"bought",pp:"bought",de:"kaufen"},
+ {n:"wear",p:"wore",pp:"worn",de:"tragen, anhaben"},{n:"choose",p:"chose",pp:"chosen",de:"wählen"},
+ {n:"show",p:"showed",pp:"shown",de:"zeigen"},{n:"put",p:"put",pp:"put",de:"legen, stellen"},{n:"seek",p:"sought",pp:"sought",de:"suchen"},
+ {n:"throw",p:"threw",pp:"thrown",de:"werfen"},{n:"catch",p:"caught",pp:"caught",de:"fangen"},{n:"deal",p:"dealt",pp:"dealt",de:"handeln, austeilen"},
+ {n:"win",p:"won",pp:"won",de:"gewinnen"},{n:"forget",p:"forgot",pp:"forgotten",de:"vergessen"},{n:"lay",p:"laid",pp:"laid",de:"legen"},
+ {n:"hang",p:"hung",pp:"hung",de:"hängen"},{n:"teach",p:"taught",pp:"taught",de:"unterrichten"},{n:"sell",p:"sold",pp:"sold",de:"verkaufen"},
+ {n:"eat",p:"ate",pp:"eaten",de:"essen"},{n:"beat",p:"beat",pp:"beaten",de:"schlagen, besiegen"},{n:"hit",p:"hit",pp:"hit",de:"schlagen, treffen"},
+ {n:"lend",p:"lent",pp:"lent",de:"leihen"},{n:"fight",p:"fought",pp:"fought",de:"kämpfen"},{n:"fly",p:"flew",pp:"flown",de:"fliegen"},
+ {n:"sleep",p:"slept",pp:"slept",de:"schlafen"},{n:"spread",p:"spread",pp:"spread",de:"verbreiten"},{n:"ride",p:"rode",pp:"ridden",de:"reiten, fahren"},
+ {n:"drink",p:"drank",pp:"drunk",de:"trinken"},{n:"swim",p:"swam",pp:"swum",de:"schwimmen"},{n:"sing",p:"sang",pp:"sung",de:"singen"},
+ {n:"ring",p:"rang",pp:"rung",de:"klingeln, anrufen"},{n:"lie",p:"lay",pp:"lain",de:"liegen"},{n:"bear",p:"bore",pp:"borne",de:"ertragen, tragen"},
+ {n:"shut",p:"shut",pp:"shut",de:"schließen"},{n:"cost",p:"cost",pp:"cost",de:"kosten"},{n:"hurt",p:"hurt",pp:"hurt",de:"verletzen, wehtun"},
+ {n:"shoot",p:"shot",pp:"shot",de:"schießen"},{n:"stick",p:"stuck",pp:"stuck",de:"kleben, stecken"},{n:"sink",p:"sank",pp:"sunk",de:"sinken"},
+ {n:"steal",p:"stole",pp:"stolen",de:"stehlen"},{n:"light",p:"lit",pp:"lit",de:"anzünden"},{n:"freeze",p:"froze",pp:"frozen",de:"frieren, einfrieren"},
+ {n:"hide",p:"hid",pp:"hidden",de:"verstecken"},{n:"bite",p:"bit",pp:"bitten",de:"beißen"},{n:"blow",p:"blew",pp:"blown",de:"blasen, wehen"},
+ {n:"burn",p:"burnt",pp:"burnt",de:"brennen, verbrennen"},{n:"bend",p:"bent",pp:"bent",de:"biegen"},{n:"dig",p:"dug",pp:"dug",de:"graben"},
+ {n:"feed",p:"fed",pp:"fed",de:"füttern"},{n:"shake",p:"shook",pp:"shaken",de:"schütteln"},{n:"shine",p:"shone",pp:"shone",de:"scheinen, leuchten"},
+ {n:"swing",p:"swung",pp:"swung",de:"schwingen, schaukeln"},{n:"tear",p:"tore",pp:"torn",de:"zerreißen"},{n:"wake",p:"woke",pp:"woken",de:"aufwachen, wecken"},
+ {n:"spell",p:"spelt",pp:"spelt",de:"buchstabieren"},{n:"forgive",p:"forgave",pp:"forgiven",de:"vergeben"},
+ {n:"learn",p:"learnt",pp:"learnt",de:"lernen"},{n:"dream",p:"dreamt",pp:"dreamt",de:"träumen"},{n:"creep",p:"crept",pp:"crept",de:"kriechen"},
+ {n:"bleed",p:"bled",pp:"bled",de:"bluten"},{n:"bet",p:"bet",pp:"bet",de:"wetten"},{n:"bind",p:"bound",pp:"bound",de:"binden"},
+ {n:"breed",p:"bred",pp:"bred",de:"züchten"},{n:"cast",p:"cast",pp:"cast",de:"werfen, besetzen"},{n:"cling",p:"clung",pp:"clung",de:"sich klammern"},
+ {n:"flee",p:"fled",pp:"fled",de:"fliehen"},{n:"forbid",p:"forbade",pp:"forbidden",de:"verbieten"},{n:"grind",p:"ground",pp:"ground",de:"mahlen"},
+ {n:"kneel",p:"knelt",pp:"knelt",de:"knien"},{n:"lean",p:"leant",pp:"leant",de:"lehnen"},{n:"leap",p:"leapt",pp:"leapt",de:"springen"},
+ {n:"mistake",p:"mistook",pp:"mistaken",de:"verwechseln"},{n:"overcome",p:"overcame",pp:"overcome",de:"überwinden"},{n:"quit",p:"quit",pp:"quit",de:"aufhören, kündigen"},
+ {n:"sew",p:"sewed",pp:"sewn",de:"nähen"},{n:"shed",p:"shed",pp:"shed",de:"abwerfen, vergießen"},{n:"shrink",p:"shrank",pp:"shrunk",de:"schrumpfen"},
+ {n:"slide",p:"slid",pp:"slid",de:"rutschen, gleiten"},{n:"smell",p:"smelt",pp:"smelt",de:"riechen"},{n:"sow",p:"sowed",pp:"sown",de:"säen"},
+ {n:"speed",p:"sped",pp:"sped",de:"rasen"},{n:"spill",p:"spilt",pp:"spilt",de:"verschütten"},{n:"spin",p:"spun",pp:"spun",de:"sich drehen"},
+ {n:"spit",p:"spat",pp:"spat",de:"spucken"},{n:"split",p:"split",pp:"split",de:"spalten, teilen"},{n:"spoil",p:"spoilt",pp:"spoilt",de:"verderben"},
+ {n:"spring",p:"sprang",pp:"sprung",de:"springen"},{n:"sting",p:"stung",pp:"stung",de:"stechen"},{n:"stink",p:"stank",pp:"stunk",de:"stinken"},
+ {n:"strike",p:"struck",pp:"struck",de:"schlagen, streiken"},{n:"swear",p:"swore",pp:"sworn",de:"schwören"},{n:"sweep",p:"swept",pp:"swept",de:"fegen"},
+ {n:"swell",p:"swelled",pp:"swollen",de:"anschwellen"},{n:"tread",p:"trod",pp:"trodden",de:"treten"},{n:"undo",p:"undid",pp:"undone",de:"rückgängig machen"},
+ {n:"upset",p:"upset",pp:"upset",de:"aufregen"},{n:"weave",p:"wove",pp:"woven",de:"weben"},{n:"weep",p:"wept",pp:"wept",de:"weinen"},
+ {n:"wind",p:"wound",pp:"wound",de:"aufziehen, winden"},{n:"withdraw",p:"withdrew",pp:"withdrawn",de:"abheben, zurückziehen"},{n:"wring",p:"wrung",pp:"wrung",de:"auswringen"},
+ {n:"arise",p:"arose",pp:"arisen",de:"entstehen"},{n:"awake",p:"awoke",pp:"awoken",de:"erwachen"},{n:"broadcast",p:"broadcast",pp:"broadcast",de:"senden"},
+ {n:"burst",p:"burst",pp:"burst",de:"platzen"},{n:"forecast",p:"forecast",pp:"forecast",de:"vorhersagen"},{n:"mow",p:"mowed",pp:"mown",de:"mähen"},
+ {n:"prove",p:"proved",pp:"proven",de:"beweisen"},{n:"rebuild",p:"rebuilt",pp:"rebuilt",de:"wieder aufbauen"},{n:"repay",p:"repaid",pp:"repaid",de:"zurückzahlen"},
+ {n:"misunderstand",p:"misunderstood",pp:"misunderstood",de:"missverstehen"},{n:"oversleep",p:"overslept",pp:"overslept",de:"verschlafen"},{n:"foresee",p:"foresaw",pp:"foreseen",de:"voraussehen"},
+ {n:"overtake",p:"overtook",pp:"overtaken",de:"überholen"},{n:"undergo",p:"underwent",pp:"undergone",de:"durchmachen"},{n:"undertake",p:"undertook",pp:"undertaken",de:"unternehmen"},
+ {n:"mislead",p:"misled",pp:"misled",de:"irreführen"},{n:"overhear",p:"overheard",pp:"overheard",de:"zufällig hören"},{n:"withhold",p:"withheld",pp:"withheld",de:"vorenthalten"},
+ {n:"uphold",p:"upheld",pp:"upheld",de:"aufrechterhalten"},{n:"withstand",p:"withstood",pp:"withstood",de:"standhalten"},{n:"overthrow",p:"overthrew",pp:"overthrown",de:"stürzen"},
+ {n:"oversee",p:"oversaw",pp:"overseen",de:"beaufsichtigen"},{n:"redo",p:"redid",pp:"redone",de:"noch einmal machen"},{n:"retell",p:"retold",pp:"retold",de:"nacherzählen"},
+ {n:"rewrite",p:"rewrote",pp:"rewritten",de:"neu schreiben"},{n:"overdo",p:"overdid",pp:"overdone",de:"übertreiben"},{n:"outgrow",p:"outgrew",pp:"outgrown",de:"herauswachsen"},
+ {n:"foretell",p:"foretold",pp:"foretold",de:"vorhersagen"},{n:"mislay",p:"mislaid",pp:"mislaid",de:"verlegen"},{n:"misread",p:"misread",pp:"misread",de:"falsch lesen"},
+ {n:"rewind",p:"rewound",pp:"rewound",de:"zurückspulen"},{n:"unwind",p:"unwound",pp:"unwound",de:"sich entspannen"},{n:"overrun",p:"overran",pp:"overrun",de:"überrennen"},
+ {n:"overeat",p:"overate",pp:"overeaten",de:"sich überessen"},{n:"overpay",p:"overpaid",pp:"overpaid",de:"zu viel bezahlen"},{n:"offset",p:"offset",pp:"offset",de:"ausgleichen"},
+ {n:"input",p:"input",pp:"input",de:"eingeben"},{n:"strive",p:"strove",pp:"striven",de:"streben"},{n:"thrust",p:"thrust",pp:"thrust",de:"stoßen"},
+ {n:"dwell",p:"dwelt",pp:"dwelt",de:"wohnen, verweilen"},{n:"babysit",p:"babysat",pp:"babysat",de:"babysitten"},{n:"stride",p:"strode",pp:"stridden",de:"schreiten"},
+ {n:"wet",p:"wet",pp:"wet",de:"nass machen"},{n:"proofread",p:"proofread",pp:"proofread",de:"Korrektur lesen"},{n:"bid",p:"bid",pp:"bid",de:"bieten"},
+ {n:"sling",p:"slung",pp:"slung",de:"schleudern"},{n:"slit",p:"slit",pp:"slit",de:"aufschlitzen"},{n:"partake",p:"partook",pp:"partaken",de:"teilnehmen"},
+ {n:"forgo",p:"forwent",pp:"forgone",de:"verzichten"},{n:"underpay",p:"underpaid",pp:"underpaid",de:"zu wenig bezahlen"},{n:"outdo",p:"outdid",pp:"outdone",de:"übertreffen"},
+ {n:"outrun",p:"outran",pp:"outrun",de:"schneller sein als"},{n:"overdraw",p:"overdrew",pp:"overdrawn",de:"Konto überziehen"},{n:"misspell",p:"misspelt",pp:"misspelt",de:"falsch schreiben"},
+ {n:"rethink",p:"rethought",pp:"rethought",de:"überdenken"}
+];
+function irr200HTML(){
+  const tiers=[[0,50,'★ Top 1–50 · absolute Muss-Verben'],[50,100,'51–100 · sehr häufig'],[100,150,'101–150 · häufig'],[150,200,'151–200 · seltener (kennen schadet nicht)']];
+  let h='<div class="spick-head">🔤 Unregelmäßige Verben · Top 200</div><div class="spick-intro">Nach <b>Häufigkeit</b> sortiert – die wichtigsten zuerst. Reihenfolge je Zeile: <b>Grundform – Simple Past – Past Participle</b>.</div>';
+  tiers.forEach(t=>{ h+='<div class="vtier">'+t[2]+'</div><div class="vgrid">';
+    for(let i=t[0];i<t[1]&&i<IRR200.length;i++){ const v=IRR200[i];
+      h+='<div class="vrow"><span class="vn">'+(i+1)+'</span><span class="vf">'+v.n+' – <b>'+v.p+'</b> – <b>'+v.pp+'</b></span><span class="vde">'+v.de+'</span></div>'; }
+    h+='</div>'; });
+  return h; }
+/* ---------- Training: nur Top-100 Verben (häufigste) ---------- */
+const VFORM_ALT={burnt:['burned'],spelt:['spelled'],learnt:['learned'],dreamt:['dreamed'],smelt:['smelled'],spilt:['spilled'],spoilt:['spoiled'],leant:['leaned'],leapt:['leaped'],knelt:['kneeled'],got:['gotten'],shown:['showed'],proven:['proved'],sewn:['sewed'],mown:['mowed'],sown:['sowed'],misspelt:['misspelled']};
+function vAccept(form){ const a=[form]; if(form.indexOf('/')>=0) form.split('/').forEach(x=>{ if(a.indexOf(x)<0)a.push(x); }); (VFORM_ALT[form]||[]).forEach(x=>{ if(a.indexOf(x)<0)a.push(x); }); return a; }
+function genTop100Verb(){
+  const v=IRR200[Math.floor(Math.random()*100)]; const askPP=Math.random()<0.5;
+  const form=askPP?v.pp:v.p; const acc=vAccept(form);
+  const label=askPP?'3. Form · Past Participle':'2. Form · Simple Past';
+  const tag=askPP?'(have/has + 3. Form)':'(z. B. yesterday …)';
+  const ref={en:form,enAlt:acc.slice(1),de:(askPP?'Past Participle (3. Form)':'Simple Past (2. Form)')+' von '+v.n+' ('+v.de+')'};
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">Top-100 Verben · '+label+'</span><div class="engword">'+v.n+'</div><div class="enghint">'+v.de+' — wie heißt die '+(askPP?'3.':'2.')+' Form? <span class="dim">'+tag+'</span></div></div>',
+    answer:form,accept:acc,vocabRef:ref,
+    explainHTML:'<b>'+v.n+'</b> – <b>'+v.p+'</b> – <b>'+v.pp+'</b> <span class="dim">· '+v.de+'</span>'}); }
+function genTop100Boss(){
+  let v; for(let i=0;i<40;i++){ v=IRR200[Math.floor(Math.random()*100)]; if(v.p.indexOf('/')<0)break; }
+  const pasts=vAccept(v.p), pps=vAccept(v.pp); const seps=[' ',', ',' - ',' – ','/',' / ','–'];
+  const acc=[]; pasts.forEach(a=>pps.forEach(b=>seps.forEach(s=>acc.push(a+s+b)))); const canon=v.p+' '+v.pp;
+  return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">★ ENDGEGNER · 2. + 3. Form</span><div class="engword">'+v.n+'</div><div class="enghint">'+v.de+' — nenne <b>Simple Past</b> und <b>Past Participle</b> <span class="dim">(z. B. „go → went gone")</span></div></div>',
+    answer:canon,accept:acc,vocabRef:{en:canon,enAlt:acc.slice(1),de:'2. + 3. Form von '+v.n+' ('+v.de+')'},
+    explainHTML:'<b>'+v.n+'</b> – <b>'+v.p+'</b> – <b>'+v.pp+'</b> <span class="dim">· '+v.de+'</span>'}); }
+const TOP100GENS=[ {w:1,f:genTop100Verb} ];
+
 /* ---------- Signalwörter → richtige Zeitform (eigene Sektion) ---------- */
 const SIG_SUBJ=["I","You","We","They","He","She","Tom","Anna","My brother","My friends","The children"];
 function sigIsS(subj){ return ["He","She","Tom","Anna","My brother","My sister","The teacher"].indexOf(subj)>=0; }
@@ -3426,7 +3541,7 @@ async function cloudPush(entry){
 }
 
 let scores=[];
-function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='komma' ? 'dekomma_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='top100' ? 'engtop100_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='komma' ? 'dekomma_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
 function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
 function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
 async function initScores(){
@@ -3858,6 +3973,12 @@ const MODE_TXT={
     ph:'englische Form eingeben',
     hint:'Nur die gefragte Form eintippen · Groß-/Kleinschreibung egal'
   },
+  top100:{
+    brand:'Quali Bayern · Englisch · Top-100 unregelmäßige Verben',
+    sub:'Trainiere nur die <b>100 häufigsten</b> unregelmäßigen Verben – Simple Past &amp; Past Participle. Im <b>📋 Spickzettel</b> findest du die ganze Liste (Top 200). Falsches landet auf der <b>💩 SHITLIST</b>. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Ready, LOOIS?',
+    ph:'englische Form eingeben',
+    hint:'Nur die gefragte Form eintippen · Groß-/Kleinschreibung egal · Doppelformen (burnt/burned) zählen beide'
+  },
   signals:{
     brand:'Quali Bayern · Englisch · Signalwörter & Zeiten',
     sub:'Verbinde <b>Signalwörter</b> mit der richtigen <b>Zeitform</b>: <i>yesterday</i> → Simple Past, <i>every day</i> → Simple Present, <i>already/just</i> → Present Perfect, <i>now/Look!</i> → Present Progressive, <i>tomorrow</i> → will-Future. Erst die Zeit erkennen, dann die richtige Form. Falsches landet auf der <b>💩 SHITLIST</b>. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Ready, LOOIS?',
@@ -3877,7 +3998,7 @@ const MODE_TXT={
     hint:'Mal Vokabel, mal Grammatik – lies die Aufgabe genau'
   }
 };
-const ENG_MODES=['vocab','grammar','reading','irreg','signals','engmix'];
+const ENG_MODES=['vocab','grammar','reading','irreg','top100','signals','engmix'];
 const DE_MODES=['komma'];
 let curSubject='math';
 function setMode(m){
@@ -3891,6 +4012,7 @@ function setMode(m){
   $('btnModeGrammar').classList.toggle('active',m==='grammar');
   $('btnModeReading').classList.toggle('active',m==='reading');
   $('btnModeIrreg').classList.toggle('active',m==='irreg');
+  $('btnModeTop100').classList.toggle('active',m==='top100');
   $('btnModeSignals').classList.toggle('active',m==='signals');
   $('btnModeKomma').classList.toggle('active',m==='komma');
   $('btnModeEngMix').classList.toggle('active',m==='engmix');
@@ -3914,12 +4036,15 @@ function setSubject(s){
   $('modepickDe').style.display=de?'':'none';
   setMode(eng?'vocab':de?'komma':'gleich');
 }
+let _verbsBuilt=false;
 function spickView(which){
-  const de=(which==='de');
-  $('spickDe').style.display=de?'':'none';
-  $('spickEng').style.display=de?'none':'';
-  $('spickTabDe').classList.toggle('active',de);
-  $('spickTabEng').classList.toggle('active',!de);
+  if(which==='verbs'&&!_verbsBuilt){ $('spickVerbs').innerHTML=irr200HTML(); _verbsBuilt=true; }
+  $('spickDe').style.display=which==='de'?'':'none';
+  $('spickEng').style.display=which==='eng'?'':'none';
+  $('spickVerbs').style.display=which==='verbs'?'':'none';
+  $('spickTabDe').classList.toggle('active',which==='de');
+  $('spickTabEng').classList.toggle('active',which==='eng');
+  $('spickTabVerbs').classList.toggle('active',which==='verbs');
 }
 function openSpick(){
   $('subjMath').classList.remove('active');
@@ -3945,6 +4070,7 @@ $('btnModeVocab').addEventListener('click',()=>setMode('vocab'));
 $('btnModeGrammar').addEventListener('click',()=>setMode('grammar'));
 $('btnModeReading').addEventListener('click',()=>setMode('reading'));
 $('btnModeIrreg').addEventListener('click',()=>setMode('irreg'));
+$('btnModeTop100').addEventListener('click',()=>setMode('top100'));
 $('btnModeSignals').addEventListener('click',()=>setMode('signals'));
 $('btnModeKomma').addEventListener('click',()=>setMode('komma'));
 $('btnModeEngMix').addEventListener('click',()=>setMode('engmix'));
@@ -3954,6 +4080,7 @@ $('subjDe').addEventListener('click',()=>setSubject('de'));
 $('subjSpick').addEventListener('click',openSpick);
 $('spickTabDe').addEventListener('click',()=>spickView('de'));
 $('spickTabEng').addEventListener('click',()=>spickView('eng'));
+$('spickTabVerbs').addEventListener('click',()=>spickView('verbs'));
 
 /* ---------- Spielername ---------- */
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -3977,7 +4104,7 @@ $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); }
 
 /* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
 let boardView='own', classMetric='tasks', classFilter='all';
-const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['signals','Signalwörter'],['komma','Komma (DE)'],['engmix','Eng-Mix']];
+const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['top100','Top-100 Verben'],['signals','Signalwörter'],['komma','Komma (DE)'],['engmix','Eng-Mix']];
 function filterLabel(f){ const e=BOARD_FILTERS.find(x=>x[0]===f); return e?e[1]:'Alle'; }
 function renderClassFilters(){
   $('classFilters').innerHTML=BOARD_FILTERS.map(p=>'<button class="board-tab'+(p[0]===classFilter?' active':'')+'" data-f="'+p[0]+'">'+p[1]+'</button>').join('');
