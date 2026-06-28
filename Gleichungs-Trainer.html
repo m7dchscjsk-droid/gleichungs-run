@@ -536,7 +536,8 @@
               <button class="modebtn epic" id="btnModeIrreg"><span class="mc-no">04</span><span class="mc-nm">Verbformen</span><span class="mc-ds">irregular + Plural</span></button>
               <button class="modebtn epic" id="btnModeTop100"><span class="mc-no">05</span><span class="mc-nm">Top 100</span><span class="mc-ds">häufigste Verben</span></button>
               <button class="modebtn epic" id="btnModeSignals"><span class="mc-no">06</span><span class="mc-nm">Signalwörter</span><span class="mc-ds">Zeit erkennen</span></button>
-              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">07</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
+              <button class="modebtn epic" id="btnModeForm"><span class="mc-no">07</span><span class="mc-nm">Richtige Form</span><span class="mc-ds">Wortart + Zeit</span></button>
+              <button class="modebtn legend" id="btnModeEngMix"><span class="mc-no">08</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
             </div>
             <div class="modepick" id="modepickDe" style="display:none">
               <button class="modebtn rare active" id="btnModeKomma"><span class="mc-no">01</span><span class="mc-nm">Kommasetzung</span><span class="mc-ds">wo &amp; warum</span></button>
@@ -1128,6 +1129,7 @@ function makeBoss(){
   if(state.mode==='reading'){ return genReadingBoss(); }
   if(state.mode==='irreg'){ return genIrrBoss(); }
   if(state.mode==='top100'){ return genTop100Boss(); }
+  if(state.mode==='form'){ return genFormBoss(); }
   if(state.mode==='signals'){ return genSignalBoss(); }
   if(state.mode==='komma'){ return genKommaBoss(); }
   if(state.mode==='engmix'){ return genEngMixBoss(); }
@@ -1148,11 +1150,12 @@ const GENS=[
   {w:6,f:genMixedDecFrac},
 ];
 function makeProblem(){
-  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='top100' ? TOP100GENS : state.mode==='signals' ? SIGNALGENS : state.mode==='komma' ? KOMMAGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='top100' ? TOP100GENS : state.mode==='form' ? ENFORMGENS : state.mode==='signals' ? SIGNALGENS : state.mode==='komma' ? KOMMAGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
   for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
   if(state.mode==='reading'){ return genReading(); }
   if(state.mode==='irreg'){ return genIrrVerb(); }
   if(state.mode==='top100'){ return genTop100Verb(); }
+  if(state.mode==='form'){ return genForm(); }
   if(state.mode==='signals'){ return genSignalTense(); }
   if(state.mode==='komma'){ return genKommaWarum(); }
   if(state.mode==='vocab'||state.mode==='grammar'||state.mode==='engmix'){ return genVocEN2DE(); }
@@ -2699,6 +2702,62 @@ function genTop100Boss(){
     explainHTML:'<b>'+v.n+'</b> – <b>'+v.p+'</b> – <b>'+v.pp+'</b> <span class="dim">· '+v.de+'</span>'}); }
 const TOP100GENS=[ {w:1,f:genTop100Verb} ];
 
+/* ---------- Englisch · Richtige Form einsetzen (Nachbarn-Check) ---------- */
+const ENFORM=[
+ {s:"We finally found a (SOLVE) ___ to the problem.",base:"solve",ans:"solution",type:"Nomen",why:'„a" davor → Nomen: solve → solution.'},
+ {s:"I need more (INFORM) ___ about the trip.",base:"inform",ans:"information",type:"Nomen",why:'nach „more", kein Verb → Nomen: inform → information.'},
+ {s:"It was a difficult (DECIDE) ___.",base:"decide",ans:"decision",type:"Nomen",why:'„a difficult" davor → Nomen: decide → decision.'},
+ {s:"Their (FRIEND) ___ lasted for many years.",base:"friend",ans:"friendship",type:"Nomen",why:'„Their" + Subjekt → Nomen: friend → friendship.'},
+ {s:"Money can't buy (HAPPY) ___.",base:"happy",ans:"happiness",type:"Nomen",why:'Objekt nach dem Verb „buy" → Nomen: happy → happiness.'},
+ {s:"The smartphone was a great (INVENT) ___.",base:"invent",ans:"invention",type:"Nomen",why:'„a great" davor → Nomen: invent → invention.'},
+ {s:"Can you give me an (EXPLAIN) ___?",base:"explain",ans:"explanation",type:"Nomen",why:'„an" davor → Nomen: explain → explanation.'},
+ {s:"We waited for the (ARRIVE) ___ of the train.",base:"arrive",ans:"arrival",type:"Nomen",why:'„the" davor → Nomen: arrive → arrival.'},
+ {s:"She often talks about her (CHILD) ___.",base:"child",ans:"childhood",type:"Nomen",why:'„her" + Objekt → Nomen: child → childhood.'},
+ {s:"He has a lot of (KNOW) ___ about cars.",base:"know",ans:"knowledge",type:"Nomen",why:'„a lot of" davor → Nomen: know → knowledge.'},
+ {s:"The garden looks very (COLOUR) ___.",base:"colour",ans:"colourful",acc:["colourful","colorful"],type:"Adjektiv",why:'nach „looks very" → Adjektiv: colour → colourful.'},
+ {s:"Swimming in this river is (DANGER) ___.",base:"danger",ans:"dangerous",type:"Adjektiv",why:'nach „is" → Adjektiv: danger → dangerous.'},
+ {s:"This app is really (USE) ___.",base:"use",ans:"useful",type:"Adjektiv",why:'nach „is really" → Adjektiv: use → useful.'},
+ {s:"It was a (SUN) ___ day at the beach.",base:"sun",ans:"sunny",type:"Adjektiv",why:'vor dem Nomen „day" → Adjektiv: sun → sunny.'},
+ {s:"Please be (CARE) ___ with the hot pan.",base:"care",ans:"careful",type:"Adjektiv",why:'nach „be" → Adjektiv: care → careful.'},
+ {s:"The classroom was very (NOISE) ___.",base:"noise",ans:"noisy",type:"Adjektiv",why:'nach „was very" → Adjektiv: noise → noisy.'},
+ {s:"Our teacher is always very (HELP) ___.",base:"help",ans:"helpful",type:"Adjektiv",why:'nach „is always very" → Adjektiv: help → helpful.'},
+ {s:"We try to buy (NATURE) ___ products.",base:"nature",ans:"natural",type:"Adjektiv",why:'vor dem Nomen „products" → Adjektiv: nature → natural.'},
+ {s:"This job is not (SUIT) ___ for me.",base:"suit",ans:"suitable",type:"Adjektiv",why:'nach „is not" → Adjektiv: suit → suitable.'},
+ {s:"A car needs a (POWER) ___ engine.",base:"power",ans:"powerful",type:"Adjektiv",why:'„a" + Lücke + Nomen „engine" → Adjektiv: power → powerful.'},
+ {s:"She finished her homework very (QUICK) ___.",base:"quick",ans:"quickly",type:"Adverb",why:'beschreibt das Verb „finished" → Adverb (-ly): quick → quickly.'},
+ {s:"He always drives very (CAREFUL) ___.",base:"careful",ans:"carefully",type:"Adverb",why:'beschreibt „drives" → Adverb: careful → carefully.'},
+ {s:"You can win this game quite (EASY) ___.",base:"easy",ans:"easily",type:"Adverb",why:'beschreibt „win" → Adverb: easy → easily.'},
+ {s:"This dish is (TRADITION) ___ served with rice.",base:"tradition",ans:"traditionally",type:"Adverb",why:'zwischen „is" und „served" → Adverb: tradition → traditionally.'},
+ {s:"Could you please speak more (SLOW) ___?",base:"slow",ans:"slowly",type:"Adverb",why:'beschreibt „speak" → Adverb: slow → slowly.'},
+ {s:"The two friends lived (HAPPY) ___ together.",base:"happy",ans:"happily",type:"Adverb",why:'beschreibt „lived" → Adverb: happy → happily.'},
+ {s:"She speaks English almost (PERFECT) ___.",base:"perfect",ans:"perfectly",type:"Adverb",why:'beschreibt „speaks" → Adverb: perfect → perfectly.'},
+ {s:"Sadly, our team played really (BAD) ___.",base:"bad",ans:"badly",type:"Adverb",why:'beschreibt „played" → Adverb: bad → badly.'},
+ {s:"He (WATCH) ___ this film many times already.",base:"watch",ans:"has watched",acc:["has watched","'s watched"],type:"Verb · Zeit",why:'Signalwort „already" → present perfect: has + 3. Form.'},
+ {s:"We (GO) ___ to London last year.",base:"go",ans:"went",type:"Verb · Zeit",why:'„last year" → simple past: go → went.'},
+ {s:"She (PLAY) ___ tennis every weekend.",base:"play",ans:"plays",type:"Verb · Zeit",why:'„every weekend" + she → simple present mit -s: plays.'},
+ {s:"Look! It (RAIN) ___ outside.",base:"rain",ans:"is raining",type:"Verb · Zeit",why:'„Look!" → present progressive: is + -ing.'},
+ {s:"If the weather is nice, we (VISIT) ___ the zoo tomorrow.",base:"visit",ans:"will visit",acc:["will visit","'ll visit"],type:"Verb · Zeit",why:'„If …, tomorrow" → will-Future: will + Grundform.'},
+ {s:"I'm not hungry, I (EAT) ___ already.",base:"eat",ans:"have eaten",acc:["have eaten","'ve eaten"],type:"Verb · Zeit",why:'„already" → present perfect: have + 3. Form (eat → eaten).'},
+ {s:"She (WRITE) ___ a long letter yesterday.",base:"write",ans:"wrote",type:"Verb · Zeit",why:'„yesterday" → simple past: write → wrote.'},
+ {s:"Be quiet, Dad (WORK) ___ at the moment.",base:"work",ans:"is working",type:"Verb · Zeit",why:'„at the moment" → present progressive: is + -ing.'},
+ {s:"He always (STUDY) ___ before a test.",base:"study",ans:"studies",type:"Verb · Zeit",why:'„always" + he → simple present: study → studies.'},
+ {s:"I (KNOW) ___ her for ten years.",base:"know",ans:"have known",acc:["have known","'ve known"],type:"Verb · Zeit",why:'„for ten years" → present perfect: have + 3. Form (know → known).'},
+ {s:"Don't worry, I (HELP) ___ you tomorrow.",base:"help",ans:"will help",acc:["will help","'ll help"],type:"Verb · Zeit",why:'Versprechen + „tomorrow" → will-Future: will help.'},
+ {s:"The bus (LEAVE) ___ five minutes ago.",base:"leave",ans:"left",type:"Verb · Zeit",why:'„ago" → simple past: leave → left.'}
+];
+let _lastForm=-1;
+function genForm(boss){
+  let i=0; if(ENFORM.length>1){ do{ i=Math.floor(Math.random()*ENFORM.length); }while(i===_lastForm); } _lastForm=i;
+  const it=ENFORM[i]; const acc=it.acc||[it.ans];
+  const sent=it.s.replace('___','<span class="gap">_____</span>');
+  return engProb({isBoss:!!boss,difficulty:boss?'sehr schwer':(it.type.indexOf('Verb')>=0?'schwer':'mittel'),kind:'text',
+    displayHTML:'<div class="engq"><span class="ptype">'+(boss?'★ ENDGEGNER · ':'')+'Richtige Form · '+it.type+'?</span><div class="engsent">'+sent+'</div><div class="enghint">Setze <b>'+it.base+'</b> in der richtigen Form ein. <span class="dim">Schau auf die Nachbarn links &amp; rechts!</span></div></div>',
+    answer:it.ans,accept:acc,
+    vocabRef:{en:it.ans,enAlt:acc.slice(1),de:it.base+' → richtige Form ('+it.type+')'},
+    explainHTML:'<b>'+it.ans+'</b> — '+it.why}); }
+function genFormBoss(){ return genForm(true); }
+const ENFORMGENS=[ {w:1,f:genForm} ];
+
 /* ---------- Signalwörter → richtige Zeitform (eigene Sektion) ---------- */
 const SIG_SUBJ=["I","You","We","They","He","She","Tom","Anna","My brother","My friends","The children"];
 function sigIsS(subj){ return ["He","She","Tom","Anna","My brother","My sister","The teacher"].indexOf(subj)>=0; }
@@ -3541,7 +3600,7 @@ async function cloudPush(entry){
 }
 
 let scores=[];
-function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='top100' ? 'engtop100_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='komma' ? 'dekomma_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='top100' ? 'engtop100_scores' : state.mode==='form' ? 'engform_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='komma' ? 'dekomma_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
 function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
 function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
 async function initScores(){
@@ -3979,6 +4038,12 @@ const MODE_TXT={
     ph:'englische Form eingeben',
     hint:'Nur die gefragte Form eintippen · Groß-/Kleinschreibung egal · Doppelformen (burnt/burned) zählen beide'
   },
+  form:{
+    brand:'Quali Bayern · Englisch · Die richtige Form einsetzen',
+    sub:'Setze das Wort in Klammern in die <b>richtige Form</b> ein – nicht immer die Zeit, oft die <b>Wortart</b>! <b>Nachbarn-Check:</b> „a/an/the" davor → Nomen · vor einem Nomen → Adjektiv · zwischen is/are und Verb → Adverb (-ly) · sonst Verb → Signalwort suchen. Falsches landet auf der <b>💩 SHITLIST</b>. Erreiche <b>1000 Punkte</b>. Ready, LOOIS?',
+    ph:'richtige Form eingeben',
+    hint:'Schau auf die Nachbarn links &amp; rechts · Groß-/Kleinschreibung egal'
+  },
   signals:{
     brand:'Quali Bayern · Englisch · Signalwörter & Zeiten',
     sub:'Verbinde <b>Signalwörter</b> mit der richtigen <b>Zeitform</b>: <i>yesterday</i> → Simple Past, <i>every day</i> → Simple Present, <i>already/just</i> → Present Perfect, <i>now/Look!</i> → Present Progressive, <i>tomorrow</i> → will-Future. Erst die Zeit erkennen, dann die richtige Form. Falsches landet auf der <b>💩 SHITLIST</b>. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Ready, LOOIS?',
@@ -3998,7 +4063,7 @@ const MODE_TXT={
     hint:'Mal Vokabel, mal Grammatik – lies die Aufgabe genau'
   }
 };
-const ENG_MODES=['vocab','grammar','reading','irreg','top100','signals','engmix'];
+const ENG_MODES=['vocab','grammar','reading','irreg','top100','signals','form','engmix'];
 const DE_MODES=['komma'];
 let curSubject='math';
 function setMode(m){
@@ -4013,6 +4078,7 @@ function setMode(m){
   $('btnModeReading').classList.toggle('active',m==='reading');
   $('btnModeIrreg').classList.toggle('active',m==='irreg');
   $('btnModeTop100').classList.toggle('active',m==='top100');
+  $('btnModeForm').classList.toggle('active',m==='form');
   $('btnModeSignals').classList.toggle('active',m==='signals');
   $('btnModeKomma').classList.toggle('active',m==='komma');
   $('btnModeEngMix').classList.toggle('active',m==='engmix');
@@ -4071,6 +4137,7 @@ $('btnModeGrammar').addEventListener('click',()=>setMode('grammar'));
 $('btnModeReading').addEventListener('click',()=>setMode('reading'));
 $('btnModeIrreg').addEventListener('click',()=>setMode('irreg'));
 $('btnModeTop100').addEventListener('click',()=>setMode('top100'));
+$('btnModeForm').addEventListener('click',()=>setMode('form'));
 $('btnModeSignals').addEventListener('click',()=>setMode('signals'));
 $('btnModeKomma').addEventListener('click',()=>setMode('komma'));
 $('btnModeEngMix').addEventListener('click',()=>setMode('engmix'));
@@ -4104,7 +4171,7 @@ $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); }
 
 /* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
 let boardView='own', classMetric='tasks', classFilter='all';
-const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['top100','Top-100 Verben'],['signals','Signalwörter'],['komma','Komma (DE)'],['engmix','Eng-Mix']];
+const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['top100','Top-100 Verben'],['signals','Signalwörter'],['form','Richtige Form'],['komma','Komma (DE)'],['engmix','Eng-Mix']];
 function filterLabel(f){ const e=BOARD_FILTERS.find(x=>x[0]===f); return e?e[1]:'Alle'; }
 function renderClassFilters(){
   $('classFilters').innerHTML=BOARD_FILTERS.map(p=>'<button class="board-tab'+(p[0]===classFilter?' active':'')+'" data-f="'+p[0]+'">'+p[1]+'</button>').join('');
