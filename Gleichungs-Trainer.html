@@ -470,6 +470,31 @@
   .spick-tab{font-weight:800;font-size:13px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;}
   .spick-tab.active{background:var(--gold);color:#000;border-color:var(--gold);}
   .kk{color:#04121f;font-weight:900;background:var(--hi);border-radius:4px;padding:0 4px;margin:0 1px;}
+  /* ---- Natur & Technik / Chemie ---- */
+  .chemq b{color:var(--hi);}
+  .elbadge{display:inline-block;font-family:var(--disp);font-weight:400;font-size:15px;letter-spacing:.03em;color:var(--gold);background:rgba(255,176,46,.12);border:1px solid rgba(255,176,46,.30);border-radius:8px;padding:2px 10px;margin-top:4px;}
+  .elsym{font-family:var(--disp);font-size:1.15em;letter-spacing:.02em;}
+  .atomfig{width:104px;height:104px;color:var(--hi);display:block;margin:2px auto;}
+  .spick-card.wide{grid-column:1/-1;}
+  .spick-fig{display:flex;flex-direction:column;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px;margin-top:9px;}
+  .spick-fig .figcap{font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:4px;text-align:center;}
+  .pse-wrap{margin-top:11px;overflow-x:auto;}
+  .pse-grid{display:grid;grid-template-columns:repeat(8,minmax(46px,1fr));gap:5px;min-width:430px;}
+  .pse-h{font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:2px;}
+  .pse-gh{font-family:var(--disp);font-size:13px;color:var(--gold);text-align:center;}
+  .pse-cell{border-radius:8px;border:1px solid var(--line);background:var(--panel2);padding:4px 2px;text-align:center;line-height:1.1;}
+  .pse-cell .pz{display:block;font-size:9.5px;color:var(--muted);font-family:var(--mono);}
+  .pse-cell .ps{display:block;font-family:var(--disp);font-size:17px;color:var(--ink);}
+  .pse-cell .pn{display:block;font-size:8.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .fam-alkali{background:rgba(255,92,92,.17);border-color:rgba(255,92,92,.45);}
+  .fam-erdalkali{background:rgba(255,176,46,.17);border-color:rgba(255,176,46,.45);}
+  .fam-halogen{background:rgba(39,182,255,.17);border-color:rgba(39,182,255,.45);}
+  .fam-edelgas{background:rgba(177,92,255,.18);border-color:rgba(177,92,255,.48);}
+  .cat-metall{background:rgba(255,255,255,.05);}
+  .cat-halbmetall{background:rgba(63,224,150,.15);border-color:rgba(63,224,150,.40);}
+  .cat-nichtmetall{background:rgba(120,140,170,.10);}
+  .pse-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .pse-legend .lg{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink);}
   .vtier{font-family:var(--disp);font-weight:400;font-size:18px;color:var(--gold);margin:16px 0 6px;letter-spacing:.02em;}
   .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
   @media(max-width:760px){.vgrid{grid-template-columns:1fr;}}
@@ -510,6 +535,7 @@
           <button class="subjbtn active" id="subjMath">📐 Mathe</button>
           <button class="subjbtn" id="subjEng">🇬🇧 Englisch</button>
           <button class="subjbtn" id="subjDe">🇩🇪 Deutsch</button>
+          <button class="subjbtn" id="subjNut">🧪 Natur &amp; Technik</button>
           <button class="subjbtn" id="subjSpick">📋 Spickzettel</button>
         </div>
         <div class="hero2" id="hero2">
@@ -542,6 +568,13 @@
             <div class="modepick" id="modepickDe" style="display:none">
               <button class="modebtn rare active" id="btnModeKomma"><span class="mc-no">01</span><span class="mc-nm">Kommasetzung</span><span class="mc-ds">wo &amp; warum</span></button>
             </div>
+            <div class="modepick" id="modepickNut" style="display:none">
+              <button class="modebtn rare active" id="btnModeAtom"><span class="mc-no">01</span><span class="mc-nm">Atombau</span><span class="mc-ds">Kern &amp; Hülle</span></button>
+              <button class="modebtn epic" id="btnModePse"><span class="mc-no">02</span><span class="mc-nm">Periodensystem</span><span class="mc-ds">lesen &amp; finden</span></button>
+              <button class="modebtn rare" id="btnModeSym"><span class="mc-no">03</span><span class="mc-nm">Symbole</span><span class="mc-ds">Name ↔ Symbol</span></button>
+              <button class="modebtn epic" id="btnModeGrp"><span class="mc-no">04</span><span class="mc-nm">Familien</span><span class="mc-ds">Gruppen &amp; Stoffe</span></button>
+              <button class="modebtn legend" id="btnModeChemMix"><span class="mc-no">05</span><span class="mc-nm">Mix</span><span class="mc-ds">alles gemischt</span></button>
+            </div>
             <div class="cta"><button class="btn-start" id="btnStart">▶ Start</button></div>
           </div>
         </div>
@@ -550,6 +583,7 @@
             <button class="spick-tab active" id="spickTabDe">✏️ Komma-Regeln (DE)</button>
             <button class="spick-tab" id="spickTabEng">🇬🇧 Englische Zeiten</button>
             <button class="spick-tab" id="spickTabVerbs">🔤 Irregular Verbs (200)</button>
+            <button class="spick-tab" id="spickTabNut">🧪 Chemie / PSE</button>
           </div>
           <div id="spickDe">
             <div class="spick-head">📋 Spickzettel · Kommasetzung</div>
@@ -698,6 +732,51 @@
           </div>
           </div>
           <div id="spickVerbs" style="display:none"></div>
+          <div id="spickNut" style="display:none">
+            <div class="spick-head">🧪 Erklärstrecke · Atombau &amp; Periodensystem</div>
+            <div class="spick-intro"><b>Kurz gesagt:</b> Alles besteht aus <b>Atomen</b>. Ein Atom hat einen <b>Kern</b> (Protonen + Neutronen) und eine <b>Hülle</b> (Elektronen in Schalen). Das <b>Periodensystem</b> ordnet alle Elemente – die Zeile verrät die Zahl der Schalen, die Spalte die Zahl der Außenelektronen.</div>
+            <div class="spick-grid">
+              <div class="spick-card"><h3>1 · Der Aufbau des Atoms</h3><div class="sde">Kern-Hülle-Modell</div>
+                <div class="spick-row"><span class="k">Kern:</span> ganz klein, aber schwer. Enthält <b>Protonen</b> (positiv +) und <b>Neutronen</b> (neutral, ohne Ladung).</div>
+                <div class="spick-row"><span class="k">Hülle:</span> die <b>Elektronen</b> (negativ −) kreisen auf <b>Schalen</b> um den Kern.</div>
+                <div class="spick-row"><span class="k">Neutral:</span> ein Atom hat gleich viele Protonen und Elektronen → nach außen ungeladen.</div>
+              </div>
+              <div class="spick-card"><h3>2 · Die wichtigen Zahlen</h3><div class="sde">Ordnungszahl &amp; Massenzahl</div>
+                <div class="spick-row"><span class="k">Ordnungszahl:</span> = Anzahl der <b>Protonen</b> = Anzahl der <b>Elektronen</b>. Sie ist der „Ausweis" des Elements.</div>
+                <div class="spick-row"><span class="k">Massenzahl:</span> = <b>Protonen + Neutronen</b> (die schweren Teilchen im Kern).</div>
+                <div class="spick-row"><span class="k">Neutronen:</span> = <b>Massenzahl − Ordnungszahl</b>.</div>
+                <div class="spick-ex"><span class="en">Natrium (Na): Ordnungszahl 11, Massenzahl 23 → 11 Protonen, 11 Elektronen, 23−11 = <b>12 Neutronen</b>.</span></div>
+              </div>
+              <div class="spick-card"><h3>3 · Das Schalenmodell</h3><div class="sde">Elektronen auf Schalen</div>
+                <div class="spick-row"><span class="k">Auffüllen:</span> von innen nach außen. 1. Schale max. <b>2</b>, 2. Schale max. <b>8</b>, 3. Schale max. <b>8</b> (für den Quali).</div>
+                <div class="spick-row"><span class="k">Außenelektronen:</span> die Elektronen auf der <b>äußersten</b> Schale (= Valenzelektronen). Sie bestimmen das chemische Verhalten.</div>
+                <div class="spick-fig"><div id="naFig"></div><div class="figcap">Natrium 2-8-1 → 3 Schalen, 1 Außenelektron</div></div>
+              </div>
+              <div class="spick-card wide"><h3>4 · Das Periodensystem (PSE) lesen</h3><div class="sde">Zeilen &amp; Spalten haben Bedeutung</div>
+                <div class="spick-row"><span class="k">Ordnung:</span> alle Elemente nach <b>steigender Ordnungszahl</b>.</div>
+                <div class="spick-row"><span class="k">Periode (Zeile):</span> die Nummer = Anzahl der <b>Elektronenschalen</b>.</div>
+                <div class="spick-row"><span class="k">Hauptgruppe (Spalte):</span> die Nummer = Anzahl der <b>Außenelektronen</b>.</div>
+                <div class="pse-wrap"><div id="pseGrid"></div></div>
+              </div>
+              <div class="spick-card"><h3>5 · Elementfamilien</h3><div class="sde">Spalten mit ähnlichen Stoffen</div>
+                <div class="spick-row"><span class="k">Alkalimetalle (I):</span> 1 Außenelektron, sehr <b>reaktionsfreudig</b>, weich – z. B. Lithium, Natrium, Kalium.</div>
+                <div class="spick-row"><span class="k">Erdalkalimetalle (II):</span> 2 Außenelektronen – z. B. Magnesium, Calcium.</div>
+                <div class="spick-row"><span class="k">Halogene (VII):</span> 7 Außenelektronen, <b>Salzbildner</b> – z. B. Fluor, Chlor, Brom, Iod.</div>
+                <div class="spick-row"><span class="k">Edelgase (VIII):</span> 8 Außenelektronen (He: 2), <b>reaktionsträge</b> – z. B. Helium, Neon, Argon.</div>
+              </div>
+              <div class="spick-card"><h3>6 · Metalle, Nichtmetalle, Halbmetalle</h3><div class="sde">Stoffeigenschaften</div>
+                <div class="spick-row"><span class="k">Metalle:</span> glänzen, leiten <b>Strom &amp; Wärme</b>, meist fest (Ausnahme: Quecksilber, flüssig). Links &amp; in der Mitte des PSE.</div>
+                <div class="spick-row"><span class="k">Nichtmetalle:</span> matt, leiten meist <b>nicht</b>, oft gasförmig – rechts oben im PSE.</div>
+                <div class="spick-row"><span class="k">Halbmetalle:</span> dazwischen, z. B. <b>Bor</b> und <b>Silicium</b>.</div>
+              </div>
+              <div class="spick-cmp"><h3>🔤 Wichtige Symbole (auch vom lateinischen Namen)</h3>
+                <div class="cmp-2">
+                  <div class="cmp-col"><div class="ct">Gut zu merken</div><div class="cx">H Wasserstoff · O Sauerstoff · C Kohlenstoff · N Stickstoff · Ca Calcium · Mg Magnesium · Al Aluminium · Cl Chlor · S Schwefel · Zn Zink</div></div>
+                  <div class="cmp-col"><div class="ct">⚠️ Latein – aufpassen!</div><div class="cx">Na Natrium · K Kalium · Fe Eisen · Cu Kupfer · Ag Silber · Au Gold · Pb Blei · Sn Zinn · Hg Quecksilber</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="ov-count" id="ovCount" style="display:none"><span id="ovNum">3</span></div>
@@ -1132,6 +1211,11 @@ function makeBoss(){
   if(state.mode==='form'){ return genFormBoss(); }
   if(state.mode==='signals'){ return genSignalBoss(); }
   if(state.mode==='komma'){ return genKommaBoss(); }
+  if(state.mode==='atom'){ return genAtomBoss(); }
+  if(state.mode==='pse'){ return genPseBoss(); }
+  if(state.mode==='symbole'){ return genSymBoss(); }
+  if(state.mode==='gruppen'){ return genFamBoss(); }
+  if(state.mode==='chemmix'){ return genChemMixBoss(); }
   if(state.mode==='engmix'){ return genEngMixBoss(); }
   for(let i=0;i<1500;i++){const p=genBoss(); if(p)return p;} return makeProblem();
 }
@@ -1150,7 +1234,7 @@ const GENS=[
   {w:6,f:genMixedDecFrac},
 ];
 function makeProblem(){
-  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='top100' ? TOP100GENS : state.mode==='form' ? ENFORMGENS : state.mode==='signals' ? SIGNALGENS : state.mode==='komma' ? KOMMAGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
+  const gens = state.mode==='prozent' ? PGENS : state.mode==='groessen' ? GGENS : state.mode==='geo' ? GEOGENS : state.mode==='mix' ? MIXGENS : state.mode==='vocab' ? VOCABGENS : state.mode==='grammar' ? GRAMMARGENS : state.mode==='reading' ? READINGGENS : state.mode==='irreg' ? IRRGENS : state.mode==='top100' ? TOP100GENS : state.mode==='form' ? ENFORMGENS : state.mode==='signals' ? SIGNALGENS : state.mode==='komma' ? KOMMAGENS : state.mode==='atom' ? ATOMGENS : state.mode==='pse' ? PSEGENS : state.mode==='symbole' ? SYMGENS : state.mode==='gruppen' ? GRPGENS : state.mode==='chemmix' ? CHEMMIXGENS : state.mode==='engmix' ? ENGMIXGENS : GENS;
   for(let i=0;i<800;i++){const g=weightedPick(gens);const p=g.f();if(p)return p;}
   if(state.mode==='reading'){ return genReading(); }
   if(state.mode==='irreg'){ return genIrrVerb(); }
@@ -2932,6 +3016,290 @@ function genKommaRF(){
 function genKommaBoss(){ return genKommaWarum(true); }
 const KOMMAGENS=[ {w:3,f:genKommaWarum},{w:3,f:genKommaWo},{w:2,f:genKommaRF} ];
 
+/* ======================================================================
+   NATUR & TECHNIK · Chemie-Schwerpunkt (Atombau & Periodensystem)
+   Übungsstrecke – Generatoren im engProb-Muster (Choice / Text + Erklärung)
+   Alle Element-Daten unabhängig gegengeprüft (siehe node-vm-Verifier).
+   ====================================================================== */
+const CHEM_FAM={alkali:'Alkalimetalle',erdalkali:'Erdalkalimetalle',halogen:'Halogene',edelgas:'Edelgase'};
+const CHEM_CATN={metall:'Metall',nichtmetall:'Nichtmetall',halbmetall:'Halbmetall'};
+/* z=Ordnungszahl, sym=Symbol, name, per=Periode, grp=Hauptgruppe(1-8),
+   val=Außenelektronen, cat=metall|nichtmetall|halbmetall, fam=Familie|null,
+   ma=gängige Massenzahl (häufigstes Isotop), sh=Schalenbelegung, alt=Namensvarianten */
+const CHEM_EL=[
+ {z:1, sym:'H',  name:'Wasserstoff', per:1, grp:1, val:1, cat:'nichtmetall', fam:null,       ma:1,  sh:[1]},
+ {z:2, sym:'He', name:'Helium',      per:1, grp:8, val:2, cat:'nichtmetall', fam:'edelgas',  ma:4,  sh:[2]},
+ {z:3, sym:'Li', name:'Lithium',     per:2, grp:1, val:1, cat:'metall',      fam:'alkali',   ma:7,  sh:[2,1]},
+ {z:4, sym:'Be', name:'Beryllium',   per:2, grp:2, val:2, cat:'metall',      fam:'erdalkali',ma:9,  sh:[2,2]},
+ {z:5, sym:'B',  name:'Bor',         per:2, grp:3, val:3, cat:'halbmetall',  fam:null,       ma:11, sh:[2,3]},
+ {z:6, sym:'C',  name:'Kohlenstoff', per:2, grp:4, val:4, cat:'nichtmetall', fam:null,       ma:12, sh:[2,4]},
+ {z:7, sym:'N',  name:'Stickstoff',  per:2, grp:5, val:5, cat:'nichtmetall', fam:null,       ma:14, sh:[2,5]},
+ {z:8, sym:'O',  name:'Sauerstoff',  per:2, grp:6, val:6, cat:'nichtmetall', fam:null,       ma:16, sh:[2,6]},
+ {z:9, sym:'F',  name:'Fluor',       per:2, grp:7, val:7, cat:'nichtmetall', fam:'halogen',  ma:19, sh:[2,7]},
+ {z:10,sym:'Ne', name:'Neon',        per:2, grp:8, val:8, cat:'nichtmetall', fam:'edelgas',  ma:20, sh:[2,8]},
+ {z:11,sym:'Na', name:'Natrium',     per:3, grp:1, val:1, cat:'metall',      fam:'alkali',   ma:23, sh:[2,8,1]},
+ {z:12,sym:'Mg', name:'Magnesium',   per:3, grp:2, val:2, cat:'metall',      fam:'erdalkali',ma:24, sh:[2,8,2]},
+ {z:13,sym:'Al', name:'Aluminium',   per:3, grp:3, val:3, cat:'metall',      fam:null,       ma:27, sh:[2,8,3]},
+ {z:14,sym:'Si', name:'Silicium',    per:3, grp:4, val:4, cat:'halbmetall',  fam:null,       ma:28, sh:[2,8,4], alt:['Silizium']},
+ {z:15,sym:'P',  name:'Phosphor',    per:3, grp:5, val:5, cat:'nichtmetall', fam:null,       ma:31, sh:[2,8,5]},
+ {z:16,sym:'S',  name:'Schwefel',    per:3, grp:6, val:6, cat:'nichtmetall', fam:null,       ma:32, sh:[2,8,6]},
+ {z:17,sym:'Cl', name:'Chlor',       per:3, grp:7, val:7, cat:'nichtmetall', fam:'halogen',  ma:35, sh:[2,8,7]},
+ {z:18,sym:'Ar', name:'Argon',       per:3, grp:8, val:8, cat:'nichtmetall', fam:'edelgas',  ma:40, sh:[2,8,8]},
+ {z:19,sym:'K',  name:'Kalium',      per:4, grp:1, val:1, cat:'metall',      fam:'alkali',   ma:39, sh:[2,8,8,1]},
+ {z:20,sym:'Ca', name:'Calcium',     per:4, grp:2, val:2, cat:'metall',      fam:'erdalkali',ma:40, sh:[2,8,8,2], alt:['Kalzium']}
+];
+/* Weitere wichtige Elemente – v. a. für die Symbol-Erkennung (keine vollen HG-Details) */
+const CHEM_MORE=[
+ {z:24,sym:'Cr', name:'Chrom',       cat:'metall'},
+ {z:25,sym:'Mn', name:'Mangan',      cat:'metall'},
+ {z:26,sym:'Fe', name:'Eisen',       cat:'metall'},
+ {z:27,sym:'Co', name:'Cobalt',      cat:'metall', alt:['Kobalt']},
+ {z:28,sym:'Ni', name:'Nickel',      cat:'metall'},
+ {z:29,sym:'Cu', name:'Kupfer',      cat:'metall'},
+ {z:30,sym:'Zn', name:'Zink',        cat:'metall'},
+ {z:35,sym:'Br', name:'Brom',        per:4, grp:7, val:7, cat:'nichtmetall', fam:'halogen'},
+ {z:47,sym:'Ag', name:'Silber',      cat:'metall'},
+ {z:50,sym:'Sn', name:'Zinn',        grp:4, cat:'metall'},
+ {z:53,sym:'I',  name:'Iod',         per:5, grp:7, val:7, cat:'nichtmetall', fam:'halogen', alt:['Jod']},
+ {z:78,sym:'Pt', name:'Platin',      cat:'metall'},
+ {z:79,sym:'Au', name:'Gold',        cat:'metall'},
+ {z:80,sym:'Hg', name:'Quecksilber', cat:'metall'},
+ {z:82,sym:'Pb', name:'Blei',        cat:'metall'}
+];
+const CHEM_ALL=CHEM_EL.concat(CHEM_MORE);
+const CHEM_ROMAN=['','I','II','III','IV','V','VI','VII','VIII'];
+function chGrpLabel(g){ return CHEM_ROMAN[g]+'. Hauptgruppe'; }
+function chEl(){ return pick(CHEM_EL); }
+function chElFam(){ const p=CHEM_EL.filter(e=>e.fam); return pick(p); }
+function chAccept(e){ return [e.name].concat(e.alt||[]).concat([e.sym]); }
+/* Multiple-Choice-Helfer: korrekte Antwort + bis zu n−1 verschiedene Distraktoren */
+function chMC(correct,pool,n){
+  n=n||4; const opts=[correct];
+  for(const c of shuffle(pool.slice())){ if(opts.length>=n)break; if(opts.indexOf(c)<0)opts.push(c); }
+  const ch=shuffle(opts); return {ch:ch,ai:ch.indexOf(correct)};
+}
+function chQ(type,badge,q,boss){
+  return '<div class="engq"><span class="ptype">'+(boss?'★ ENDGEGNER · ':'')+type+'</span>'+
+    (badge?'<div class="elbadge">'+badge+'</div>':'')+
+    '<div class="engsent chemq">'+q+'</div></div>';
+}
+/* kleines Schalen-Diagramm (K/L/M/N) für die Erklärung */
+function chShellFig(e){
+  const R=[13,22,31,40]; let rings='';
+  e.sh.forEach((n,i)=>{ rings+='<circle cx="48" cy="48" r="'+R[i]+'" fill="none" stroke="currentColor" stroke-opacity="0.5"/>'; });
+  let dots='';
+  e.sh.forEach((n,i)=>{ const r=R[i]; for(let k=0;k<n;k++){ const a=(Math.PI*2*k/n)-Math.PI/2; dots+='<circle cx="'+(48+r*Math.cos(a)).toFixed(1)+'" cy="'+(48+r*Math.sin(a)).toFixed(1)+'" r="2.3" fill="currentColor"/>'; } });
+  return '<svg class="atomfig" viewBox="0 0 96 96"><circle cx="48" cy="48" r="7" fill="currentColor"/><text x="48" y="51" text-anchor="middle" font-size="7" fill="var(--bg)">'+e.z+'+</text>'+rings+dots+'</svg>';
+}
+
+/* ---------- Modus 1: Atombau (Protonen/Neutronen/Elektronen, Schalen) ---------- */
+function genAtomPE(){
+  const e=chEl(); const askE=Math.random()<0.5;
+  return engProb({difficulty:'leicht',kind:'text',
+    displayHTML:chQ('Atombau · Teilchen',e.sym+' · '+e.name,'Die <b>Ordnungszahl</b> von '+e.name+' ist <b>'+e.z+'</b>. Wie viele <b>'+(askE?'Elektronen':'Protonen')+'</b> hat ein neutrales Atom?'),
+    answer:String(e.z),accept:[String(e.z)],
+    explainHTML:'Die Ordnungszahl = Zahl der <b>Protonen</b>. Ein neutrales Atom hat gleich viele Elektronen → '+e.name+': <b>'+e.z+' Protonen</b> und <b>'+e.z+' Elektronen</b>.'});
+}
+function genAtomNeutrons(){
+  const e=chEl(); const nN=e.ma-e.z;
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:chQ('Atombau · Neutronen',e.sym+' · '+e.name,'Ein '+e.name+'-Atom hat die <b>Massenzahl '+e.ma+'</b> und die <b>Ordnungszahl '+e.z+'</b>. Wie viele <b>Neutronen</b>?'),
+    answer:String(nN),accept:[String(nN)],
+    explainHTML:'Neutronen = Massenzahl − Ordnungszahl = '+e.ma+' − '+e.z+' = <b>'+nN+'</b>.'});
+}
+function genAtomShells(){
+  const e=chEl();
+  return engProb({difficulty:'leicht',kind:'text',
+    displayHTML:chQ('Atombau · Schalen',e.sym+' · '+e.name,'Wie viele <b>Elektronenschalen</b> hat ein '+e.name+'-Atom? (Schalenbelegung: '+e.sh.join('-')+')'),
+    answer:String(e.per),accept:[String(e.per)],
+    explainHTML:'Belegte Schalen: '+e.sh.join('-')+' → <b>'+e.per+'</b> Schale'+(e.per>1?'n':'')+'. Die Zahl der Schalen ist die <b>Periode</b> im PSE.'});
+}
+function genAtomValence(){
+  const e=chEl();
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:chQ('Atombau · Außenelektronen',e.sym+' · '+e.name,'Wie viele <b>Außenelektronen</b> (Valenzelektronen) hat '+e.name+'? (Schalen: '+e.sh.join('-')+')'),
+    answer:String(e.val),accept:[String(e.val)],
+    explainHTML:'Außenelektronen = Elektronen auf der <b>äußersten</b> Schale ('+e.sh.join('-')+') → <b>'+e.val+'</b>. Das ist die <b>Hauptgruppen-Nummer</b>.'});
+}
+const CHEM_CONCEPT_ATOM=[
+ {q:'Was gibt die <b>Ordnungszahl</b> eines Elements an?',correct:'die Anzahl der Protonen',pool:['die Anzahl der Protonen','die Anzahl der Neutronen','die Masse des Atoms','die Anzahl der Schalen']},
+ {q:'Wo sitzen <b>Protonen und Neutronen</b> im Atom?',correct:'im Atomkern',pool:['im Atomkern','in der Atomhülle','auf der äußersten Schale','frei im Raum']},
+ {q:'Welches Teilchen ist <b>negativ</b> geladen?',correct:'das Elektron',pool:['das Elektron','das Proton','das Neutron','der Atomkern']},
+ {q:'Welches Teilchen ist <b>positiv</b> geladen?',correct:'das Proton',pool:['das Proton','das Elektron','das Neutron','die Schale']},
+ {q:'Warum ist ein Atom nach außen <b>elektrisch neutral</b>?',correct:'gleich viele Protonen und Elektronen',pool:['gleich viele Protonen und Elektronen','es hat keine Ladung','es hat nur Neutronen','die Schalen sind leer']},
+ {q:'Wie berechnet man die Zahl der <b>Neutronen</b>?',correct:'Massenzahl − Ordnungszahl',pool:['Massenzahl − Ordnungszahl','Ordnungszahl + Protonen','Massenzahl + Ordnungszahl','Protonen × 2']}
+];
+function genAtomConcept(){
+  const c=pick(CHEM_CONCEPT_ATOM); const m=chMC(c.correct,c.pool,4);
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:chQ('Atombau · Verständnis','',c.q),
+    choices:m.ch,answerIndex:m.ai,
+    explainHTML:'Richtig ist: <b>'+c.correct+'</b>.'});
+}
+function genAtomBoss(){
+  const e=chElFam()||chEl();
+  const famClue=e.fam?(' Es gehört zu den <b>'+CHEM_FAM[e.fam]+'</b>.'):'';
+  return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
+    displayHTML:chQ('Steckbrief · welches Element?',e.sym+' = ?','Ein Atom hat <b>'+e.z+' Protonen</b>, die Massenzahl <b>'+e.ma+'</b> und die Schalenbelegung <b>'+e.sh.join('-')+'</b>.'+famClue+' Wie heißt das Element? (Name oder Symbol)',true),
+    answer:e.name,accept:chAccept(e),
+    explainHTML:'Ordnungszahl '+e.z+' → <b>'+e.name+' ('+e.sym+')</b>. Neutronen: '+e.ma+'−'+e.z+'='+(e.ma-e.z)+' · '+e.per+' Schalen · '+e.val+' Außenelektronen.'});
+}
+const ATOMGENS=[ {w:3,f:genAtomPE},{w:2.5,f:genAtomNeutrons},{w:2,f:genAtomShells},{w:2.5,f:genAtomValence},{w:2,f:genAtomConcept} ];
+
+/* ---------- Modus 2: Periodensystem lesen (Periode, Hauptgruppe, Position) ---------- */
+function genPsePeriod(){
+  const e=chEl();
+  return engProb({difficulty:'leicht',kind:'text',
+    displayHTML:chQ('PSE · Periode',e.sym+' · '+e.name,'In welcher <b>Periode</b> (Zeile) steht '+e.name+'? (Schalen: '+e.sh.join('-')+')'),
+    answer:String(e.per),accept:[String(e.per)],
+    explainHTML:e.name+' hat '+e.per+' Schale'+(e.per>1?'n':'')+' → <b>'+e.per+'. Periode</b>. Periodennummer = Anzahl der Schalen.'});
+}
+function genPseGroup(){
+  const e=chEl(); const correct=chGrpLabel(e.grp);
+  const pool=[]; for(let g=1;g<=8;g++) pool.push(chGrpLabel(g));
+  const m=chMC(correct,pool,4);
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:chQ('PSE · Hauptgruppe',e.sym+' · '+e.name,'In welcher <b>Hauptgruppe</b> (Spalte) steht '+e.name+'? (Außenelektronen: '+e.val+')'),
+    choices:m.ch,answerIndex:m.ai,
+    explainHTML:e.name+' hat '+e.val+' Außenelektronen → <b>'+correct+'</b>.'});
+}
+function genPseFromZ(){
+  const e=chEl(); const m=chMC(e.name,CHEM_EL.map(x=>x.name),4);
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:chQ('PSE · Ordnungszahl','Z = '+e.z,'Welches Element hat die <b>Ordnungszahl '+e.z+'</b>?'),
+    choices:m.ch,answerIndex:m.ai,
+    explainHTML:'Ordnungszahl '+e.z+' → <b>'+e.name+' ('+e.sym+')</b>.'});
+}
+function genPsePosition(){
+  const e=chEl();
+  return engProb({difficulty:'schwer',kind:'text',
+    displayHTML:chQ('PSE · Position',chGrpLabel(e.grp)+' · '+e.per+'. Periode','Welches Element steht in der <b>'+e.per+'. Periode</b> und der <b>'+chGrpLabel(e.grp)+'</b>? (Name oder Symbol)'),
+    answer:e.name,accept:chAccept(e),
+    explainHTML:'Periode '+e.per+' (= '+e.per+' Schalen) und '+chGrpLabel(e.grp)+' (= '+e.val+' Außenelektronen) → <b>'+e.name+' ('+e.sym+')</b>.'});
+}
+const CHEM_CONCEPT_PSE=[
+ {q:'Was sagt dir die <b>Periode</b> (Zeile) im Periodensystem?',correct:'die Anzahl der Elektronenschalen',pool:['die Anzahl der Elektronenschalen','die Anzahl der Außenelektronen','die Ordnungszahl','die Masse']},
+ {q:'Was sagt dir die <b>Hauptgruppe</b> (Spalte) im Periodensystem?',correct:'die Anzahl der Außenelektronen',pool:['die Anzahl der Außenelektronen','die Anzahl der Schalen','die Anzahl der Neutronen','die Massenzahl']},
+ {q:'Wonach sind die Elemente im PSE <b>geordnet</b>?',correct:'nach steigender Ordnungszahl',pool:['nach steigender Ordnungszahl','nach dem Alphabet','nach der Masse','nach der Farbe']}
+];
+function genPseConcept(){
+  const c=pick(CHEM_CONCEPT_PSE); const m=chMC(c.correct,c.pool,4);
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:chQ('PSE · Verständnis','',c.q),
+    choices:m.ch,answerIndex:m.ai,
+    explainHTML:'Richtig ist: <b>'+c.correct+'</b>.'});
+}
+function genPseBoss(){ return genAtomBoss(); }
+const PSEGENS=[ {w:2.5,f:genPsePeriod},{w:3,f:genPseGroup},{w:2.5,f:genPseFromZ},{w:2,f:genPsePosition},{w:2,f:genPseConcept} ];
+
+/* ---------- Modus 3: Element-Symbole (Symbol ↔ Name, mit SHITLIST) ---------- */
+function genSymEl2SymMC(){
+  const e=pick(CHEM_ALL); const m=chMC(e.sym,CHEM_ALL.map(x=>x.sym),4);
+  return engProb({difficulty:'leicht',kind:'choice',
+    displayHTML:chQ('Symbole · Name → Symbol',e.name,'Welches <b>chemische Symbol</b> hat '+e.name+'?'),
+    choices:m.ch,answerIndex:m.ai,vocabRef:{en:e.sym,de:e.name},
+    explainHTML:e.name+' → <b>'+e.sym+'</b>.'});
+}
+function genSymEl2SymText(){
+  const e=pick(CHEM_ALL);
+  return engProb({difficulty:'mittel',kind:'text',
+    displayHTML:chQ('Symbole · Name → Symbol',e.name,'Schreibe das <b>chemische Symbol</b> für '+e.name+'.'),
+    answer:e.sym,accept:[e.sym],vocabRef:{en:e.sym,de:e.name},
+    explainHTML:e.name+' → <b>'+e.sym+'</b>.'});
+}
+function genSymSym2El(){
+  const e=pick(CHEM_ALL); const m=chMC(e.name,CHEM_ALL.map(x=>x.name),4);
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:chQ('Symbole · Symbol → Name','<span class="elsym">'+e.sym+'</span>','Für welches <b>Element</b> steht das Symbol <b>'+e.sym+'</b>?'),
+    choices:m.ch,answerIndex:m.ai,vocabRef:{en:e.sym,de:e.name},
+    explainHTML:'<b>'+e.sym+'</b> → '+e.name+'.'});
+}
+function genSymBoss(){
+  const latin=CHEM_ALL.filter(x=>['Fe','Cu','Ag','Au','Sn','Pb','Hg','Na','K','Sb','W'].indexOf(x.sym)>=0);
+  const e=pick(latin.length?latin:CHEM_ALL);
+  return engProb({isBoss:true,difficulty:'sehr schwer',kind:'text',
+    displayHTML:chQ('Symbole · Endgegner',e.name,'Schreibe das <b>chemische Symbol</b> für '+e.name+'. (Achtung: oft vom lateinischen Namen!)',true),
+    answer:e.sym,accept:[e.sym],vocabRef:{en:e.sym,de:e.name},
+    explainHTML:e.name+' → <b>'+e.sym+'</b>.'});
+}
+const SYMGENS=[ {w:3,f:genSymEl2SymMC},{w:2,f:genSymEl2SymText},{w:3,f:genSymSym2El} ];
+
+/* ---------- Modus 4: Elementfamilien & Eigenschaften ---------- */
+function genFamOf(){
+  const e=chElFam(); const correct=CHEM_FAM[e.fam];
+  const m=chMC(correct,Object.keys(CHEM_FAM).map(k=>CHEM_FAM[k]),4);
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:chQ('Familien · Zuordnung',e.sym+' · '+e.name,'Zu welcher <b>Elementfamilie</b> gehört '+e.name+'? (Hauptgruppe '+CHEM_ROMAN[e.grp]+', '+e.val+' Außenelektronen)'),
+    choices:m.ch,answerIndex:m.ai,
+    explainHTML:e.name+' steht in der '+chGrpLabel(e.grp)+' → <b>'+correct+'</b>.'});
+}
+function genFamMember(){
+  const fk=pick(Object.keys(CHEM_FAM)); const members=CHEM_EL.filter(e=>e.fam===fk);
+  const correct=pick(members);
+  const others=CHEM_EL.filter(e=>e.fam!==fk);
+  const m=chMC(correct.name,others.map(e=>e.name),4);
+  return engProb({difficulty:'schwer',kind:'choice',
+    displayHTML:chQ('Familien · Mitglied finden',CHEM_FAM[fk],'Welches Element gehört zu den <b>'+CHEM_FAM[fk]+'</b>?'),
+    choices:m.ch,answerIndex:m.ai,
+    explainHTML:'<b>'+correct.name+' ('+correct.sym+')</b> gehört zu den '+CHEM_FAM[fk]+' ('+chGrpLabel(correct.grp)+').'});
+}
+function genMetalClass(){
+  const e=pick(CHEM_ALL.filter(x=>x.cat));
+  const correct=CHEM_CATN[e.cat];
+  const m=chMC(correct,[CHEM_CATN.metall,CHEM_CATN.nichtmetall,CHEM_CATN.halbmetall],3);
+  return engProb({difficulty:'leicht',kind:'choice',
+    displayHTML:chQ('Familien · Metall?',e.sym+' · '+e.name,'Ist '+e.name+' ein <b>Metall</b>, <b>Nichtmetall</b> oder <b>Halbmetall</b>?'),
+    choices:m.ch,answerIndex:m.ai,
+    explainHTML:e.name+' ist ein <b>'+correct+'</b>.'});
+}
+const CHEM_CONCEPT_FAM=[
+ {q:'Welche Elementfamilie ist besonders <b>reaktionsträge</b> (reagiert kaum)?',correct:'Edelgase',pool:['Edelgase','Alkalimetalle','Halogene','Erdalkalimetalle']},
+ {q:'Welche Familie ist sehr <b>reaktionsfreudig</b> und wird unter Öl gelagert?',correct:'Alkalimetalle',pool:['Alkalimetalle','Edelgase','Halogene','Erdalkalimetalle']},
+ {q:'Wie viele <b>Außenelektronen</b> haben die <b>Alkalimetalle</b> (I. Hauptgruppe)?',correct:'1',pool:['1','2','7','8']},
+ {q:'Wie viele <b>Außenelektronen</b> haben die <b>Halogene</b> (VII. Hauptgruppe)?',correct:'7',pool:['7','1','2','8']},
+ {q:'Wie viele <b>Außenelektronen</b> haben die <b>Edelgase</b> (außer Helium)?',correct:'8',pool:['8','1','2','7']},
+ {q:'In welcher Hauptgruppe stehen die <b>Halogene</b>?',correct:'VII. Hauptgruppe',pool:['VII. Hauptgruppe','I. Hauptgruppe','II. Hauptgruppe','VIII. Hauptgruppe']},
+ {q:'Welche Familie bildet mit Metallen <b>Salze</b> (z. B. Kochsalz)?',correct:'Halogene',pool:['Halogene','Edelgase','Alkalimetalle','Erdalkalimetalle']},
+ {q:'Typische Eigenschaften von <b>Metallen</b> sind …',correct:'glänzend und leiten Strom',pool:['glänzend und leiten Strom','matt und leiten keinen Strom','immer gasförmig','immer flüssig']}
+];
+function genFamProp(){
+  const c=pick(CHEM_CONCEPT_FAM); const m=chMC(c.correct,c.pool,4);
+  return engProb({difficulty:'mittel',kind:'choice',
+    displayHTML:chQ('Familien · Eigenschaften','',c.q),
+    choices:m.ch,answerIndex:m.ai,
+    explainHTML:'Richtig ist: <b>'+c.correct+'</b>.'});
+}
+function genFamBoss(){ return genAtomBoss(); }
+const GRPGENS=[ {w:2.5,f:genFamOf},{w:2.5,f:genFamMember},{w:2,f:genMetalClass},{w:3,f:genFamProp} ];
+
+/* ---------- Modus 5: Chemie-Mix ---------- */
+const CHEMMIXGENS=[ {w:2,f:genAtomPE},{w:1.5,f:genAtomNeutrons},{w:1.5,f:genAtomValence},{w:1.5,f:genAtomConcept},
+  {w:1.5,f:genPseGroup},{w:1.5,f:genPseFromZ},{w:1.5,f:genPseConcept},
+  {w:2,f:genSymSym2El},{w:1.5,f:genSymEl2SymMC},
+  {w:1.5,f:genFamOf},{w:1.5,f:genFamMember},{w:2,f:genFamProp},{w:1.5,f:genMetalClass} ];
+function genChemMixBoss(){ return genAtomBoss(); }
+
+/* ---------- Erklärstrecke: visuelles Haupt­gruppen-PSE (Z 1–20) ---------- */
+function pseGridHTML(){
+  let cells='<div class="pse-h" style="grid-column:1/-1">Hauptgruppen (Außenelektronen) →</div>';
+  for(let g=1;g<=8;g++) cells+='<div class="pse-gh" style="grid-column:'+g+';grid-row:1">'+CHEM_ROMAN[g]+'</div>';
+  CHEM_EL.forEach(e=>{
+    const cls=e.fam?('fam-'+e.fam):('cat-'+e.cat);
+    cells+='<div class="pse-cell '+cls+'" style="grid-column:'+e.grp+';grid-row:'+(e.per+1)+'">'+
+      '<span class="pz">'+e.z+'</span><span class="ps">'+e.sym+'</span><span class="pn">'+e.name+'</span></div>';
+  });
+  return '<div class="pse-grid">'+cells+'</div>'+
+    '<div class="pse-legend">'+
+      '<span class="lg fam-alkali">Alkalimetalle</span>'+
+      '<span class="lg fam-erdalkali">Erdalkalimetalle</span>'+
+      '<span class="lg fam-halogen">Halogene</span>'+
+      '<span class="lg fam-edelgas">Edelgase</span>'+
+      '<span class="lg cat-metall">Metall</span>'+
+      '<span class="lg cat-halbmetall">Halbmetall</span>'+
+      '<span class="lg cat-nichtmetall">Nichtmetall</span>'+
+    '</div>';
+}
+
 /* ---------- Grammatik-Generatoren (Phase 1, generiert) ---------- */
 const EN_SUBJ_S=["He","She","My friend","The teacher","My brother","Anna","Tom","The man"];
 const EN_SUBJ_PL=["I","We","They","You","My friends"];
@@ -3600,7 +3968,7 @@ async function cloudPush(entry){
 }
 
 let scores=[];
-function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='top100' ? 'engtop100_scores' : state.mode==='form' ? 'engform_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='komma' ? 'dekomma_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
+function scoreKey(){ return state.mode==='prozent' ? 'prozentrun_scores' : state.mode==='groessen' ? 'groessenrun_scores' : state.mode==='geo' ? 'georun_scores' : state.mode==='mix' ? 'mixrun_scores' : state.mode==='vocab' ? 'engvocab_scores' : state.mode==='grammar' ? 'enggrammar_scores' : state.mode==='reading' ? 'engreading_scores' : state.mode==='irreg' ? 'engirreg_scores' : state.mode==='top100' ? 'engtop100_scores' : state.mode==='form' ? 'engform_scores' : state.mode==='signals' ? 'engsignals_scores' : state.mode==='komma' ? 'dekomma_scores' : state.mode==='atom' ? 'nutatom_scores' : state.mode==='pse' ? 'nutpse_scores' : state.mode==='symbole' ? 'nutsym_scores' : state.mode==='gruppen' ? 'nutgruppen_scores' : state.mode==='chemmix' ? 'nutmix_scores' : state.mode==='engmix' ? 'engmix_scores' : 'gleichungsrun_scores'; }
 function loadScoresLocal(){ try{const s=localStorage.getItem(scoreKey()); scores=s?JSON.parse(s):[];}catch(e){scores=[];} }
 function saveScoresLocal(){ try{localStorage.setItem(scoreKey(),JSON.stringify(scores));}catch(e){} }
 async function initScores(){
@@ -4061,10 +4429,41 @@ const MODE_TXT={
     sub:'Der <b>Englisch-Mix</b> aus Wortschatz und Grammatik, jedes Mal neu. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt ein zufälliger Endgegner. Ready, LOOIS?',
     ph:'Antwort eingeben',
     hint:'Mal Vokabel, mal Grammatik – lies die Aufgabe genau'
+  },
+  atom:{
+    brand:'Quali Bayern · Natur &amp; Technik · Atombau',
+    sub:'Der <b>Aufbau des Atoms</b>: Kern mit <b>Protonen</b> und <b>Neutronen</b>, Hülle mit <b>Elektronen</b> in Schalen. Übe Ordnungszahl, Massenzahl, Neutronen und Außenelektronen. Tipp vorher die <b>📋 Erklärung</b> an, wenn du unsicher bist. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Bereit, LOOIS?',
+    ph:'Zahl eingeben',
+    hint:'Meist eine Zahl eintippen · Ordnungszahl = Protonen = Elektronen'
+  },
+  pse:{
+    brand:'Quali Bayern · Natur &amp; Technik · Periodensystem',
+    sub:'Lies das <b>Periodensystem</b>: <b>Periode</b> (Zeile) = Anzahl der Schalen, <b>Hauptgruppe</b> (Spalte) = Anzahl der Außenelektronen. Finde Elemente über Ordnungszahl und Position. Alles im <b>📋 Spickzettel</b>. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Bereit, LOOIS?',
+    ph:'Antwort eingeben',
+    hint:'Periode = Schalen · Hauptgruppe = Außenelektronen'
+  },
+  symbole:{
+    brand:'Quali Bayern · Natur &amp; Technik · Element-Symbole',
+    sub:'Lerne die <b>chemischen Symbole</b> der wichtigsten Elemente – auch die kniffligen vom lateinischen Namen (Eisen = Fe, Kupfer = Cu, Gold = Au). Was du falsch hast, landet am Rundenende auf der <b>💩 SHITLIST</b>, bis es sitzt. Erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Bereit, LOOIS?',
+    ph:'Symbol eingeben (z. B. Na)',
+    hint:'Großschreibung egal · Fe, Cu, Ag, Au, Na, K, Pb kommen vom Latein'
+  },
+  gruppen:{
+    brand:'Quali Bayern · Natur &amp; Technik · Elementfamilien',
+    sub:'Die <b>Elementfamilien</b>: Alkalimetalle (I), Erdalkalimetalle (II), Halogene (VII), Edelgase (VIII) – plus Metall, Nichtmetall oder Halbmetall. Erkenne Mitglieder und typische Eigenschaften. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner. Bereit, LOOIS?',
+    ph:'Antwort wählen',
+    hint:'Hauptgruppe verrät die Familie · Edelgase reagieren kaum'
+  },
+  chemmix:{
+    brand:'Quali Bayern · Natur &amp; Technik · Alles gemischt',
+    sub:'Der <b>Chemie-Mix</b> aus Atombau, Periodensystem, Symbolen und Elementfamilien – jedes Mal neu. Halte deine <b>Serie</b> für AURA und erreiche <b>1000 Punkte</b>. Bei 10 Richtigen kommt der Endgegner als Element-Steckbrief. Bereit, LOOIS?',
+    ph:'Antwort eingeben',
+    hint:'Mal Rechnen, mal Zuordnen – lies die Aufgabe genau'
   }
 };
 const ENG_MODES=['vocab','grammar','reading','irreg','top100','signals','form','engmix'];
 const DE_MODES=['komma'];
+const NUT_MODES=['atom','pse','symbole','gruppen','chemmix'];
 let curSubject='math';
 function setMode(m){
   state.mode=m;
@@ -4081,45 +4480,56 @@ function setMode(m){
   $('btnModeForm').classList.toggle('active',m==='form');
   $('btnModeSignals').classList.toggle('active',m==='signals');
   $('btnModeKomma').classList.toggle('active',m==='komma');
+  $('btnModeAtom').classList.toggle('active',m==='atom');
+  $('btnModePse').classList.toggle('active',m==='pse');
+  $('btnModeSym').classList.toggle('active',m==='symbole');
+  $('btnModeGrp').classList.toggle('active',m==='gruppen');
+  $('btnModeChemMix').classList.toggle('active',m==='chemmix');
   $('btnModeEngMix').classList.toggle('active',m==='engmix');
   const t=MODE_TXT[m];
-  $('ovSub').innerHTML=nm(t.sub); $('brandSub').textContent=t.brand;
-  $('brandTitle').innerHTML = DE_MODES.indexOf(m)>=0 ? 'Deutsch&nbsp;Run' : ENG_MODES.indexOf(m)>=0 ? 'English&nbsp;Run' : 'Gleichungs&nbsp;Run';
+  $('ovSub').innerHTML=nm(t.sub); $('brandSub').innerHTML=t.brand;
+  $('brandTitle').innerHTML = DE_MODES.indexOf(m)>=0 ? 'Deutsch&nbsp;Run' : ENG_MODES.indexOf(m)>=0 ? 'English&nbsp;Run' : NUT_MODES.indexOf(m)>=0 ? 'Chemie&nbsp;Run' : 'Gleichungs&nbsp;Run';
   $('answer').placeholder=t.ph; $('eqHint').textContent=t.hint;
   resetRound(); reloadScores(); fitLobby();
 }
 function setSubject(s){
   curSubject=s;
-  const math=(s==='math'), eng=(s==='eng'), de=(s==='de');
+  const math=(s==='math'), eng=(s==='eng'), de=(s==='de'), nut=(s==='nut');
   $('subjSpick').classList.remove('active');
   $('spickPanel').style.display='none';
   $('hero2').style.display='';
   $('subjMath').classList.toggle('active',math);
   $('subjEng').classList.toggle('active',eng);
   $('subjDe').classList.toggle('active',de);
+  $('subjNut').classList.toggle('active',nut);
   $('modepickMath').style.display=math?'':'none';
   $('modepickEng').style.display=eng?'':'none';
   $('modepickDe').style.display=de?'':'none';
-  setMode(eng?'vocab':de?'komma':'gleich');
+  $('modepickNut').style.display=nut?'':'none';
+  setMode(eng?'vocab':de?'komma':nut?'atom':'gleich');
 }
-let _verbsBuilt=false;
+let _verbsBuilt=false, _pseBuilt=false;
 function spickView(which){
   if(which==='verbs'&&!_verbsBuilt){ $('spickVerbs').innerHTML=irr200HTML(); _verbsBuilt=true; }
+  if(which==='nut'&&!_pseBuilt){ $('pseGrid').innerHTML=pseGridHTML(); const na=CHEM_EL.find(e=>e.sym==='Na'); if(na)$('naFig').innerHTML=chShellFig(na); _pseBuilt=true; }
   $('spickDe').style.display=which==='de'?'':'none';
   $('spickEng').style.display=which==='eng'?'':'none';
   $('spickVerbs').style.display=which==='verbs'?'':'none';
+  $('spickNut').style.display=which==='nut'?'':'none';
   $('spickTabDe').classList.toggle('active',which==='de');
   $('spickTabEng').classList.toggle('active',which==='eng');
   $('spickTabVerbs').classList.toggle('active',which==='verbs');
+  $('spickTabNut').classList.toggle('active',which==='nut');
 }
 function openSpick(){
   $('subjMath').classList.remove('active');
   $('subjEng').classList.remove('active');
   $('subjDe').classList.remove('active');
+  $('subjNut').classList.remove('active');
   $('subjSpick').classList.add('active');
   $('hero2').style.display='none';
   $('spickPanel').style.display='';
-  spickView(curSubject==='de'?'de':'eng');
+  spickView(curSubject==='de'?'de':curSubject==='nut'?'nut':'eng');
 }
 function reloadScores(){
   if(CLOUD){
@@ -4140,14 +4550,21 @@ $('btnModeTop100').addEventListener('click',()=>setMode('top100'));
 $('btnModeForm').addEventListener('click',()=>setMode('form'));
 $('btnModeSignals').addEventListener('click',()=>setMode('signals'));
 $('btnModeKomma').addEventListener('click',()=>setMode('komma'));
+$('btnModeAtom').addEventListener('click',()=>setMode('atom'));
+$('btnModePse').addEventListener('click',()=>setMode('pse'));
+$('btnModeSym').addEventListener('click',()=>setMode('symbole'));
+$('btnModeGrp').addEventListener('click',()=>setMode('gruppen'));
+$('btnModeChemMix').addEventListener('click',()=>setMode('chemmix'));
 $('btnModeEngMix').addEventListener('click',()=>setMode('engmix'));
 $('subjMath').addEventListener('click',()=>setSubject('math'));
 $('subjEng').addEventListener('click',()=>setSubject('eng'));
 $('subjDe').addEventListener('click',()=>setSubject('de'));
+$('subjNut').addEventListener('click',()=>setSubject('nut'));
 $('subjSpick').addEventListener('click',openSpick);
 $('spickTabDe').addEventListener('click',()=>spickView('de'));
 $('spickTabEng').addEventListener('click',()=>spickView('eng'));
 $('spickTabVerbs').addEventListener('click',()=>spickView('verbs'));
+$('spickTabNut').addEventListener('click',()=>spickView('nut'));
 
 /* ---------- Spielername ---------- */
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -4171,7 +4588,7 @@ $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') saveName(); }
 
 /* ---------- Board-Umschalter (Eigenes / Klassen-Board) ---------- */
 let boardView='own', classMetric='tasks', classFilter='all';
-const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['top100','Top-100 Verben'],['signals','Signalwörter'],['form','Richtige Form'],['komma','Komma (DE)'],['engmix','Eng-Mix']];
+const BOARD_FILTERS=[['all','Alle'],['gleich','Gleichungen'],['prozent','Prozent'],['groessen','Größen'],['geo','Geometrie'],['mix','Mathe-Mix'],['vocab','Vokabeln'],['grammar','Grammatik'],['reading','Lesen'],['irreg','Verben/Plural'],['top100','Top-100 Verben'],['signals','Signalwörter'],['form','Richtige Form'],['komma','Komma (DE)'],['atom','Atombau'],['pse','Periodensystem'],['symbole','Symbole'],['gruppen','Elementfamilien'],['chemmix','Chemie-Mix'],['engmix','Eng-Mix']];
 function filterLabel(f){ const e=BOARD_FILTERS.find(x=>x[0]===f); return e?e[1]:'Alle'; }
 function renderClassFilters(){
   $('classFilters').innerHTML=BOARD_FILTERS.map(p=>'<button class="board-tab'+(p[0]===classFilter?' active':'')+'" data-f="'+p[0]+'">'+p[1]+'</button>').join('');
